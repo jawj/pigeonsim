@@ -4,7 +4,7 @@
   google.load('earth', '1.x');
 
   window.onload = function() {
-    var addLayers, altStatus, compassPts, connect, data, debugDataStatus, debugEarthAPIStatus, earthInitCallback, el, flapAmount, flown, ge, goToStart, headingStatus, k, kvp, lastFlap, latFactor, lonFactor, moveCam, params, pi, piOver180, speed, speedFactor, tick, titleStatus, truncNum, twoPi, v, wls, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref2;
+    var addLayers, altStatus, apiSent, compassPts, connect, data, debugDataStatus, debugEarthAPIStatus, earthInitCallback, el, flapAmount, flown, ge, goToStart, headingStatus, k, kvp, lastFlap, latFactor, lonFactor, moveCam, params, pi, piOver180, speed, speedFactor, tick, titleStatus, truncNum, twoPi, v, wls, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref2;
     if (!window.WebSocket) {
       alert('This app needs browser WebSocket support');
       return;
@@ -65,13 +65,15 @@
     lonFactor = 1 / Math.cos(params.startLat * piOver180);
     latFactor = speedFactor;
     lonFactor = speedFactor * lonFactor;
+    apiSent = 0;
     moveCam = function(o) {
       var c;
       if (o == null) o = {};
+      apiSent += 1;
       if (params.debugEarthAPI) {
-        debugEarthAPIStatus.innerHTML = JSON.stringify(o, function(k, v) {
+        debugEarthAPIStatus.innerHTML = "" + apiSent + " — " + (JSON.stringify(o, function(k, v) {
           return truncNum(v);
-        });
+        }));
       }
       c = ge.getView().copyAsCamera(ge.ALTITUDE_ABSOLUTE);
       if (o.lat) c.setLatitude(o.lat);
@@ -197,7 +199,7 @@
         received += 1;
         data = JSON.parse(e.data);
         if (params.debugData) {
-          return debugDataStatus.innerHTML = "" + received + ": " + (JSON.stringify(data, function(k, v) {
+          return debugDataStatus.innerHTML = "" + received + " — " + (JSON.stringify(data, function(k, v) {
             return truncNum(v);
           }));
         }

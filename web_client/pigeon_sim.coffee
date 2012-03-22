@@ -59,8 +59,10 @@ window.onload = ->
   latFactor = speedFactor
   lonFactor = speedFactor * lonFactor
   
+  apiSent = 0
   moveCam = (o = {}) ->
-    debugEarthAPIStatus.innerHTML = JSON.stringify(o, (k, v) -> truncNum(v)) if params.debugEarthAPI
+    apiSent += 1
+    debugEarthAPIStatus.innerHTML = "#{apiSent} — #{JSON.stringify(o, (k, v) -> truncNum(v))}" if params.debugEarthAPI
     c = ge.getView().copyAsCamera(ge.ALTITUDE_ABSOLUTE)
     
     # absolute
@@ -169,7 +171,7 @@ window.onload = ->
     ws.onmessage = (e) ->
       received += 1
       data = JSON.parse(e.data)
-      debugDataStatus.innerHTML = "#{received}: #{JSON.stringify(data, (k, v) -> truncNum(v))}" if params.debugData
+      debugDataStatus.innerHTML = "#{received} — #{JSON.stringify(data, (k, v) -> truncNum(v))}" if params.debugData
     
   connect()
   

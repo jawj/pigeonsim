@@ -51,6 +51,8 @@ void identifyGestures(int userId) {
   float leanFwdDeg = degrees(atan2(meanHipZ, head.z)) - 45.0 - 1.5;  // last figure is dive recognition threshold (degrees)
   if (leanFwdDeg < 0) leanFwdDeg = 0;
   
+  flyingUserId = userId;  // if *not* flying, this gets altered below
+  
   if (armsStraight && flapStage >= 0) {  // we're flying!
     stroke(255, 255, 0);
     float handsLeftRad = atan2(rHand.y - lHand.y, rHand.x - lHand.x);
@@ -64,6 +66,7 @@ void identifyGestures(int userId) {
     ws.broadcast("{\"reset\": 1}");
 
   } else {
+    flyingUserId = -1;
     ws.broadcast("{}");
   }
 }
