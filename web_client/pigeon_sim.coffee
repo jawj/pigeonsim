@@ -13,7 +13,6 @@ window.onload = ->
     startAlt:      80       # metres above "sea level"
     speed:          4       # = when flying straight
     maxSpeed:      10       # = when diving
-    diveThreshold:  1.5     # degrees -- don't start diving until leaning forward this much
     diveSpeed:      0.1     # speed multiplier for diving (dive speed also a function of lean angle and general speed)
     diveAccel:      0.05    # rate at which diving increases general speed
     diveDecel:      0.025   # rate at which speed decreases again after levelling out
@@ -22,20 +21,32 @@ window.onload = ->
     maxRoll:       80       # max degrees left or right
     turnSpeed:      0.075   # controls how tight a turn is produced by a given roll
     credits:        0
-    ws:            "ws://127.0.0.1:8888/p5websocket"
+    status:         1
+    ws:            'ws://127.0.0.1:8888/p5websocket'
+    reconnectWait:  2       # seconds
+    debugData:      0
     
   wls = window.location.search
   for kvp in wls.substring(1).split('&')
     [k, v] = kvp.split('=')
     params[k] = if k is 'ws' then v else parseFloat(v)
-    
-  document.getElementById('creditOuter').show() if params.credits
+  
+  el = (id) -> document.getElementById(id)
+  
+  el('creditOuter').style.display = 'block' if params.credits
+  el('statusOuter').style.display = 'block' if params.status
+  
+  titleStatus     = el('title')
+  altStatus       = el('alt')
+  debugDataStatus = el('debugData')
+  headingStatus   = el('heading')
   
   ge = flown = null  # scoping
   
   pi          = Math.PI
   twoPi       = pi * 2
   piOver180   = pi / 180
+  compassPts  = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N']
   
   speedFactor = 0.00001
   lonFactor   = 1 / Math.cos(params.startLat * piOver180)
@@ -65,7 +76,7 @@ window.onload = ->
   
   addLayers = (layers...) -> ge.getLayerRoot().enableLayerById(l, yes) for l in layers
   
-  goToStart = ->
+  goToStart = (speed = ge.SPEED_TELEPORT) ->
     flown = no
     moveCam(
       lat:     params.startLat
@@ -74,24 +85,38 @@ window.onload = ->
       alt:     params.startAlt
       tilt:    90
       roll:    0.0000001  # a plain 0 is ignored
-      speed:   4.5        # fast but not teleport
+      speed:   speed
     )
     
   speed = params.speed
   lastFlap = flapAmount = 0
-
-  tick = ->    
-    if data.reset && flown
-      goToStart()
   
+  wrapDegs360 = (d) ->
+    d += 360 while d <    0
+    d -= 360 while d >= 360
+    d
+    
+  wrapDegs180 = (d) ->
+    d += 360 while d < -180
+    d -= 360 while d >= 180
+    d
+
+  tick = ->
+    view       = ge.getView().copyAsCamera(ge.ALTITUDE_ABSOLUTE)
+    oldHeading = view.getHeading()
+    oldAlt     = view.getAltitude()
+    headingStatus.innerHTML = compassPts[Math.round(wrapDegs360(oldHeading) / 45)]
+    altStatus.innerHTML     = "#{Math.round(oldAlt)}m"
+    
+    goToStart(4.5) if data.reset && flown
+    
     altDelta = tilt = 0
-    if data.dive and data.dive > params.diveThreshold
-      dive = data.dive - params.diveThreshold
+    if data.dive
+      dive = data.dive
       altDelta = - dive * params.diveSpeed * speed
       tilt = 90 - dive
       speed += dive * params.diveAccel
       speed = params.maxSpeed if speed > params.maxSpeed  # TODO: max should depend on angle of dive?
-    
     else
       speed -= params.diveAccel
       speed = params.speed if speed < params.speed
@@ -105,31 +130,35 @@ window.onload = ->
     flapAmount *= params.flapDecay
     
     if data.roll
-      flown = yes
-    
+      flown      = yes
+
       roll = data.roll
       roll =   params.maxRoll if roll >   params.maxRoll
       roll = - params.maxRoll if roll < - params.maxRoll
     
       rollRad = roll * piOver180
-      heading = ge.getView().copyAsCamera(ge.ALTITUDE_ABSOLUTE).getHeading()
+      
       headingDelta = - roll * params.turnSpeed
-      headingRad = heading * piOver180      
-    
+      heading = oldHeading + headingDelta
+
+      headingRad = heading * piOver180
       latDelta = Math.cos(headingRad) * speed * latFactor
       lonDelta = Math.sin(headingRad) * speed * lonFactor
+      
+      alt = oldAlt + altDelta
     
-      moveCam({altDelta, tilt, latDelta, lonDelta, headingDelta, roll, speed: ge.SPEED_TELEPORT})  
+      moveCam({alt, tilt, latDelta, lonDelta, heading, roll, speed: ge.SPEED_TELEPORT})
 
   data = {}  # scoping
   connect = ->
-    reconnectDelay = 2
     ws = new WebSocket(params.ws)
-    ws.onopen = -> console.log('Connected')
+    ws.onopen = -> titleStatus.style.color = '#fff'
     ws.onclose = ->
-      console.log("Disconnected: retrying in #{reconnectDelay}s")
-      setTimeout(connect, reconnectDelay * 1000)
-    ws.onmessage = (e) -> data = JSON.parse(e.data)
+      titleStatus.style.color = '#f00'
+      setTimeout(connect, params.reconnectWait * 1000)
+    ws.onmessage = (e) ->
+      debugDataStatus.innerHTML = "#{new Date().getTime()}: #{e.data}" if params.debugData
+      data = JSON.parse(e.data)
     
   connect()
   
@@ -138,7 +167,7 @@ window.onload = ->
     console.log("Google Earth plugin v#{ge.getPluginVersion()}, API v#{ge.getApiVersion()}")
     addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION)
     goToStart()
-    ge.getOptions().setStatusBarVisibility(yes)
+    # ge.getOptions().setStatusBarVisibility(yes)
     ge.getOptions().setAtmosphereVisibility(yes)
     ge.getSun().setVisibility(yes)
     ge.getTime().getControl().setVisibility(ge.VISIBILITY_HIDE)

@@ -48,14 +48,15 @@ void identifyGestures(int userId) {
   boolean handsOverHead = lHand.y > head.y + 100 && rHand.y > head.y + 100;
   
   float meanHipZ   = (rHip.z + lHip.z) / 2.0;
-  float leanFwdDeg = degrees(atan2(meanHipZ, head.z)) - 45.0; 
+  float leanFwdDeg = degrees(atan2(meanHipZ, head.z)) - 45.0 - 1.5;  // last figure is dive recognition threshold (degrees)
+  if (leanFwdDeg < 0) leanFwdDeg = 0;
   
   if (armsStraight && flapStage >= 0) {  // we're flying!
     stroke(255, 255, 0);
     float handsLeftRad = atan2(rHand.y - lHand.y, rHand.x - lHand.x);
     float handsLeftDeg = wrapDegs180(degrees(handsLeftRad));
     
-    String data = "{\"roll\":" + handsLeftDeg + ",\"dive\":" + leanFwdDeg + ",\"flap\":" + flapStage + "}";
+    String data = "{\"roll\":" + nfc(handsLeftDeg, 2) + ",\"dive\":" + nfc(leanFwdDeg, 2) + ",\"flap\":" + flapStage + "}";
     ws.broadcast(data);
 
   } else if (handsTogether && handsOverHead) {
