@@ -48,7 +48,7 @@ void identifyGestures(int userId) {
   boolean handsOverHead = lHand.y > head.y + 100 && rHand.y > head.y + 100;
   
   float meanHipZ   = (rHip.z + lHip.z) / 2.0;
-  float leanFwdDeg = degrees(atan2(meanHipZ, head.z)) - 45.0 - 1.0;  // last figure is dive recognition threshold (degrees)
+  float leanFwdDeg = degrees(atan2(meanHipZ, head.z)) - 45.0 - 1.5;  // last figure is dive recognition threshold (degrees)
   if (leanFwdDeg < 0) leanFwdDeg = 0;
   
   flyingUserId = userId;  // if *not* flying, this gets altered below

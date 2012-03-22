@@ -5,7 +5,7 @@ import muthesius.net.*;
 import org.webbitserver.*;
 
 int   wsPort      = 8888;
-float scaleFactor = 1.0;
+float scaleFactor = 1.0 / 3.0;
 int   fps         = 30;
 
 WebSocketP5   ws;
