@@ -1,7 +1,7 @@
 
 google.load 'earth', '1.x'
 
-$ ->
+window.onload = ->
   unless window.WebSocket
     alert('This app needs browser WebSocket support')
     return
@@ -29,7 +29,7 @@ $ ->
     [k, v] = kvp.split('=')
     params[k] = if k is 'ws' then v else parseFloat(v)
     
-  $('#creditOuter').show() if params.credits
+  document.getElementById('creditOuter').show() if params.credits
   
   ge = flown = null  # scoping
   

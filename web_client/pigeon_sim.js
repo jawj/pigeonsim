@@ -3,7 +3,7 @@
 
   google.load('earth', '1.x');
 
-  $(function() {
+  window.onload = function() {
     var addLayers, connect, data, earthInitCallback, flapAmount, flown, ge, goToStart, k, kvp, lastFlap, latFactor, lonFactor, moveCam, params, pi, piOver180, speed, speedFactor, tick, twoPi, v, wls, _i, _len, _ref, _ref2;
     if (!window.WebSocket) {
       alert('This app needs browser WebSocket support');
@@ -34,7 +34,7 @@
       _ref2 = kvp.split('='), k = _ref2[0], v = _ref2[1];
       params[k] = k === 'ws' ? v : parseFloat(v);
     }
-    if (params.credits) $('#creditOuter').show();
+    if (params.credits) document.getElementById('creditOuter').show();
     ge = flown = null;
     pi = Math.PI;
     twoPi = pi * 2;
@@ -161,6 +161,6 @@
     return google.earth.createInstance('earth', earthInitCallback, function() {
       return alert("Google Earth error: " + errorCode);
     });
-  });
+  };
 
 }).call(this);
