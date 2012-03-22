@@ -6,6 +6,11 @@ window.onload = ->
     alert('This app needs browser WebSocket support')
     return
   
+  el = (id) -> document.getElementById(id)
+  truncNum = (n, dp = 2) -> if typeof n is 'number' then parseFloat(n.toFixed(dp)) else n
+  wrapDegs360 = (d) -> d += 360 while d <    0; d -= 360 while d >= 360; d
+  wrapDegs180 = (d) -> d += 360 while d < -180; d -= 360 while d >= 180; d
+  
   params = 
     startLat:      51.520113
     startLon:      -0.130956
@@ -13,29 +18,25 @@ window.onload = ->
     startAlt:      80       # metres above "sea level"
     speed:          4       # = when flying straight
     maxSpeed:      10       # = when diving
-    diveSpeed:      0.1     # speed multiplier for diving (dive speed also a function of lean angle and general speed)
+    diveSpeed:      0.15    # speed multiplier for diving (dive speed also a function of lean angle and general speed)
     diveAccel:      0.05    # rate at which diving increases general speed
     diveDecel:      0.025   # rate at which speed decreases again after levelling out
     flapSize:       2       # controls size of flap effect
     flapDecay:      0.8     # controls duration of flap effect
     maxRoll:       80       # max degrees left or right
     turnSpeed:      0.075   # controls how tight a turn is produced by a given roll
-    credits:        0
-    status:         1
-    geStatusBar:    0
-    geTimeCtrl:     0
+    credits:        0       # show credits at bottom
+    status:         1       # show status bar with title, heading, altitude
+    geStatusBar:    0       # show Google Earth plugin's own status bar at bottom
+    geTimeCtrl:     0       # show Google Earth time controller
+    debugData:      0       # show debug data in status bar
+    reconnectWait:  1       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'
-    reconnectWait:  2       # seconds
-    debugData:      0
-    debugEarthAPI:  0
     
   wls = window.location.search
   for kvp in wls.substring(1).split('&')
     [k, v] = kvp.split('=')
     params[k] = if k is 'ws' then v else parseFloat(v)
-  
-  el = (id) -> document.getElementById(id)
-  truncNum = (n, dp) -> if typeof n is 'number' then parseFloat(n.toFixed(dp)) else n
   
   el('creditOuter').style.display = 'block' if params.credits
   el('statusOuter').style.display = 'block' if params.status
@@ -44,8 +45,9 @@ window.onload = ->
   altStatus           = el('alt')
   debugDataStatus     = el('debugData')
   debugEarthAPIStatus = el('debugEarthAPI')
+  debugTicksStatus    = el('debugTicks')
   headingStatus       = el('heading')
-  
+
   ge = flown = null  # scoping
   
   pi          = Math.PI
@@ -60,9 +62,10 @@ window.onload = ->
   lonFactor = speedFactor * lonFactor
   
   apiSent = 0
+  
   moveCam = (o = {}) ->
     apiSent += 1
-    debugEarthAPIStatus.innerHTML = "#{apiSent} — #{JSON.stringify(o, (k, v) -> truncNum(v))}" if params.debugEarthAPI
+    debugEarthAPIStatus.innerHTML = "#{apiSent} #{JSON.stringify(o, (k, v) -> truncNum(v))}" if params.debugData
     c = ge.getView().copyAsCamera(ge.ALTITUDE_ABSOLUTE)
     
     # absolute
@@ -97,69 +100,67 @@ window.onload = ->
       roll:    0.0000001  # a plain 0 is ignored
       speed:   speed
     )
-    
-  speed = params.speed
-  lastFlap = flapAmount = 0
   
-  wrapDegs360 = (d) ->
-    d += 360 while d <    0
-    d -= 360 while d >= 360
-    d
-    
-  wrapDegs180 = (d) ->
-    d += 360 while d < -180
-    d -= 360 while d >= 180
-    d
-
+  speed = params.speed
+  lastFlap = flapAmount = tickNum = 0
+  fallbackTimeout = null
+  
   tick = ->
+    clearTimeout(fallbackTimeout)
+    
+    tickNum += 1
+    debugTicksStatus.innerHTML = tickNum if params.debugData
+    
     view       = ge.getView().copyAsCamera(ge.ALTITUDE_ABSOLUTE)
     oldHeading = view.getHeading()
     oldAlt     = view.getAltitude()
     
     headingStatus.innerHTML = compassPts[Math.round(wrapDegs360(oldHeading) / 45)]
     altStatus.innerHTML     = "#{Math.round(oldAlt)}m"
+
+    goToStart(4.5) if data.reset and flown
     
-    goToStart(4.5) if data.reset && flown
-    
-    altDelta = tilt = 0
-    if data.dive
+    if data.roll?
+      flown = yes  # since last goToStart()
+      
       dive = data.dive
-      altDelta = - dive * params.diveSpeed * speed
-      tilt = 90 - dive
-      speed += dive * params.diveAccel
-      speed = params.maxSpeed if speed > params.maxSpeed  # TODO: max should depend on angle of dive?
-    else
-      speed -= params.diveAccel
-      speed = params.speed if speed < params.speed
-    
-    if data.flap
+      altDelta = tilt = 0
+      if dive > 0
+        altDelta = - dive * params.diveSpeed * speed
+        tilt = 90 - dive
+        speed += dive * params.diveAccel
+        speed = params.maxSpeed if speed > params.maxSpeed  # TODO: max should depend on angle of dive?
+      else
+        speed -= params.diveDecel
+        speed = params.speed if speed < params.speed
+      
+      # TODO -- flap calculations need to occur in response to data receipt, since this is more frequent than animation ticking
+      
       flapDiff = data.flap - lastFlap
       flapAmount += params.flapSize * flapDiff if flapDiff > 0
+      altDelta += flapAmount if flapAmount > 0
+      flapAmount *= params.flapDecay
       lastFlap = data.flap
-    
-    altDelta += flapAmount if flapAmount > 0
-    flapAmount *= params.flapDecay
-    
-    if data.roll
-      flown      = yes
-
+      
       roll = data.roll
       roll =   params.maxRoll if roll >   params.maxRoll
       roll = - params.maxRoll if roll < - params.maxRoll
-    
       rollRad = roll * piOver180
       
       headingDelta = - roll * params.turnSpeed
       heading = oldHeading + headingDelta
-
       headingRad = heading * piOver180
+      
       latDelta = Math.cos(headingRad) * speed * latFactor
       lonDelta = Math.sin(headingRad) * speed * lonFactor
       
       alt = oldAlt + altDelta
-    
+      
       moveCam({alt, tilt, latDelta, lonDelta, heading, roll, speed: ge.SPEED_TELEPORT})
-
+   
+    else
+      fallbackTimeout = setTimeout(tick, 200)  # for if there are no frameends
+  
   data = {}  # scoping
   connect = ->
     received = 0
@@ -171,7 +172,7 @@ window.onload = ->
     ws.onmessage = (e) ->
       received += 1
       data = JSON.parse(e.data)
-      debugDataStatus.innerHTML = "#{received} — #{JSON.stringify(data, (k, v) -> truncNum(v))}" if params.debugData
+      debugDataStatus.innerHTML = "#{received} #{JSON.stringify(data, (k, v) -> truncNum(v))}" if params.debugData
     
   connect()
   
@@ -186,6 +187,6 @@ window.onload = ->
     ge.getTime().getControl().setVisibility(if params.geTimeCtrl then ge.VISIBILITY_SHOW else ge.VISIBILITY_HIDE)
     ge.getWindow().setVisibility(yes)
     google.earth.addEventListener(ge, 'frameend', tick)
-
-  google.earth.createInstance('earth', earthInitCallback, -> alert("Google Earth error: #{errorCode}"))
+  
+  google.earth.createInstance('earth', earthInitCallback, -> console.log("Google Earth error: #{errorCode}"))
   

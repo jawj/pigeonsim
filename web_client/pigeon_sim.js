@@ -4,11 +4,40 @@
   google.load('earth', '1.x');
 
   window.onload = function() {
-    var addLayers, altStatus, apiSent, compassPts, connect, data, debugDataStatus, debugEarthAPIStatus, earthInitCallback, el, flapAmount, flown, ge, goToStart, headingStatus, k, kvp, lastFlap, latFactor, lonFactor, moveCam, params, pi, piOver180, speed, speedFactor, tick, titleStatus, truncNum, twoPi, v, wls, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref2;
+    var addLayers, altStatus, apiSent, compassPts, connect, data, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, fallbackTimeout, flapAmount, flown, ge, goToStart, headingStatus, k, kvp, lastFlap, latFactor, lonFactor, moveCam, params, pi, piOver180, speed, speedFactor, tick, tickNum, titleStatus, truncNum, twoPi, v, wls, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref2;
     if (!window.WebSocket) {
       alert('This app needs browser WebSocket support');
       return;
     }
+    el = function(id) {
+      return document.getElementById(id);
+    };
+    truncNum = function(n, dp) {
+      if (dp == null) dp = 2;
+      if (typeof n === 'number') {
+        return parseFloat(n.toFixed(dp));
+      } else {
+        return n;
+      }
+    };
+    wrapDegs360 = function(d) {
+      while (d < 0) {
+        d += 360;
+      }
+      while (d >= 360) {
+        d -= 360;
+      }
+      return d;
+    };
+    wrapDegs180 = function(d) {
+      while (d < -180) {
+        d += 360;
+      }
+      while (d >= 180) {
+        d -= 360;
+      }
+      return d;
+    };
     params = {
       startLat: 51.520113,
       startLon: -0.130956,
@@ -16,7 +45,7 @@
       startAlt: 80,
       speed: 4,
       maxSpeed: 10,
-      diveSpeed: 0.1,
+      diveSpeed: 0.15,
       diveAccel: 0.05,
       diveDecel: 0.025,
       flapSize: 2,
@@ -27,10 +56,9 @@
       status: 1,
       geStatusBar: 0,
       geTimeCtrl: 0,
-      ws: 'ws://127.0.0.1:8888/p5websocket',
-      reconnectWait: 2,
       debugData: 0,
-      debugEarthAPI: 0
+      reconnectWait: 1,
+      ws: 'ws://127.0.0.1:8888/p5websocket'
     };
     wls = window.location.search;
     _ref = wls.substring(1).split('&');
@@ -39,22 +67,13 @@
       _ref2 = kvp.split('='), k = _ref2[0], v = _ref2[1];
       params[k] = k === 'ws' ? v : parseFloat(v);
     }
-    el = function(id) {
-      return document.getElementById(id);
-    };
-    truncNum = function(n, dp) {
-      if (typeof n === 'number') {
-        return parseFloat(n.toFixed(dp));
-      } else {
-        return n;
-      }
-    };
     if (params.credits) el('creditOuter').style.display = 'block';
     if (params.status) el('statusOuter').style.display = 'block';
     titleStatus = el('title');
     altStatus = el('alt');
     debugDataStatus = el('debugData');
     debugEarthAPIStatus = el('debugEarthAPI');
+    debugTicksStatus = el('debugTicks');
     headingStatus = el('heading');
     ge = flown = null;
     pi = Math.PI;
@@ -70,8 +89,8 @@
       var c;
       if (o == null) o = {};
       apiSent += 1;
-      if (params.debugEarthAPI) {
-        debugEarthAPIStatus.innerHTML = "" + apiSent + " — " + (JSON.stringify(o, function(k, v) {
+      if (params.debugData) {
+        debugEarthAPIStatus.innerHTML = "" + apiSent + " " + (JSON.stringify(o, function(k, v) {
           return truncNum(v);
         }));
       }
@@ -115,53 +134,37 @@
       });
     };
     speed = params.speed;
-    lastFlap = flapAmount = 0;
-    wrapDegs360 = function(d) {
-      while (d < 0) {
-        d += 360;
-      }
-      while (d >= 360) {
-        d -= 360;
-      }
-      return d;
-    };
-    wrapDegs180 = function(d) {
-      while (d < -180) {
-        d += 360;
-      }
-      while (d >= 180) {
-        d -= 360;
-      }
-      return d;
-    };
+    lastFlap = flapAmount = tickNum = 0;
+    fallbackTimeout = null;
     tick = function() {
       var alt, altDelta, dive, flapDiff, heading, headingDelta, headingRad, latDelta, lonDelta, oldAlt, oldHeading, roll, rollRad, tilt, view;
+      clearTimeout(fallbackTimeout);
+      tickNum += 1;
+      if (params.debugData) debugTicksStatus.innerHTML = tickNum;
       view = ge.getView().copyAsCamera(ge.ALTITUDE_ABSOLUTE);
       oldHeading = view.getHeading();
       oldAlt = view.getAltitude();
       headingStatus.innerHTML = compassPts[Math.round(wrapDegs360(oldHeading) / 45)];
       altStatus.innerHTML = "" + (Math.round(oldAlt)) + "m";
       if (data.reset && flown) goToStart(4.5);
-      altDelta = tilt = 0;
-      if (data.dive) {
+      if (data.roll != null) {
+        flown = true;
         dive = data.dive;
-        altDelta = -dive * params.diveSpeed * speed;
-        tilt = 90 - dive;
-        speed += dive * params.diveAccel;
-        if (speed > params.maxSpeed) speed = params.maxSpeed;
-      } else {
-        speed -= params.diveAccel;
-        if (speed < params.speed) speed = params.speed;
-      }
-      if (data.flap) {
+        altDelta = tilt = 0;
+        if (dive > 0) {
+          altDelta = -dive * params.diveSpeed * speed;
+          tilt = 90 - dive;
+          speed += dive * params.diveAccel;
+          if (speed > params.maxSpeed) speed = params.maxSpeed;
+        } else {
+          speed -= params.diveDecel;
+          if (speed < params.speed) speed = params.speed;
+        }
         flapDiff = data.flap - lastFlap;
         if (flapDiff > 0) flapAmount += params.flapSize * flapDiff;
+        if (flapAmount > 0) altDelta += flapAmount;
+        flapAmount *= params.flapDecay;
         lastFlap = data.flap;
-      }
-      if (flapAmount > 0) altDelta += flapAmount;
-      flapAmount *= params.flapDecay;
-      if (data.roll) {
-        flown = true;
         roll = data.roll;
         if (roll > params.maxRoll) roll = params.maxRoll;
         if (roll < -params.maxRoll) roll = -params.maxRoll;
@@ -181,6 +184,8 @@
           roll: roll,
           speed: ge.SPEED_TELEPORT
         });
+      } else {
+        return fallbackTimeout = setTimeout(tick, 200);
       }
     };
     data = {};
@@ -199,7 +204,7 @@
         received += 1;
         data = JSON.parse(e.data);
         if (params.debugData) {
-          return debugDataStatus.innerHTML = "" + received + " — " + (JSON.stringify(data, function(k, v) {
+          return debugDataStatus.innerHTML = "" + received + " " + (JSON.stringify(data, function(k, v) {
             return truncNum(v);
           }));
         }
@@ -219,7 +224,7 @@
       return google.earth.addEventListener(ge, 'frameend', tick);
     };
     return google.earth.createInstance('earth', earthInitCallback, function() {
-      return alert("Google Earth error: " + errorCode);
+      return console.log("Google Earth error: " + errorCode);
     });
   };
 

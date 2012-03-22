@@ -16,10 +16,11 @@ html, body, #earth { margin: 0; padding: 0; border: 0; overflow: hidden; width: 
 #creditInner {}
 #statusInner {}
 #statusInner span { margin-right: 1em; }
-#title { color: #777; }
-#debugData { color: #ff0; }
+#title         { color: #777; }  /* changes according to connection status */
+#debugData     { color: #ff0; }
 #debugEarthAPI { color: #0ff; }
-a { color: #fff; }
+#debugTicks    { color: #f0f; }
+a              { color: #fff; }
 </style>
 <title>pigeon sim</title>
 </head>
@@ -30,6 +31,7 @@ a { color: #fff; }
   <span id="alt"></span>
   <span id="debugData"></span>
   <span id="debugEarthAPI"></span>
+  <span id="debugTicks"></span>
 </div></div>
 <div id="earth"></div>
 <div id="creditOuter"><div id="creditInner">
