@@ -35,12 +35,12 @@ void identifyGestures(int userId) {
   boolean armsAligned = shoulHandDegSum >= 310 || shoulHandDegSum < 80;
 
   if      (armsAligned)                                                       flapStage =  0;
-  else if (flapStage == 0 && shoulHandDegSum >= 295 && shoulHandDegSum < 310) flapStage =  1;
-  else if (flapStage == 1 && shoulHandDegSum >= 280 && shoulHandDegSum < 295) flapStage =  2;
-  else if (flapStage == 2 && shoulHandDegSum >= 265 && shoulHandDegSum < 280) flapStage =  3;
-  else if (flapStage == 3 && shoulHandDegSum >= 250 && shoulHandDegSum < 265) flapStage =  4;
-  else if (flapStage == 4 && shoulHandDegSum >= 235 && shoulHandDegSum < 250) flapStage =  5;
-  else if (flapStage == 5 && shoulHandDegSum >= 210 && shoulHandDegSum < 235) flapStage =  6;
+  else if (flapStage >= 0 && shoulHandDegSum >= 295 && shoulHandDegSum < 310) flapStage =  1;
+  else if (flapStage >= 1 && shoulHandDegSum >= 280 && shoulHandDegSum < 295) flapStage =  2;
+  else if (flapStage >= 2 && shoulHandDegSum >= 265 && shoulHandDegSum < 280) flapStage =  3;
+  else if (flapStage >= 3 && shoulHandDegSum >= 250 && shoulHandDegSum < 265) flapStage =  4;
+  else if (flapStage >= 4 && shoulHandDegSum >= 235 && shoulHandDegSum < 250) flapStage =  5;
+  else if (flapStage >= 5 && shoulHandDegSum >= 210 && shoulHandDegSum < 235) flapStage =  6;
   else if (                  shoulHandDegSum >=  80 && shoulHandDegSum < 210) flapStage = -1;
 
   float handsDistance = dist(lHand.x, lHand.y, lHand.z, rHand.x, rHand.y, rHand.z);
