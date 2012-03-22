@@ -56,7 +56,7 @@ void identifyGestures(int userId) {
     float handsLeftRad = atan2(rHand.y - lHand.y, rHand.x - lHand.x);
     float handsLeftDeg = wrapDegs180(degrees(handsLeftRad));
     
-    String data = "{\"roll\":" + nfc(handsLeftDeg, 2) + ",\"dive\":" + nfc(leanFwdDeg, 2) + ",\"flap\":" + flapStage + "}";
+    String data = "{\"roll\":" + handsLeftDeg + ",\"dive\":" + leanFwdDeg + ",\"flap\":" + flapStage + "}";
     ws.broadcast(data);
 
   } else if (handsTogether && handsOverHead) {

@@ -22,9 +22,12 @@ window.onload = ->
     turnSpeed:      0.075   # controls how tight a turn is produced by a given roll
     credits:        0
     status:         1
+    geStatusBar:    0
+    geTimeCtrl:     0
     ws:            'ws://127.0.0.1:8888/p5websocket'
     reconnectWait:  2       # seconds
     debugData:      0
+    debugEarthAPI:  0
     
   wls = window.location.search
   for kvp in wls.substring(1).split('&')
@@ -32,14 +35,16 @@ window.onload = ->
     params[k] = if k is 'ws' then v else parseFloat(v)
   
   el = (id) -> document.getElementById(id)
+  truncNum = (n, dp) -> if typeof n is 'number' then parseFloat(n.toFixed(dp)) else n
   
   el('creditOuter').style.display = 'block' if params.credits
   el('statusOuter').style.display = 'block' if params.status
   
-  titleStatus     = el('title')
-  altStatus       = el('alt')
-  debugDataStatus = el('debugData')
-  headingStatus   = el('heading')
+  titleStatus         = el('title')
+  altStatus           = el('alt')
+  debugDataStatus     = el('debugData')
+  debugEarthAPIStatus = el('debugEarthAPI')
+  headingStatus       = el('heading')
   
   ge = flown = null  # scoping
   
@@ -55,8 +60,10 @@ window.onload = ->
   lonFactor = speedFactor * lonFactor
   
   moveCam = (o = {}) ->
+    debugEarthAPIStatus.innerHTML = JSON.stringify(o, (k, v) -> truncNum(v)) if params.debugEarthAPI
     c = ge.getView().copyAsCamera(ge.ALTITUDE_ABSOLUTE)
     
+    # absolute
     c.setLatitude(o.lat) if o.lat
     c.setLongitude(o.lon) if o.lon
     c.setAltitude(o.alt) if o.alt
@@ -64,6 +71,7 @@ window.onload = ->
     c.setTilt(o.tilt) if o.tilt
     c.setRoll(o.roll) if o.roll
     
+    # relative (deltas)
     c.setLatitude(c.getLatitude() + o.latDelta) if o.latDelta
     c.setLongitude(c.getLongitude() + o.lonDelta) if o.lonDelta
     c.setAltitude(c.getAltitude() + o.altDelta) if o.altDelta
@@ -105,6 +113,7 @@ window.onload = ->
     view       = ge.getView().copyAsCamera(ge.ALTITUDE_ABSOLUTE)
     oldHeading = view.getHeading()
     oldAlt     = view.getAltitude()
+    
     headingStatus.innerHTML = compassPts[Math.round(wrapDegs360(oldHeading) / 45)]
     altStatus.innerHTML     = "#{Math.round(oldAlt)}m"
     
@@ -151,14 +160,16 @@ window.onload = ->
 
   data = {}  # scoping
   connect = ->
+    received = 0
     ws = new WebSocket(params.ws)
     ws.onopen = -> titleStatus.style.color = '#fff'
     ws.onclose = ->
       titleStatus.style.color = '#f00'
       setTimeout(connect, params.reconnectWait * 1000)
     ws.onmessage = (e) ->
-      debugDataStatus.innerHTML = "#{new Date().getTime()}: #{e.data}" if params.debugData
+      received += 1
       data = JSON.parse(e.data)
+      debugDataStatus.innerHTML = "#{received}: #{JSON.stringify(data, (k, v) -> truncNum(v))}" if params.debugData
     
   connect()
   
@@ -167,10 +178,10 @@ window.onload = ->
     console.log("Google Earth plugin v#{ge.getPluginVersion()}, API v#{ge.getApiVersion()}")
     addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION)
     goToStart()
-    # ge.getOptions().setStatusBarVisibility(yes)
     ge.getOptions().setAtmosphereVisibility(yes)
     ge.getSun().setVisibility(yes)
-    ge.getTime().getControl().setVisibility(ge.VISIBILITY_HIDE)
+    ge.getOptions().setStatusBarVisibility(params.geStatusBar)
+    ge.getTime().getControl().setVisibility(if params.geTimeCtrl then ge.VISIBILITY_SHOW else ge.VISIBILITY_HIDE)
     ge.getWindow().setVisibility(yes)
     google.earth.addEventListener(ge, 'frameend', tick)
 

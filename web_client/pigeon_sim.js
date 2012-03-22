@@ -4,7 +4,7 @@
   google.load('earth', '1.x');
 
   window.onload = function() {
-    var addLayers, altStatus, compassPts, connect, data, debugDataStatus, earthInitCallback, el, flapAmount, flown, ge, goToStart, headingStatus, k, kvp, lastFlap, latFactor, lonFactor, moveCam, params, pi, piOver180, speed, speedFactor, tick, titleStatus, twoPi, v, wls, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref2;
+    var addLayers, altStatus, compassPts, connect, data, debugDataStatus, debugEarthAPIStatus, earthInitCallback, el, flapAmount, flown, ge, goToStart, headingStatus, k, kvp, lastFlap, latFactor, lonFactor, moveCam, params, pi, piOver180, speed, speedFactor, tick, titleStatus, truncNum, twoPi, v, wls, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref2;
     if (!window.WebSocket) {
       alert('This app needs browser WebSocket support');
       return;
@@ -25,9 +25,12 @@
       turnSpeed: 0.075,
       credits: 0,
       status: 1,
+      geStatusBar: 0,
+      geTimeCtrl: 0,
       ws: 'ws://127.0.0.1:8888/p5websocket',
       reconnectWait: 2,
-      debugData: 0
+      debugData: 0,
+      debugEarthAPI: 0
     };
     wls = window.location.search;
     _ref = wls.substring(1).split('&');
@@ -39,11 +42,19 @@
     el = function(id) {
       return document.getElementById(id);
     };
+    truncNum = function(n, dp) {
+      if (typeof n === 'number') {
+        return parseFloat(n.toFixed(dp));
+      } else {
+        return n;
+      }
+    };
     if (params.credits) el('creditOuter').style.display = 'block';
     if (params.status) el('statusOuter').style.display = 'block';
     titleStatus = el('title');
     altStatus = el('alt');
     debugDataStatus = el('debugData');
+    debugEarthAPIStatus = el('debugEarthAPI');
     headingStatus = el('heading');
     ge = flown = null;
     pi = Math.PI;
@@ -57,6 +68,11 @@
     moveCam = function(o) {
       var c;
       if (o == null) o = {};
+      if (params.debugEarthAPI) {
+        debugEarthAPIStatus.innerHTML = JSON.stringify(o, function(k, v) {
+          return truncNum(v);
+        });
+      }
       c = ge.getView().copyAsCamera(ge.ALTITUDE_ABSOLUTE);
       if (o.lat) c.setLatitude(o.lat);
       if (o.lon) c.setLongitude(o.lon);
@@ -167,7 +183,8 @@
     };
     data = {};
     connect = function() {
-      var ws;
+      var received, ws;
+      received = 0;
       ws = new WebSocket(params.ws);
       ws.onopen = function() {
         return titleStatus.style.color = '#fff';
@@ -177,10 +194,13 @@
         return setTimeout(connect, params.reconnectWait * 1000);
       };
       return ws.onmessage = function(e) {
+        received += 1;
+        data = JSON.parse(e.data);
         if (params.debugData) {
-          debugDataStatus.innerHTML = "" + (new Date().getTime()) + ": " + e.data;
+          return debugDataStatus.innerHTML = "" + received + ": " + (JSON.stringify(data, function(k, v) {
+            return truncNum(v);
+          }));
         }
-        return data = JSON.parse(e.data);
       };
     };
     connect();
@@ -191,7 +211,8 @@
       goToStart();
       ge.getOptions().setAtmosphereVisibility(true);
       ge.getSun().setVisibility(true);
-      ge.getTime().getControl().setVisibility(ge.VISIBILITY_HIDE);
+      ge.getOptions().setStatusBarVisibility(params.geStatusBar);
+      ge.getTime().getControl().setVisibility(params.geTimeCtrl ? ge.VISIBILITY_SHOW : ge.VISIBILITY_HIDE);
       ge.getWindow().setVisibility(true);
       return google.earth.addEventListener(ge, 'frameend', tick);
     };
