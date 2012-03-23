@@ -2,27 +2,23 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
 <script src="https://www.google.com/jsapi"></script>
 <script src="pigeon_sim.js"></script>
-
 <style>
 * { -webkit-user-select: none; -moz-user-select: none; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); -webkit-text-size-adjust: none; }
-html, body, #earth { margin: 0; padding: 0; border: 0; overflow: hidden; width: 100%; height: 100%; background: #000; }
-#creditOuter, #statusOuter { display: none; position: absolute; width: 100%; font-size: 12px; z-index: 10; font-weight: bold; pointer-events: none; }
-#creditOuter { bottom: 0; }
-#statusOuter { text-align: center; }
-#creditInner, #statusInner { padding: 5px 10px; font-family: Helvetica; color: #fff; text-shadow: #000 1px 1px 3px; }
-#creditInner {}
-#statusInner {}
-#statusInner span { margin-right: 1em; }
+html, body { margin: 0; padding: 0; font-size: 0.95em; overflow: hidden; width: 100%; height: 100%; background: #000; }
+#earth { position: absolute; height: auto; top: 0; bottom: 0; left: 0; right: 0; margin-top: 1.75em; }
+#statusOuter { display: none; position: absolute; width: 100%; font-weight: bold; }
+#statusInner { padding: 0.4em 1em 0; font-family: Helvetica; color: #fff; }
+#statusInner span { margin: 0 0.5em; }
+#credit { float: right; font-weight: normal; color: #999; }
 #title         { color: #777; }  /* title colour changes according to connection status */
 #debugData     { color: #ff0; }  /* JSON data: yelow   */
 #debugEarthAPI { color: #0ff; }  /* API data:  cyan    */
 #debugTicks    { color: #f0f; }  /* tick data: magenta */
 a              { color: #fff; }
 </style>
-<title>pigeon sim</title>
+<title>Pigeon Sim</title>
 </head>
 <body>
 <div id="statusOuter"><div id="statusInner">
@@ -32,11 +28,10 @@ a              { color: #fff; }
   <span id="debugData"></span>
   <span id="debugEarthAPI"></span>
   <span id="debugTicks"></span>
+  <span id="debugTicks"></span>
+  <div id="credit"><span>UCL Bartlett Centre for Advanced Spatial Analysis — George MacKerron</span></div>
+  </div>
 </div></div>
 <div id="earth"></div>
-<div id="creditOuter"><div id="creditInner">
-  made by <a href="http://mackerron.com">George MacKerron</a> 
-  of UCL Bartlett <a href="http://casa.ucl.ac.uk">Centre for Advanced Spatial Analysis</a>
-</div></div>
 </body>
 </html>

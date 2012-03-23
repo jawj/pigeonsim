@@ -30,7 +30,6 @@ window.onload = ->
     flapDecay:      0.8     # controls duration of flap effect
     maxRoll:       80       # max degrees left or right
     turnSpeed:      0.075   # controls how tight a turn is produced by a given roll
-    credits:        0       # show credits at bottom
     status:         1       # show status bar with title, heading, altitude
     timeControl:    0       # show Google Earth time controller
     debugData:      0       # show debug data in status bar
@@ -42,8 +41,8 @@ window.onload = ->
     [k, v] = kvp.split('=')
     params[k] = if k is 'ws' then v else parseFloat(v)
   
-  el('creditOuter').style.display = 'block' if params.credits
   el('statusOuter').style.display = 'block' if params.status
+  el('credit').style.display = 'none' if params.debugData
   
   [titleStatus, altStatus, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, headingStatus] =
     (el(id) for id in w('title alt debugData debugEarthAPI debugTicks heading'))
