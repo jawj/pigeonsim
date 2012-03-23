@@ -20,7 +20,7 @@ window.onload = ->
     startHeading:  55       # degrees
     startAlt:      80       # metres above "sea level"
     
-    minAlt:        10       # metres above "sea level"
+    minAlt:         5       # metres above "sea level"
     speed:          3       # = when flying straight
     maxSpeed:       6       # = when diving
     diveSpeed:      0.15    # speed multiplier for diving (dive speed also a function of lean angle and general speed)

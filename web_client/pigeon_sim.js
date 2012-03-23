@@ -67,7 +67,7 @@
       startLon: -0.130956,
       startHeading: 55,
       startAlt: 80,
-      minAlt: 10,
+      minAlt: 5,
       speed: 3,
       maxSpeed: 6,
       diveSpeed: 0.15,
