@@ -30,19 +30,23 @@ void identifyGestures(int userId) {
   
   boolean rArmStraight = rDegDiff >= -40 & rDegDiff < 80;
   boolean lArmStraight = lDegDiff >= -40 & lDegDiff < 80;
-  
   boolean armsStraight = rArmStraight && lArmStraight;
-  boolean armsAligned = shoulHandDegSum >= 310 || shoulHandDegSum < 80;
 
-  if      (armsAligned)                                                       flapStage =  0;
+  if                        (shoulHandDegSum >= 310 || shoulHandDegSum <  80) flapStage =  0;
   else if (flapStage >= 0 && shoulHandDegSum >= 295 && shoulHandDegSum < 310) flapStage =  1;
   else if (flapStage >= 1 && shoulHandDegSum >= 280 && shoulHandDegSum < 295) flapStage =  2;
   else if (flapStage >= 2 && shoulHandDegSum >= 265 && shoulHandDegSum < 280) flapStage =  3;
   else if (flapStage >= 3 && shoulHandDegSum >= 250 && shoulHandDegSum < 265) flapStage =  4;
   else if (flapStage >= 4 && shoulHandDegSum >= 235 && shoulHandDegSum < 250) flapStage =  5;
   else if (flapStage >= 5 && shoulHandDegSum >= 210 && shoulHandDegSum < 235) flapStage =  6;
-  else if (                  shoulHandDegSum >=  80 && shoulHandDegSum < 210) flapStage = -1;
-
+  if                        (shoulHandDegSum >=  80 && shoulHandDegSum < 210) {
+    long now = System.currentTimeMillis();
+    long timeSinceFlight = now - lastFlightTime;
+    if (timeSinceFlight > flightGracePeriod) flapStage = -1;
+  } else {
+    lastFlightTime = System.currentTimeMillis();
+  }
+  
   float handsDistance = dist(lHand.x, lHand.y, lHand.z, rHand.x, rHand.y, rHand.z);
   boolean handsTogether = handsDistance < 100;
   float meanShoulY = (lShoul.y + rShoul.y) / 2.0;
@@ -50,7 +54,7 @@ void identifyGestures(int userId) {
   
   float sumHipZ   = (rHip.z + lHip.z);
   float sumShoulZ = (rShoul.z + lShoul.z);
-  float leanFwdDeg = degrees(atan2(sumHipZ, sumShoulZ)) - 45.0 - 2.5;  // last figure is dive recognition threshold (degrees)
+  float leanFwdDeg = degrees(atan2(sumHipZ, sumShoulZ)) - 45.0 - leanThresholdDeg;
   if (leanFwdDeg < 0) leanFwdDeg = 0;
   
   flyingUserId = userId;  // if *not* flying, this gets altered below

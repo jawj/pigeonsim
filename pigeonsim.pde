@@ -4,9 +4,11 @@ import SimpleOpenNI.*;
 import muthesius.net.*;
 import org.webbitserver.*;
 
-int   wsPort      = 8888;
-float scaleFactor = 1.0;
-int   fps         = 30;
+int   wsPort            = 8888;
+float scaleFactor       = 1.0;
+int   fps               = 30;
+float leanThresholdDeg  = 2.5;
+long  flightGracePeriod = 333; // ms
 
 WebSocketP5   ws;
 SimpleOpenNI  ni;
@@ -14,8 +16,9 @@ IntVector     users;
 
 PVector rShoul, lShoul, rElbow, lElbow, rHand, lHand, rHip, lHip, head;
 
-int flyingUserId = -1;
-int flapStage = -1;
+int  flyingUserId = -1;
+int  flapStage = -1;
+long lastFlightTime = 0;
 
 void setup() {
   rShoul = new PVector(); lShoul = new PVector();
