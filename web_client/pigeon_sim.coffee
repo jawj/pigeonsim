@@ -31,8 +31,8 @@ window.onload = ->
     maxRoll:       80       # max degrees left or right
     turnSpeed:      0.075   # controls how tight a turn is produced by a given roll
     status:         1       # show status bar with title, heading, altitude
-    timeControl:    0       # show Google Earth time controller
     debugData:      0       # show debug data in status bar
+    timeControl:    0       # show Google Earth time controller
     
     reconnectWait:  2       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'
@@ -117,7 +117,7 @@ window.onload = ->
     roll         = - params.maxRoll if roll < - params.maxRoll
     
     headingDelta = - roll * params.turnSpeed
-    heading      = cam.heading + headingDelta
+    heading      = wrapDegs360(cam.heading + headingDelta)
     
     headingRad   = heading * piOver180
     latDelta     = Math.cos(headingRad) * speed * latFactor

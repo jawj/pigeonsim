@@ -83,8 +83,8 @@
       maxRoll: 80,
       turnSpeed: 0.075,
       status: 1,
-      timeControl: 0,
       debugData: 0,
+      timeControl: 0,
       reconnectWait: 2,
       ws: 'ws://127.0.0.1:8888/p5websocket'
     };
@@ -208,7 +208,7 @@
         roll = -params.maxRoll;
       }
       headingDelta = -roll * params.turnSpeed;
-      heading = cam.heading + headingDelta;
+      heading = wrapDegs360(cam.heading + headingDelta);
       headingRad = heading * piOver180;
       latDelta = Math.cos(headingRad) * speed * latFactor;
       lonDelta = Math.sin(headingRad) * speed * lonFactor;
