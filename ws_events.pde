@@ -1,6 +1,7 @@
 
 void stop() {
   ws.stop();
+  super.stop();
 }
 
 void websocketOnOpen(WebSocketConnection c) {
