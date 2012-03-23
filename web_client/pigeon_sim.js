@@ -73,7 +73,7 @@
       diveSpeed: 0.15,
       diveAccel: 0.05,
       diveDecel: 0.05,
-      flapSize: 2,
+      flapSize: 1,
       flapDecay: 0.8,
       maxRoll: 80,
       turnSpeed: 0.075,
