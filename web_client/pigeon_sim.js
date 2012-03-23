@@ -67,8 +67,9 @@
       startLon: -0.130956,
       startHeading: 55,
       startAlt: 80,
-      speed: 4,
-      maxSpeed: 10,
+      minAlt: 10,
+      speed: 3,
+      maxSpeed: 6,
       diveSpeed: 0.15,
       diveAccel: 0.05,
       diveDecel: 0.05,
@@ -126,7 +127,7 @@
     moveCam = function() {
       var c, unmoved, view;
       camMoves += 1;
-      debugEarthAPIStatus.innerHTML = camMoves;
+      if (params.debugData) debugEarthAPIStatus.innerHTML = camMoves;
       unmoved = objsEq(cam, seenCam);
       if (unmoved) return false;
       view = ge.getView();
@@ -157,7 +158,7 @@
       return _results;
     };
     updateCam = function(data) {
-      var altDelta, flapDiff, heading, headingDelta, headingRad, latDelta, lonDelta, roll;
+      var alt, altDelta, flapDiff, heading, headingDelta, headingRad, latDelta, lonDelta, roll;
       if (data.reset && flown) resetCam();
       if (data.roll == null) return;
       flown = true;
@@ -183,10 +184,12 @@
       headingRad = heading * piOver180;
       latDelta = Math.cos(headingRad) * speed * latFactor;
       lonDelta = Math.sin(headingRad) * speed * lonFactor;
+      alt = cam.alt + altDelta;
+      if (alt < params.minAlt) alt = params.minAlt;
       cam.lat += latDelta;
       cam.lon += lonDelta;
       cam.heading = heading;
-      cam.alt += altDelta;
+      cam.alt = alt;
       cam.roll = roll;
       return cam.tilt = 90 - data.dive;
     };

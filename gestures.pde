@@ -10,6 +10,8 @@ void identifyGestures(int userId) {
   float confRHip   = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_HIP,      rHip);
   float confLHip   = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_HIP,       lHip);
   
+  float confSum = confRShoul + confLShoul + confRElbow + confLElbow + confRHand + confLHand + confRHip + confLHip;
+  
   float rShoulElbowRad =   atan2(  rShoul.y - rElbow.y,   rShoul.x - rElbow.x);
   float rElbowHandRad  =   atan2(  rElbow.y - rHand.y,    rElbow.x - rHand.x);
   float rShoulHandRad  =   atan2(  rShoul.y - rHand.y,    rShoul.x - rHand.x);
@@ -59,7 +61,7 @@ void identifyGestures(int userId) {
   
   flyingUserId = userId;  // if *not* flying, this gets altered below
   
-  if (armsStraight && flapStage >= 0) {  // we're flying!
+  if (armsStraight && flapStage >= 0 && confSum > 4.0) {  // we're flying!
     stroke(255, leanFwdDeg > 0 ? 128 : 255, 0);  // yellow if straight, orange if diving
     
     float handsLeftRad = atan2(rHand.y - lHand.y, rHand.x - lHand.x);
@@ -68,7 +70,7 @@ void identifyGestures(int userId) {
     String data = "{\"roll\":" + handsLeftDeg + ",\"dive\":" + leanFwdDeg + ",\"flap\":" + flapStage + "}";
     ws.broadcast(data);
 
-  } else if (handsTogether && handsOverHead) {
+  } else if (handsTogether && handsOverHead && confSum > 4.0) {
     stroke(0, 255, 0);
     ws.broadcast("{\"reset\": 1}");
 

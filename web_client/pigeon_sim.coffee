@@ -20,8 +20,9 @@ window.onload = ->
     startHeading:  55       # degrees
     startAlt:      80       # metres above "sea level"
     
-    speed:          4       # = when flying straight
-    maxSpeed:      10       # = when diving
+    minAlt:        10       # metres above "sea level"
+    speed:          3       # = when flying straight
+    maxSpeed:       6       # = when diving
     diveSpeed:      0.15    # speed multiplier for diving (dive speed also a function of lean angle and general speed)
     diveAccel:      0.05    # rate at which diving increases general speed
     diveDecel:      0.05    # rate at which speed decreases again after levelling out
@@ -73,7 +74,7 @@ window.onload = ->
   
   moveCam = ->
     camMoves += 1
-    debugEarthAPIStatus.innerHTML = camMoves
+    debugEarthAPIStatus.innerHTML = camMoves if params.debugData
     unmoved = objsEq(cam, seenCam)
     return no if unmoved
     view = ge.getView()
@@ -123,10 +124,13 @@ window.onload = ->
     latDelta     = Math.cos(headingRad) * speed * latFactor
     lonDelta     = Math.sin(headingRad) * speed * lonFactor
     
+    alt          = cam.alt + altDelta
+    alt          = params.minAlt if alt < params.minAlt
+    
     cam.lat     += latDelta
     cam.lon     += lonDelta
     cam.heading  = heading
-    cam.alt     += altDelta
+    cam.alt      = alt
     cam.roll     = roll
     cam.tilt     = 90 - data.dive
   
