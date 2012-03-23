@@ -9,14 +9,14 @@
 <style>
 * { -webkit-user-select: none; -moz-user-select: none; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); -webkit-text-size-adjust: none; }
 html, body, #earth { margin: 0; padding: 0; border: 0; overflow: hidden; width: 100%; height: 100%; background: #000; }
-#creditOuter, #statusOuter { display: none; position: absolute; width: 100%; text-align: left; font-size: 12px; z-index: 10; font-weight: bold; }
+#creditOuter, #statusOuter { display: none; position: absolute; width: 100%; font-size: 12px; z-index: 10; font-weight: bold; pointer-events: none; }
 #creditOuter { bottom: 0; }
-#statusOuter { background: rgba(0, 0, 0, 0.5); }
-#creditInner, #statusInner { padding: 5px 10px; font-family: Helvetica; color: #fff; }
+#statusOuter { xbackground: rgba(0, 0, 0, 0.33); text-align: center; }
+#creditInner, #statusInner { padding: 5px 10px; font-family: Helvetica; color: #fff; text-shadow: #000 1px 1px 3px; }
 #creditInner {}
 #statusInner {}
 #statusInner span { margin-right: 1em; }
-#title         { color: #777; }  /* changes according to connection status */
+#title         { color: #777; }  /* title colour changes according to connection status */
 #debugData     { color: #ff0; }
 #debugEarthAPI { color: #0ff; }
 #debugTicks    { color: #f0f; }

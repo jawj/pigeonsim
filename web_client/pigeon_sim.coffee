@@ -16,11 +16,12 @@ window.onload = ->
     startLon:      -0.130956
     startHeading:  55       # degrees
     startAlt:      80       # metres above "sea level"
+    
     speed:          4       # = when flying straight
     maxSpeed:      10       # = when diving
     diveSpeed:      0.15    # speed multiplier for diving (dive speed also a function of lean angle and general speed)
     diveAccel:      0.05    # rate at which diving increases general speed
-    diveDecel:      0.025   # rate at which speed decreases again after levelling out
+    diveDecel:      0.05    # rate at which speed decreases again after levelling out
     flapSize:       2       # controls size of flap effect
     flapDecay:      0.8     # controls duration of flap effect
     maxRoll:       80       # max degrees left or right
@@ -30,13 +31,16 @@ window.onload = ->
     geStatusBar:    0       # show Google Earth plugin's own status bar at bottom
     geTimeCtrl:     0       # show Google Earth time controller
     debugData:      0       # show debug data in status bar
-    reconnectWait:  1       # seconds to wait between connection attempts
+    
+    reconnectWait:  2       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'
     
   wls = window.location.search
   for kvp in wls.substring(1).split('&')
     [k, v] = kvp.split('=')
     params[k] = if k is 'ws' then v else parseFloat(v)
+    
+  # alt, tilt, latDelta, lonDelta, heading, roll
   
   el('creditOuter').style.display = 'block' if params.credits
   el('statusOuter').style.display = 'block' if params.status
@@ -165,9 +169,10 @@ window.onload = ->
   connect = ->
     received = 0
     ws = new WebSocket(params.ws)
-    ws.onopen = -> titleStatus.style.color = '#fff'
+    titleStatus.style.color = '#ff0'                      # yellow when connecting
+    ws.onopen = -> titleStatus.style.color = '#fff'       # white when connected
     ws.onclose = ->
-      titleStatus.style.color = '#f00'
+      titleStatus.style.color = '#f00'                    # red when disconnected
       setTimeout(connect, params.reconnectWait * 1000)
     ws.onmessage = (e) ->
       received += 1

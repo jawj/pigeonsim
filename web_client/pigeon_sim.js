@@ -47,7 +47,7 @@
       maxSpeed: 10,
       diveSpeed: 0.15,
       diveAccel: 0.05,
-      diveDecel: 0.025,
+      diveDecel: 0.05,
       flapSize: 2,
       flapDecay: 0.8,
       maxRoll: 80,
@@ -57,7 +57,7 @@
       geStatusBar: 0,
       geTimeCtrl: 0,
       debugData: 0,
-      reconnectWait: 1,
+      reconnectWait: 2,
       ws: 'ws://127.0.0.1:8888/p5websocket'
     };
     wls = window.location.search;
@@ -193,6 +193,7 @@
       var received, ws;
       received = 0;
       ws = new WebSocket(params.ws);
+      titleStatus.style.color = '#ff0';
       ws.onopen = function() {
         return titleStatus.style.color = '#fff';
       };
