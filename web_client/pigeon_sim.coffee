@@ -95,33 +95,33 @@ window.onload = ->
     resetCam() if data.reset and flown
     return unless data.roll?
     
-    flown = yes  # since last resetCam()
-    altDelta = 0
+    flown        = yes  # since last resetCam()
+    altDelta     = 0
     
     if data.dive > 0
-      altDelta = - data.dive * params.diveSpeed * speed
-      speed += data.dive * params.diveAccel
-      speed = params.maxSpeed if speed > params.maxSpeed  # TODO: max should depend on angle of dive?
+      altDelta   = - data.dive * params.diveSpeed * speed
+      speed     += data.dive * params.diveAccel
+      speed      = params.maxSpeed if speed > params.maxSpeed  # TODO: max should depend on angle of dive?
     else
-      speed -= params.diveDecel
-      speed = params.speed if speed < params.speed
+      speed     -= params.diveDecel
+      speed      = params.speed if speed < params.speed
     
-    flapDiff = data.flap - lastFlap
-    flapAmount += params.flapSize * flapDiff if flapDiff > 0
-    altDelta += flapAmount if flapAmount > 0
-    flapAmount *= params.flapDecay
-    lastFlap = data.flap
+    flapDiff     = data.flap - lastFlap
+    flapAmount  += params.flapSize * flapDiff if flapDiff > 0
+    altDelta    += flapAmount if flapAmount > 0
+    flapAmount  *= params.flapDecay
+    lastFlap     = data.flap
     
-    roll = data.roll
-    roll =   params.maxRoll if roll >   params.maxRoll
-    roll = - params.maxRoll if roll < - params.maxRoll
+    roll         = data.roll
+    roll         =   params.maxRoll if roll >   params.maxRoll
+    roll         = - params.maxRoll if roll < - params.maxRoll
     
     headingDelta = - roll * params.turnSpeed
-    heading = cam.heading + headingDelta
+    heading      = cam.heading + headingDelta
     
-    headingRad = heading * piOver180
-    latDelta = Math.cos(headingRad) * speed * latFactor
-    lonDelta = Math.sin(headingRad) * speed * lonFactor
+    headingRad   = heading * piOver180
+    latDelta     = Math.cos(headingRad) * speed * latFactor
+    lonDelta     = Math.sin(headingRad) * speed * lonFactor
     
     cam.lat     += latDelta
     cam.lon     += lonDelta
@@ -135,7 +135,9 @@ window.onload = ->
     debugTicksStatus.innerHTML = animTicks if params.debugData
     headingStatus.innerHTML    = compassPts[Math.round(wrapDegs360(cam.heading) / 45)]
     altStatus.innerHTML        = "#{Math.round(cam.alt)}m"
+    
     moved = moveCam()
+    
     clearTimeout(animTimeout) if animTimeout?
     animTimeout = null
     unless moved  # can't rely on frameend event if no movement made
