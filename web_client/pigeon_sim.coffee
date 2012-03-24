@@ -23,6 +23,7 @@ window.onload = ->
     minAlt:         5       # metres above "sea level"
     speed:          3       # = when flying straight
     maxSpeed:       6       # = when diving
+    cruiseTilt:    85       # degrees up from straight down
     diveSpeed:      0.15    # speed multiplier for diving (dive speed also a function of lean angle and general speed)
     diveAccel:      0.05    # rate at which diving increases general speed
     diveDecel:      0.05    # rate at which speed decreases again after levelling out
@@ -68,7 +69,7 @@ window.onload = ->
       heading:  params.startHeading
       alt:      params.startAlt
       roll:     0.0000001  # a plain 0 is ignored
-      tilt:     90
+      tilt:     params.cruiseTilt
     flown = no
   
   moveCam = ->
@@ -131,7 +132,7 @@ window.onload = ->
     cam.heading  = heading
     cam.alt      = alt
     cam.roll     = roll
-    cam.tilt     = 90 - data.dive
+    cam.tilt     = params.cruiseTilt - data.dive
   
   animTick = ->
     animTicks += 1

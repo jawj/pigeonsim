@@ -75,6 +75,7 @@
       minAlt: 5,
       speed: 3,
       maxSpeed: 6,
+      cruiseTilt: 85,
       diveSpeed: 0.15,
       diveAccel: 0.05,
       diveDecel: 0.05,
@@ -128,7 +129,7 @@
         heading: params.startHeading,
         alt: params.startAlt,
         roll: 0.0000001,
-        tilt: 90
+        tilt: params.cruiseTilt
       };
       return flown = false;
     };
@@ -221,7 +222,7 @@
       cam.heading = heading;
       cam.alt = alt;
       cam.roll = roll;
-      return cam.tilt = 90 - data.dive;
+      return cam.tilt = params.cruiseTilt - data.dive;
     };
     animTick = function() {
       var moved;
