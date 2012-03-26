@@ -34,6 +34,7 @@ void setup() {
   if (! ni.enableDepth()) {
      println("Can't open the depth map: is the camera connected?");
      exit();
+     return;
   }
   ni.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
   
