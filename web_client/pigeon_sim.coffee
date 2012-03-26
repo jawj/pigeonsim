@@ -23,6 +23,7 @@ window.onload = ->
     minAlt:         5       # metres above "sea level"
     speed:          3       # = when flying straight
     maxSpeed:       6       # = when diving
+    cruiseTilt:    85       # degrees up from straight down
     diveSpeed:      0.15    # speed multiplier for diving (dive speed also a function of lean angle and general speed)
     diveAccel:      0.05    # rate at which diving increases general speed
     diveDecel:      0.05    # rate at which speed decreases again after levelling out
@@ -30,10 +31,9 @@ window.onload = ->
     flapDecay:      0.8     # controls duration of flap effect
     maxRoll:       80       # max degrees left or right
     turnSpeed:      0.075   # controls how tight a turn is produced by a given roll
-    credits:        0       # show credits at bottom
     status:         1       # show status bar with title, heading, altitude
-    timeControl:    0       # show Google Earth time controller
     debugData:      0       # show debug data in status bar
+    timeControl:    0       # show Google Earth time controller
     
     reconnectWait:  2       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'
@@ -42,8 +42,8 @@ window.onload = ->
     [k, v] = kvp.split('=')
     params[k] = if k is 'ws' then v else parseFloat(v)
   
-  el('creditOuter').style.display = 'block' if params.credits
   el('statusOuter').style.display = 'block' if params.status
+  el('credit').style.display = 'none' if params.debugData
   
   [titleStatus, altStatus, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, headingStatus] =
     (el(id) for id in w('title alt debugData debugEarthAPI debugTicks heading'))
@@ -69,7 +69,7 @@ window.onload = ->
       heading:  params.startHeading
       alt:      params.startAlt
       roll:     0.0000001  # a plain 0 is ignored
-      tilt:     90
+      tilt:     params.cruiseTilt
     flown = no
   
   moveCam = ->
@@ -118,7 +118,7 @@ window.onload = ->
     roll         = - params.maxRoll if roll < - params.maxRoll
     
     headingDelta = - roll * params.turnSpeed
-    heading      = cam.heading + headingDelta
+    heading      = wrapDegs360(cam.heading + headingDelta)
     
     headingRad   = heading * piOver180
     latDelta     = Math.cos(headingRad) * speed * latFactor
@@ -132,7 +132,7 @@ window.onload = ->
     cam.heading  = heading
     cam.alt      = alt
     cam.roll     = roll
-    cam.tilt     = 90 - data.dive
+    cam.tilt     = params.cruiseTilt - data.dive
   
   animTick = ->
     animTicks += 1
