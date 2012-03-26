@@ -14,12 +14,12 @@ window.onload = ->
   wrapDegs360 = (d) -> d += 360 while d <    0; d -= 360 while d >= 360; d
   wrapDegs180 = (d) -> d += 360 while d < -180; d -= 360 while d >= 180; d
   
-  params = 
+  params =  # all these default params may be over-ridden in the query string
     startLat:      51.520113
     startLon:      -0.130956
     startHeading:  55       # degrees
     startAlt:      80       # metres above "sea level"
-    
+
     minAlt:         5       # metres above "sea level"
     speed:          3       # = when flying straight
     maxSpeed:       6       # = when diving
@@ -36,7 +36,7 @@ window.onload = ->
     timeControl:    0       # show Google Earth time controller
     
     reconnectWait:  2       # seconds to wait between connection attempts
-    ws:            'ws://127.0.0.1:8888/p5websocket'
+    ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
     
   for kvp in window.location.search.substring(1).split('&')
     [k, v] = kvp.split('=')

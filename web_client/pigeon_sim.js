@@ -1,6 +1,9 @@
 (function() {
-  var __hasProp = Object.prototype.hasOwnProperty, __slice = Array.prototype.slice;
+  var __hasProp = Object.prototype.hasOwnProperty,
+    __slice = Array.prototype.slice;
+
   google.load('earth', '1.x');
+
   window.onload = function() {
     var addLayers, altStatus, animTick, animTicks, animTimeout, cam, camMoves, compassPts, connect, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, flapAmount, flown, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, latFactor, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref2, _ref3;
     if (!window.WebSocket) {
@@ -15,23 +18,17 @@
     };
     objsEq = function(o1, o2) {
       var k, v;
-      if (o2 == null) {
-        o2 = {};
-      }
+      if (o2 == null) o2 = {};
       for (k in o1) {
         if (!__hasProp.call(o1, k)) continue;
         v = o1[k];
-        if (o2[k] !== v) {
-          return false;
-        }
+        if (o2[k] !== v) return false;
       }
       return true;
     };
     objClone = function(o1, o2) {
       var k, v;
-      if (o2 == null) {
-        o2 = {};
-      }
+      if (o2 == null) o2 = {};
       for (k in o1) {
         if (!__hasProp.call(o1, k)) continue;
         v = o1[k];
@@ -40,9 +37,7 @@
       return o2;
     };
     truncNum = function(n, dp) {
-      if (dp == null) {
-        dp = 2;
-      }
+      if (dp == null) dp = 2;
       if (typeof n === 'number') {
         return parseFloat(n.toFixed(dp));
       } else {
@@ -95,12 +90,8 @@
       _ref2 = kvp.split('='), k = _ref2[0], v = _ref2[1];
       params[k] = k === 'ws' ? v : parseFloat(v);
     }
-    if (params.status) {
-      el('statusOuter').style.display = 'block';
-    }
-    if (params.debugData) {
-      el('credit').style.display = 'none';
-    }
+    if (params.status) el('statusOuter').style.display = 'block';
+    if (params.debugData) el('credit').style.display = 'none';
     _ref3 = (function() {
       var _j, _len2, _ref3, _results;
       _ref3 = w('title alt debugData debugEarthAPI debugTicks heading');
@@ -136,13 +127,9 @@
     moveCam = function() {
       var c, unmoved, view;
       camMoves += 1;
-      if (params.debugData) {
-        debugEarthAPIStatus.innerHTML = camMoves;
-      }
+      if (params.debugData) debugEarthAPIStatus.innerHTML = camMoves;
       unmoved = objsEq(cam, seenCam);
-      if (unmoved) {
-        return false;
-      }
+      if (unmoved) return false;
       view = ge.getView();
       c = view.copyAsCamera(ge.ALTITUDE_ABSOLUTE);
       c.setLatitude(cam.lat);
@@ -172,51 +159,33 @@
     };
     updateCam = function(data) {
       var alt, altDelta, flapDiff, heading, headingDelta, headingRad, latDelta, lonDelta, roll;
-      if (data.reset && flown) {
-        resetCam();
-      }
-      if (data.roll == null) {
-        return;
-      }
+      if (data.reset && flown) resetCam();
+      if (data.roll == null) return;
       flown = true;
       altDelta = 0;
       if (data.dive > 0) {
         altDelta = -data.dive * params.diveSpeed * speed;
         speed += data.dive * params.diveAccel;
-        if (speed > params.maxSpeed) {
-          speed = params.maxSpeed;
-        }
+        if (speed > params.maxSpeed) speed = params.maxSpeed;
       } else {
         speed -= params.diveDecel;
-        if (speed < params.speed) {
-          speed = params.speed;
-        }
+        if (speed < params.speed) speed = params.speed;
       }
       flapDiff = data.flap - lastFlap;
-      if (flapDiff > 0) {
-        flapAmount += params.flapSize * flapDiff;
-      }
-      if (flapAmount > 0) {
-        altDelta += flapAmount;
-      }
+      if (flapDiff > 0) flapAmount += params.flapSize * flapDiff;
+      if (flapAmount > 0) altDelta += flapAmount;
       flapAmount *= params.flapDecay;
       lastFlap = data.flap;
       roll = data.roll;
-      if (roll > params.maxRoll) {
-        roll = params.maxRoll;
-      }
-      if (roll < -params.maxRoll) {
-        roll = -params.maxRoll;
-      }
+      if (roll > params.maxRoll) roll = params.maxRoll;
+      if (roll < -params.maxRoll) roll = -params.maxRoll;
       headingDelta = -roll * params.turnSpeed;
       heading = wrapDegs360(cam.heading + headingDelta);
       headingRad = heading * piOver180;
       latDelta = Math.cos(headingRad) * speed * latFactor;
       lonDelta = Math.sin(headingRad) * speed * lonFactor;
       alt = cam.alt + altDelta;
-      if (alt < params.minAlt) {
-        alt = params.minAlt;
-      }
+      if (alt < params.minAlt) alt = params.minAlt;
       cam.lat += latDelta;
       cam.lon += lonDelta;
       cam.heading = heading;
@@ -227,19 +196,13 @@
     animTick = function() {
       var moved;
       animTicks += 1;
-      if (params.debugData) {
-        debugTicksStatus.innerHTML = animTicks;
-      }
+      if (params.debugData) debugTicksStatus.innerHTML = animTicks;
       headingStatus.innerHTML = compassPts[Math.round(wrapDegs360(cam.heading) / 45)];
       altStatus.innerHTML = "" + (Math.round(cam.alt)) + "m";
       moved = moveCam();
-      if (animTimeout != null) {
-        clearTimeout(animTimeout);
-      }
+      if (animTimeout != null) clearTimeout(animTimeout);
       animTimeout = null;
-      if (!moved) {
-        return animTimeout = setTimeout(animTick, 200);
-      }
+      if (!moved) return animTimeout = setTimeout(animTick, 200);
     };
     connect = function() {
       var ws;
@@ -282,4 +245,5 @@
     });
     return connect();
   };
+
 }).call(this);
