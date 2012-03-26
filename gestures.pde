@@ -9,8 +9,10 @@ void identifyGestures(int userId) {
   float confLHand  = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_HAND,      lHand);
   float confRHip   = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_HIP,      rHip);
   float confLHip   = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_HIP,       lHip);
+  float confRKnee  = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_KNEE,     rKnee);
+  float confLKnee  = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_KNEE,      lKnee);
   
-  float confSum = confRShoul + confLShoul + confRElbow + confLElbow + confRHand + confLHand + confRHip + confLHip;
+  float confSum = confRShoul + confLShoul + confRElbow + confLElbow + confRHand + confLHand + confRHip + confLHip + confRKnee + confLKnee;
   
   float rShoulElbowRad =   atan2(  rShoul.y - rElbow.y,   rShoul.x - rElbow.x);
   float rElbowHandRad  =   atan2(  rElbow.y - rHand.y,    rElbow.x - rHand.x);
@@ -33,6 +35,9 @@ void identifyGestures(int userId) {
   boolean rArmStraight = rDegDiff >= -40 & rDegDiff < 80;
   boolean lArmStraight = lDegDiff >= -40 & lDegDiff < 80;
   boolean armsStraight = rArmStraight && lArmStraight;
+  
+  int prevFlapStage = flapStage;
+  long now = System.currentTimeMillis();
 
   if                        (shoulHandDegSum >= 310 || shoulHandDegSum <  80) flapStage =  0;
   else if (flapStage >= 0 && shoulHandDegSum >= 295 && shoulHandDegSum < 310) flapStage =  1;
@@ -42,11 +47,11 @@ void identifyGestures(int userId) {
   else if (flapStage >= 4 && shoulHandDegSum >= 235 && shoulHandDegSum < 250) flapStage =  5;
   else if (flapStage >= 5 && shoulHandDegSum >= 210 && shoulHandDegSum < 235) flapStage =  6;
   if                        (shoulHandDegSum >=  80 && shoulHandDegSum < 210) {
-    long now = System.currentTimeMillis();
     long timeSinceFlight = now - lastFlightTime;
     if (timeSinceFlight > flightGracePeriod) flapStage = -1;
   } else {
-    lastFlightTime = System.currentTimeMillis();
+    lastFlightTime = now;
+    if (flapStage > prevFlapStage) lastFlapTime = now;
   }
   
   float handsDistance = dist(lHand.x, lHand.y, lHand.z, rHand.x, rHand.y, rHand.z);
@@ -54,16 +59,32 @@ void identifyGestures(int userId) {
   float meanShoulY = (lShoul.y + rShoul.y) / 2.0;
   boolean handsOverHead = lHand.y > meanShoulY && rHand.y > meanShoulY;
   
-  float sumHipZ   = (rHip.z + lHip.z);
+  float sumHipZ   = (rHip.z   + lHip.z);
   float sumShoulZ = (rShoul.z + lShoul.z);
-  float leanFwdDeg = degrees(atan2(sumHipZ, sumShoulZ)) - 45.0 - leanThresholdDeg;
+  float sumKneeZ  = (rKnee.z  + lKnee.z);
+  
+  float torsoDeg = degrees(atan2(sumHipZ, sumShoulZ));
+  float thighDeg = degrees(atan2(sumKneeZ, sumHipZ));
+  float leanFwdDeg = torsoDeg - thighDeg - leanThresholdDeg;
   if (leanFwdDeg < 0) leanFwdDeg = 0;
   
   flyingUserId = userId;  // if *not* flying, this gets altered below
   
-  if (armsStraight && flapStage >= 0 && confSum > 4.0) {  // we're flying!
-    stroke(255, leanFwdDeg > 0 ? 128 : 255, 0);  // yellow if straight, orange if diving
-    
+  if (armsStraight && flapStage >= 0 && confSum >= 10) {  // we're flying!
+    if (leanFwdDeg > 0) {
+      stroke(diveCol); fill(diveCol);
+      text("DIVE", textX, textY);
+    } else {
+      long timeSinceFlap = now - lastFlapTime;
+      if (timeSinceFlap <= flapHighlightPeriod) {
+        stroke(flapCol); fill(flapCol);
+        text("FLAP", textX, textY);
+      } else {
+        stroke(flyCol); fill(flyCol);
+        text("FLY", textX, textY);
+      }
+    }
+
     float handsLeftRad = atan2(rHand.y - lHand.y, rHand.x - lHand.x);
     float handsLeftDeg = wrapDegs180(degrees(handsLeftRad));
     
@@ -71,7 +92,8 @@ void identifyGestures(int userId) {
     ws.broadcast(data);
 
   } else if (handsTogether && handsOverHead && confSum > 4.0) {
-    stroke(0, 255, 0);
+    stroke(resetCol); fill(resetCol);
+    text("RESET", textX, textY);
     ws.broadcast("{\"reset\": 1}");
 
   } else {

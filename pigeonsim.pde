@@ -4,28 +4,39 @@ import SimpleOpenNI.*;
 import muthesius.net.*;
 import org.webbitserver.*;
 
-int   wsPort            = 8888;
-float scaleFactor       = 1.0;
-int   fps               = 30;
-float leanThresholdDeg  = 1.5;
-long  flightGracePeriod = 333; // ms
+int   wsPort              = 8888;
+float scaleFactor         = 1.0;
+int   fps                 = 30;
+float leanThresholdDeg    = 1.3; // deg
+long  flightGracePeriod   = 333; // ms
+long  flapHighlightPeriod = 500; // ms
 
 WebSocketP5   ws;
 SimpleOpenNI  ni;
 IntVector     users;
 
-PVector rShoul, lShoul, rElbow, lElbow, rHand, lHand, rHip, lHip, head;
+PFont         font;
+color         flyCol, diveCol, flapCol, resetCol;
+
+PVector head, rShoul, lShoul, rElbow, lElbow, rHand, lHand, rHip, lHip, rKnee, lKnee;
 
 int  flyingUserId = -1;
 int  flapStage = -1;
-long lastFlightTime = 0;
+long lastFlightTime, lastFlapTime;
+float textX, textY; 
 
 void setup() {
   rShoul = new PVector(); lShoul = new PVector();
   rElbow = new PVector(); lElbow = new PVector();
   rHand  = new PVector(); lHand  = new PVector();
   rHip   = new PVector(); lHip   = new PVector();
+  rKnee  = new PVector(); lKnee  = new PVector();
   head   = new PVector();
+  
+  flyCol   = color(255, 255, 0);   // yellow
+  diveCol  = color(255, 128, 0);   // orange
+  flapCol  = color(  0, 255, 0);   // green
+  resetCol = color(64, 128, 255);  // blue
   
   ni    = new SimpleOpenNI(this);
   users = new IntVector();
@@ -43,12 +54,18 @@ void setup() {
   frameRate(fps);
   size(round(ni.depthWidth() * scaleFactor), round(ni.depthHeight() * scaleFactor));
   
+  font = loadFont("HelveticaNeue-Bold-60.vlw");
+  textX = width  * 0.05;
+  textY = height * 0.95;
+  
   strokeWeight(6);
   smooth();
 }
 
 void draw() {
   scale(scaleFactor);
+  textFont(font);
+  textAlign(LEFT);
   
   ni.update();
   image(ni.depthImage(), 0, 0);
