@@ -7,7 +7,7 @@ import org.webbitserver.*;
 int   wsPort              = 8888;
 float scaleFactor         = 1.0;
 int   fps                 = 30;
-float leanThresholdDeg    = 1.3; // deg
+float leanThresholdDeg    = 1.2; // deg
 long  flightGracePeriod   = 333; // ms
 long  flapHighlightPeriod = 500; // ms
 

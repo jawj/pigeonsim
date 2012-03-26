@@ -51,7 +51,7 @@ void identifyGestures(int userId) {
     if (timeSinceFlight > flightGracePeriod) flapStage = -1;
   } else {
     lastFlightTime = now;
-    if (flapStage > prevFlapStage) lastFlapTime = now;
+    if (flapStage > prevFlapStage && prevFlapStage > -1) lastFlapTime = now;
   }
   
   float handsDistance = dist(lHand.x, lHand.y, lHand.z, rHand.x, rHand.y, rHand.z);
