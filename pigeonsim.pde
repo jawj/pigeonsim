@@ -4,19 +4,20 @@ import SimpleOpenNI.*;
 import muthesius.net.*;
 import org.webbitserver.*;
 
-int   wsPort              = 8888;
-float scaleFactor         = 1.0;
-int   fps                 = 30;
-float leanThresholdDeg    = 1.2; // deg
-long  flightGracePeriod   = 333; // ms
-long  flapHighlightPeriod = 500; // ms
+int     wsPort              = 8888;
+float   scaleFactor         = 1.0;
+int     fps                 = 30;
+float   leanThresholdDeg    = 1.2; // deg
+long    flightGracePeriod   = 333; // ms
+long    flapHighlightPeriod = 500; // ms
+boolean showText            = true;
 
 WebSocketP5   ws;
 SimpleOpenNI  ni;
 IntVector     users;
 
 PFont         font;
-color         flyCol, diveCol, flapCol, resetCol;
+color         bgCol,readyCol, flyCol, diveCol, flapCol, resetCol;
 
 PVector head, rShoul, lShoul, rElbow, lElbow, rHand, lHand, rHip, lHip, rKnee, lKnee;
 
@@ -33,6 +34,7 @@ void setup() {
   rKnee  = new PVector(); lKnee  = new PVector();
   head   = new PVector();
   
+  readyCol = color(255);           // white
   flyCol   = color(255, 255, 0);   // yellow
   diveCol  = color(255, 128, 0);   // orange
   flapCol  = color(  0, 255, 0);   // green
@@ -55,20 +57,19 @@ void setup() {
   size(round(ni.depthWidth() * scaleFactor), round(ni.depthHeight() * scaleFactor));
   
   font = loadFont("HelveticaNeue-Bold-60.vlw");
-  textX = width  * 0.05;
-  textY = height * 0.95;
+  textX = width  * 0.5;
+  textY = height * 0.975;
   
-  strokeWeight(6);
   smooth();
 }
 
 void draw() {
   scale(scaleFactor);
   textFont(font);
-  textAlign(LEFT);
+  textAlign(CENTER);
   
   ni.update();
-  image(ni.depthImage(), 0, 0);
+  image(ni.depthImage(), 0, 0);  
   ni.getUsers(users);
   long len = users.size();
   
@@ -96,13 +97,10 @@ void draw() {
   for (int i = 0; i < len; i ++) {
     int userId = users.get(i);
     if (ni.isTrackingSkeleton(userId)) {
-      if (userId == activeUserId) {
-        stroke(255);  // will be overridden if any gesture is identified
-        identifyGestures(userId);
-      } else {
-        stroke(128);
-      }
+      stroke(127);
+      strokeWeight(10);
       drawSkeleton(userId);
+      if (userId == activeUserId) identifyGestures(userId);
     }
   }
 

@@ -21,3 +21,12 @@ void drawSkeleton(int userId) {
   ni.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_HIP, SimpleOpenNI.SKEL_RIGHT_KNEE);
   ni.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_KNEE, SimpleOpenNI.SKEL_RIGHT_FOOT);
 }
+
+void drawText(String t) {
+  if (! showText) return;
+  noStroke();
+  fill(0, 0, 0, 85);
+  rect(0, height * 0.86, width, height * 0.14);
+  fill(255);
+  text(t, textX, textY);
+}

@@ -1,5 +1,7 @@
 
 void identifyGestures(int userId) {
+  strokeWeight(7);
+  
   // already got head position within draw()
   float confRShoul = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_SHOULDER, rShoul);
   float confLShoul = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_SHOULDER,  lShoul);
@@ -72,18 +74,19 @@ void identifyGestures(int userId) {
   
   if (armsStraight && flapStage >= 0 && confSum >= 10) {  // we're flying!
     if (leanFwdDeg > 0) {
-      stroke(diveCol); fill(diveCol);
-      text("DIVE", textX, textY);
+      drawText("DIVE");
+      stroke(diveCol);
     } else {
       long timeSinceFlap = now - lastFlapTime;
       if (timeSinceFlap <= flapHighlightPeriod) {
-        stroke(flapCol); fill(flapCol);
-        text("FLAP", textX, textY);
+        drawText("FLAP");
+        stroke(flapCol);
       } else {
-        stroke(flyCol); fill(flyCol);
-        text("FLY", textX, textY);
+        drawText("FLY");
+        stroke(flyCol);
       }
     }
+    drawSkeleton(userId);
 
     float handsLeftRad = atan2(rHand.y - lHand.y, rHand.x - lHand.x);
     float handsLeftDeg = wrapDegs180(degrees(handsLeftRad));
@@ -92,12 +95,16 @@ void identifyGestures(int userId) {
     ws.broadcast(data);
 
   } else if (handsTogether && handsOverHead && confSum > 4.0) {
-    stroke(resetCol); fill(resetCol);
-    text("RESET", textX, textY);
+    drawText("HOME");
+    stroke(resetCol);
+    drawSkeleton(userId);
     ws.broadcast("{\"reset\": 1}");
 
   } else {
     flyingUserId = -1;
+    drawText("READY");
+    stroke(readyCol);
+    drawSkeleton(userId);
     ws.broadcast("{}");
   }
 }
