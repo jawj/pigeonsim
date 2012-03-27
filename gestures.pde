@@ -1,6 +1,6 @@
 
 void identifyGestures(int userId) {
-  strokeWeight(7);
+  strokeWeight(8);
   
   // already got head position within draw()
   float confRShoul = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_SHOULDER, rShoul);
@@ -11,10 +11,8 @@ void identifyGestures(int userId) {
   float confLHand  = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_HAND,      lHand);
   float confRHip   = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_HIP,      rHip);
   float confLHip   = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_HIP,       lHip);
-  float confRKnee  = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_KNEE,     rKnee);
-  float confLKnee  = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_KNEE,      lKnee);
   
-  float confSum = confRShoul + confLShoul + confRElbow + confLElbow + confRHand + confLHand + confRHip + confLHip + confRKnee + confLKnee;
+  float confSum = confRShoul + confLShoul + confRElbow + confLElbow + confRHand + confLHand + confRHip + confLHip;
   
   float rShoulElbowRad =   atan2(  rShoul.y - rElbow.y,   rShoul.x - rElbow.x);
   float rElbowHandRad  =   atan2(  rElbow.y - rHand.y,    rElbow.x - rHand.x);
@@ -56,24 +54,31 @@ void identifyGestures(int userId) {
     if (flapStage > prevFlapStage && prevFlapStage > -1) lastFlapTime = now;
   }
   
+  float meanShoulX = (lShoul.x + rShoul.x) * 0.5;
+  float meanShoulY = (lShoul.y + rShoul.y) * 0.5;
+  float meanShoulZ = (lShoul.z + rShoul.z) * 0.5;
+  
   float handsDistance = dist(lHand.x, lHand.y, lHand.z, rHand.x, rHand.y, rHand.z);
   boolean handsTogether = handsDistance < 100;
-  float meanShoulY = (lShoul.y + rShoul.y) / 2.0;
   boolean handsOverHead = lHand.y > meanShoulY && rHand.y > meanShoulY;
+  
+  float shoulRadius = abs(lShoul.x - rShoul.x) * 0.5;
+  boolean rHandOnHeart = (meanShoulZ - rHand.z) < 200 
+                      && rHand.y < meanShoulY 
+                      && Math.pow(rHand.x - meanShoulX, 2) + Math.pow(rHand.y - meanShoulY, 2) < Math.pow(shoulRadius, 2);
   
   float sumHipZ   = (rHip.z   + lHip.z);
   float sumShoulZ = (rShoul.z + lShoul.z);
-  float sumKneeZ  = (rKnee.z  + lKnee.z);
   
   float torsoDeg = degrees(atan2(sumHipZ, sumShoulZ));
-  float thighDeg = degrees(atan2(sumKneeZ, sumHipZ));
-  float leanFwdDeg = torsoDeg - thighDeg - leanThresholdDeg;
-  if (leanFwdDeg < 0) leanFwdDeg = 0;
-  
+  float leanFwdDeg = torsoDeg - 45.0;
+  float diveDeg = leanFwdDeg - leanStraightDeg - leanThresholdDeg;
+  if (diveDeg < 0) diveDeg = 0;
+
   flyingUserId = userId;  // if *not* flying, this gets altered below
   
-  if (armsStraight && flapStage >= 0 && confSum >= 10) {  // we're flying!
-    if (leanFwdDeg > 0) {
+  if (armsStraight && flapStage >= 0 && confSum >= 8) {  // we're flying!
+    if (diveDeg > 0) {
       drawText("DIVE");
       stroke(diveCol);
     } else {
@@ -87,18 +92,24 @@ void identifyGestures(int userId) {
       }
     }
     drawSkeleton(userId);
-
+    
     float handsLeftRad = atan2(rHand.y - lHand.y, rHand.x - lHand.x);
     float handsLeftDeg = wrapDegs180(degrees(handsLeftRad));
-    
-    String data = "{\"roll\":" + handsLeftDeg + ",\"dive\":" + leanFwdDeg + ",\"flap\":" + flapStage + "}";
+
+    String data = "{\"roll\":" + handsLeftDeg + ",\"dive\":" + diveDeg + ",\"flap\":" + flapStage + "}";
     ws.broadcast(data);
 
-  } else if (handsTogether && handsOverHead && confSum > 4.0) {
+  } else if (rHandOnHeart && confSum >= 8) {
     drawText("HOME");
     stroke(resetCol);
     drawSkeleton(userId);
     ws.broadcast("{\"reset\": 1}");
+    
+  } else if (handsTogether && handsOverHead && confSum >= 8) {
+    drawText("CALIBRATE");
+    stroke(calibCol);
+    drawSkeleton(userId);
+    leanStraightDeg = leanFwdDeg;
 
   } else {
     flyingUserId = -1;

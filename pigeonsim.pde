@@ -7,19 +7,19 @@ import org.webbitserver.*;
 int     wsPort              = 8888;
 float   scaleFactor         = 1.0;
 int     fps                 = 30;
-float   leanThresholdDeg    = 1.2; // deg
+float   leanStraightDeg     = 0; // deg -- may be overridden by calibration
+float   leanThresholdDeg    = 1.5; // deg
 long    flightGracePeriod   = 333; // ms
 long    flapHighlightPeriod = 500; // ms
-boolean showText            = true;
+boolean showText            = false;
 
 WebSocketP5   ws;
 SimpleOpenNI  ni;
 IntVector     users;
 
 PFont         font;
-color         bgCol,readyCol, flyCol, diveCol, flapCol, resetCol;
-
-PVector head, rShoul, lShoul, rElbow, lElbow, rHand, lHand, rHip, lHip, rKnee, lKnee;
+color         bgCol, readyCol, flyCol, diveCol, flapCol, resetCol, calibCol;
+PVector       head, rShoul, lShoul, rElbow, lElbow, rHand, lHand, rHip, lHip;
 
 int  flyingUserId = -1;
 int  flapStage = -1;
@@ -31,14 +31,14 @@ void setup() {
   rElbow = new PVector(); lElbow = new PVector();
   rHand  = new PVector(); lHand  = new PVector();
   rHip   = new PVector(); lHip   = new PVector();
-  rKnee  = new PVector(); lKnee  = new PVector();
   head   = new PVector();
   
-  readyCol = color(255);           // white
-  flyCol   = color(255, 255, 0);   // yellow
-  diveCol  = color(255, 128, 0);   // orange
-  flapCol  = color(  0, 255, 0);   // green
-  resetCol = color(64, 128, 255);  // blue
+  readyCol = color(255);             // white
+  flyCol   = color(255, 255,   0);   // yellow
+  diveCol  = color(255, 128,   0);   // orange
+  flapCol  = color(  0, 255,   0);   // green
+  resetCol = color(64,  128, 255);   // blue
+  calibCol = color(255,   0, 255);   // magenta
   
   ni    = new SimpleOpenNI(this);
   users = new IntVector();
@@ -98,7 +98,7 @@ void draw() {
     int userId = users.get(i);
     if (ni.isTrackingSkeleton(userId)) {
       stroke(127);
-      strokeWeight(10);
+      strokeWeight(12);
       drawSkeleton(userId);
       if (userId == activeUserId) identifyGestures(userId);
     }
