@@ -1,11 +1,4 @@
 
-void swapPVectors(PVector a, PVector b) {
-  PVector tmp;
-  tmp = a;
-  a = b;
-  b = tmp;
-}
-
 void identifyGestures(int userId) {
   strokeWeight(8);
   
@@ -19,11 +12,12 @@ void identifyGestures(int userId) {
   float confRHip   = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_HIP,      rHip);
   float confLHip   = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_HIP,       lHip);
   
-  if (rShoul.x > lShoul.x) {  // if user appears backwards, right them
-    swapPVectors(rShoul, lShoul);
-    swapPVectors(rElbow, lElbow);
-    swapPVectors(rHand,  lHand);
-    swapPVectors(rHip,   lHip);
+  if (rShoul.x < lShoul.x) {  // if user appears backwards, right them
+    PVector tmp;
+    tmp = rShoul; rShoul = lShoul; lShoul = tmp;
+    tmp = rElbow; rElbow = lElbow; lElbow = tmp;
+    tmp = rHand;  rHand  = lHand;  lHand  = tmp;
+    tmp = rHip;   rHip   = lHip;   lHip   = tmp;
   }
   
   float confSum = confRShoul + confLShoul + confRElbow + confLElbow + confRHand + confLHand + confRHip + confLHip;
