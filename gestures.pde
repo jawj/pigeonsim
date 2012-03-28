@@ -1,4 +1,11 @@
 
+void swapPVectors(PVector a, PVector b) {
+  PVector tmp;
+  tmp = a;
+  a = b;
+  b = tmp;
+}
+
 void identifyGestures(int userId) {
   strokeWeight(8);
   
@@ -11,6 +18,13 @@ void identifyGestures(int userId) {
   float confLHand  = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_HAND,      lHand);
   float confRHip   = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_HIP,      rHip);
   float confLHip   = ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_HIP,       lHip);
+  
+  if (rShoul.x > lShoul.x) {  // if user appears backwards, right them
+    swapPVectors(rShoul, lShoul);
+    swapPVectors(rElbow, lElbow);
+    swapPVectors(rHand,  lHand);
+    swapPVectors(rHip,   lHip);
+  }
   
   float confSum = confRShoul + confLShoul + confRElbow + confLElbow + confRHand + confLHand + confRHip + confLHip;
   
@@ -100,14 +114,8 @@ void identifyGestures(int userId) {
       }
     }
     drawSkeleton(userId);
-    
-    float handsXDelta = rHand.x - lHand.x;
-    float handsYDelta = rHand.y - lHand.y;
-    if (handsXDelta < 0) {  // if the Kinect thinks the user is backwards, which it sometimes does, this turns them round again
-      handsXDelta *= -1;
-      handsYDelta *= -1;
-    }
-    float handsLeftRad = atan2(handsYDelta, handsXDelta);
+
+    float handsLeftRad = atan2(rHand.y - lHand.y, rHand.x - lHand.x);
     float handsLeftDeg = wrapDegs180(degrees(handsLeftRad));
 
     String data = "{\"roll\":" + handsLeftDeg + ",\"dive\":" + diveDeg + ",\"flap\":" + flapStage + "}";
