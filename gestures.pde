@@ -63,9 +63,17 @@ void identifyGestures(int userId) {
   boolean handsOverHead = lHand.y > meanShoulY && rHand.y > meanShoulY;
   
   float shoulRadius = abs(lShoul.x - rShoul.x) * 0.5;
+  float maxHandShouldDistSq = shoulRadius * 1.2 * shoulRadius * 1.2;
+  float rHandShoulXDelta = rHand.x - meanShoulX;
+  float rHandShoulYDelta = rHand.y - meanShoulY;
   boolean rHandOnHeart = (meanShoulZ - rHand.z) < 200 
                       && rHand.y < meanShoulY 
-                      && Math.pow(rHand.x - meanShoulX, 2) + Math.pow(rHand.y - meanShoulY, 2) < Math.pow(shoulRadius, 2);
+                      && (rHandShoulXDelta * rHandShoulXDelta) + (rHandShoulYDelta * rHandShoulYDelta) <= maxHandShouldDistSq;
+  float lHandShoulXDelta = lHand.x - meanShoulX;
+  float lHandShoulYDelta = lHand.y - meanShoulY;
+  boolean lHandOnHeart = (meanShoulZ - lHand.z) < 200 
+                      && lHand.y < meanShoulY 
+                      && (lHandShoulXDelta * lHandShoulXDelta) + (lHandShoulYDelta * lHandShoulYDelta) <= maxHandShouldDistSq;
   
   float sumHipZ   = (rHip.z   + lHip.z);
   float sumShoulZ = (rShoul.z + lShoul.z);
@@ -93,13 +101,19 @@ void identifyGestures(int userId) {
     }
     drawSkeleton(userId);
     
-    float handsLeftRad = atan2(rHand.y - lHand.y, rHand.x - lHand.x);
+    float handsXDelta = rHand.x - lHand.x;
+    float handsYDelta = rHand.y - lHand.y;
+    if (handsXDelta < 0) {  // if the Kinect thinks the user is backwards, which it sometimes does, this turns them round again
+      handsXDelta *= -1;
+      handsYDelta *= -1;
+    }
+    float handsLeftRad = atan2(handsYDelta, handsXDelta);
     float handsLeftDeg = wrapDegs180(degrees(handsLeftRad));
 
     String data = "{\"roll\":" + handsLeftDeg + ",\"dive\":" + diveDeg + ",\"flap\":" + flapStage + "}";
     ws.broadcast(data);
 
-  } else if (rHandOnHeart && confSum >= 8) {
+  } else if ((rHandOnHeart || lHandOnHeart) && confSum >= 8) {
     drawText("HOME");
     stroke(resetCol);
     drawSkeleton(userId);
