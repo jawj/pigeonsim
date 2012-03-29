@@ -228,6 +228,7 @@
       };
     };
     earthInitCallback = function(instance) {
+      var s;
       window.ge = ge = instance;
       console.log("Google Earth plugin v" + (ge.getPluginVersion()) + ", API v" + (ge.getApiVersion()));
       addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION);
@@ -238,7 +239,19 @@
       resetCam();
       ge.getWindow().setVisibility(true);
       animTick();
-      return google.earth.addEventListener(ge, 'frameend', animTick);
+      google.earth.addEventListener(ge, 'frameend', animTick);
+      s = new SkyText(51.52120111222482, -0.12885332107543945, 140);
+      s.line('CASA Smart Cities', {
+        bearing: -params.startHeading,
+        size: 3,
+        lineWidth: 4
+      });
+      s.line('Next session: Steve Gray', {
+        bearing: -params.startHeading + 15,
+        size: 2,
+        lineWidth: 2
+      });
+      return ge.getFeatures().appendChild(ge.parseKml(s.kml()));
     };
     google.earth.createInstance('earth', earthInitCallback, function() {
       return console.log("Google Earth error: " + errorCode);
