@@ -15,28 +15,38 @@ class window.SkyText
     lonRatio = 1 / Math.cos(@lat * @piOver180)
     @lonFactor = @latFactor * lonRatio
     
-  text: (text, o) ->
-    @line(line, o) for line in text.split("\n")
+  text: (text, o) -> @line(line, o) for line in text.split("\n")
     
   line: (text, o = {}) ->
-    o.bearing   ?= 0
-    o.size      ?= 2
-    o.lineWidth ?= 2
-    o.colour    ?= 'ffffffff'
-    o.lineSpace ?= 1
-    o.charSpace ?= 1
-    o.font      ?= window.font
+    o.bearing    ?= 0  # text will be readable straight on when viewed facing this way
+    o.size       ?= 2
+    o.lineWidth  ?= 2
+    o.colour     ?= 'ffffffff'
+    o.lineSpace  ?= 1  # vertical space between lines 
+    o.charSpace  ?= 1  # horizontal space between chars
+    o.spaceWidth ?= 2
+    o.tabSpaces  ?= 4  # tabs are this many spaces wide
+    o.offset     ?= 5  # horizontal space at start of line (independent of o.size)
+    o.font       ?= window.font
 
-    xCursor = o.charSpace * 3
     bRad = o.bearing * @piOver180
-    latFactor = Math.sin(bRad) * o.size * @latFactor
-    lonFactor = Math.cos(bRad) * o.size * @lonFactor
+    sinB = Math.sin(bRad)
+    cosB = Math.cos(bRad)
+    latFactor = sinB * o.size * @latFactor
+    lonFactor = cosB * o.size * @lonFactor
+    latStart = @lat + sinB * o.offset * @latFactor
+    lonStart = @lon + cosB * o.offset * @lonFactor
     
+    xCursor = 0
+    tabWidth = o.tabSpaces * o.spaceWidth
     lineCoordSets = []
     
     for char in text.split('')
-      if char in [" ", "\n", "\r", "\t"]
-        xCursor += 2 + o.charSpace
+      if char in [" ", "\n", "\r"]
+        xCursor += o.spaceWidth
+        continue
+      if char is "\t"
+        xCursor = Math.ceil((xCursor + 1) / tabWidth) * tabWidth
         continue
       paths = o.font[char] ? o.font['na']
       maxX = 0
@@ -44,8 +54,9 @@ class window.SkyText
         coords = for x, i in path by 2
           y = path[i + 1]
           maxX = x if x > maxX
-          lat = @lat + (x + xCursor) * latFactor
-          lon = @lon + (x + xCursor) * lonFactor
+          absX = xCursor + x
+          lat = latStart + absX * latFactor
+          lon = lonStart + absX * lonFactor
           alt = @alt - (y * o.size)
           [lon, lat, alt]
         lineCoordSets.push(coords)

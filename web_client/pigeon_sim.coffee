@@ -23,7 +23,7 @@ window.onload = ->
     minAlt:         5       # metres above "sea level"
     speed:          3       # = when flying straight
     maxSpeed:       6       # = when diving
-    cruiseTilt:    85       # degrees up from straight down
+    cruiseTilt:    87.5     # degrees up from straight down
     diveSpeed:      0.15    # speed multiplier for diving (dive speed also a function of lean angle and general speed)
     diveAccel:      0.05    # rate at which diving increases general speed
     diveDecel:      0.05    # rate at which speed decreases again after levelling out
@@ -185,8 +185,8 @@ window.onload = ->
     
     s = new SkyText(51.52038666343198, -0.13435721397399902, 140)
     s.line('ø Goodge Street', bearing: params.startHeading, size: 3, lineWidth: 3)
-    s.line('W  West Ruislip  2 mins',  bearing: params.startHeading, size: 2, lineWidth: 2)
-    s.line('E  Hainault via Newbury Park  due', bearing: params.startHeading, size: 2, lineWidth: 2)   
+    s.line('W\tWest Ruislip  2 mins',  bearing: params.startHeading, size: 2, lineWidth: 2)
+    s.line('E\tHainault via Newbury Park  due', bearing: params.startHeading, size: 2, lineWidth: 2)   
     ge.getFeatures().appendChild(ge.parseKml(s.kml()))
     
     connect()

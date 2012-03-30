@@ -38,7 +38,7 @@
     };
 
     SkyText.prototype.line = function(text, o) {
-      var alt, bRad, char, coords, i, lat, latFactor, lineCoordSets, lon, lonFactor, maxX, path, paths, x, xCursor, y, _i, _j, _len, _len2, _ref, _ref2;
+      var absX, alt, bRad, char, coords, cosB, i, lat, latFactor, latStart, lineCoordSets, lon, lonFactor, lonStart, maxX, path, paths, sinB, tabWidth, x, xCursor, y, _i, _j, _len, _len2, _ref, _ref2;
       if (o == null) o = {};
       if (o.bearing == null) o.bearing = 0;
       if (o.size == null) o.size = 2;
@@ -46,17 +46,29 @@
       if (o.colour == null) o.colour = 'ffffffff';
       if (o.lineSpace == null) o.lineSpace = 1;
       if (o.charSpace == null) o.charSpace = 1;
+      if (o.spaceWidth == null) o.spaceWidth = 2;
+      if (o.tabSpaces == null) o.tabSpaces = 4;
+      if (o.offset == null) o.offset = 5;
       if (o.font == null) o.font = window.font;
-      xCursor = o.charSpace * 3;
       bRad = o.bearing * this.piOver180;
-      latFactor = Math.sin(bRad) * o.size * this.latFactor;
-      lonFactor = Math.cos(bRad) * o.size * this.lonFactor;
+      sinB = Math.sin(bRad);
+      cosB = Math.cos(bRad);
+      latFactor = sinB * o.size * this.latFactor;
+      lonFactor = cosB * o.size * this.lonFactor;
+      latStart = this.lat + sinB * o.offset * this.latFactor;
+      lonStart = this.lon + cosB * o.offset * this.lonFactor;
+      xCursor = 0;
+      tabWidth = o.tabSpaces * o.spaceWidth;
       lineCoordSets = [];
       _ref = text.split('');
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         char = _ref[_i];
-        if (char === " " || char === "\n" || char === "\r" || char === "\t") {
-          xCursor += 2 + o.charSpace;
+        if (char === " " || char === "\n" || char === "\r") {
+          xCursor += o.spaceWidth;
+          continue;
+        }
+        if (char === "\t") {
+          xCursor = Math.ceil((xCursor + 1) / tabWidth) * tabWidth;
           continue;
         }
         paths = (_ref2 = o.font[char]) != null ? _ref2 : o.font['na'];
@@ -70,8 +82,9 @@
               x = path[i];
               y = path[i + 1];
               if (x > maxX) maxX = x;
-              lat = this.lat + (x + xCursor) * latFactor;
-              lon = this.lon + (x + xCursor) * lonFactor;
+              absX = xCursor + x;
+              lat = latStart + absX * latFactor;
+              lon = lonStart + absX * lonFactor;
               alt = this.alt - (y * o.size);
               _results.push([lon, lat, alt]);
             }

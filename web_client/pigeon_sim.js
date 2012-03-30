@@ -70,7 +70,7 @@
       minAlt: 5,
       speed: 3,
       maxSpeed: 6,
-      cruiseTilt: 85,
+      cruiseTilt: 87.5,
       diveSpeed: 0.15,
       diveAccel: 0.05,
       diveDecel: 0.05,
@@ -262,12 +262,12 @@
         size: 3,
         lineWidth: 3
       });
-      s.line('W  West Ruislip  2 mins', {
+      s.line('W\tWest Ruislip  2 mins', {
         bearing: params.startHeading,
         size: 2,
         lineWidth: 2
       });
-      s.line('E  Hainault via Newbury Park  due', {
+      s.line('E\tHainault via Newbury Park  due', {
         bearing: params.startHeading,
         size: 2,
         lineWidth: 2
