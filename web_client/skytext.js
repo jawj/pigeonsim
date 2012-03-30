@@ -1,6 +1,6 @@
 (function() {
 
-  window.SkyText = (function() {
+  this.SkyText = (function() {
 
     SkyText.prototype.piOver180 = Math.PI / 180;
 

@@ -1,5 +1,5 @@
 
-class window.SkyText
+class this.SkyText
   piOver180:  Math.PI / 180
   latFactor:  0.00001
   fontHeight: 5
