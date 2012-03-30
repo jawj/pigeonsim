@@ -33,7 +33,9 @@ window.onload = ->
     turnSpeed:      0.075   # controls how tight a turn is produced by a given roll
     status:         1       # show status bar with title, heading, altitude
     debugData:      0       # show debug data in status bar
-    timeControl:    0       # show Google Earth time controller
+    atmosphere:     1       # show atmosphere
+    sun:            0       # show sun
+    timeControl:    0       # show Google Earth time controller (if sun is 1)
     
     reconnectWait:  2       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
@@ -150,10 +152,13 @@ window.onload = ->
   connect = ->
     ws = new WebSocket(params.ws)
     titleStatus.style.color = '#ff0'                      # yellow when connecting
-    ws.onopen = -> titleStatus.style.color = '#fff'       # white when connected
+    ws.onopen = -> 
+      titleStatus.style.color = '#fff'                    # white when connected
+      ge.getNavigationControl().setVisibility(ge.VISIBILITY_HIDE)
     ws.onclose = ->
       titleStatus.style.color = '#f00'                    # red when disconnected
       setTimeout(connect, params.reconnectWait * 1000)
+      ge.getNavigationControl().setVisibility(ge.VISIBILITY_AUTO)
     ws.onmessage = (e) ->
       inMsgs += 1
       data = JSON.parse(e.data)
@@ -164,8 +169,8 @@ window.onload = ->
     window.ge = ge = instance
     console.log("Google Earth plugin v#{ge.getPluginVersion()}, API v#{ge.getApiVersion()}")
     addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION)
-    ge.getOptions().setAtmosphereVisibility(yes)
-    ge.getSun().setVisibility(yes)
+    ge.getOptions().setAtmosphereVisibility(params.atmosphere)
+    ge.getSun().setVisibility(params.sun)
     ge.getTime().getControl().setVisibility(if params.timeControl then ge.VISIBILITY_SHOW else ge.VISIBILITY_HIDE)
     ge.getOptions().setFlyToSpeed(ge.SPEED_TELEPORT)
     resetCam()
@@ -174,11 +179,17 @@ window.onload = ->
     google.earth.addEventListener(ge, 'frameend', animTick)
     
     s = new SkyText(51.52120111222482, -0.12885332107543945, 140)
-    s.line('CASA Smart Cities', {bearing: -params.startHeading, size: 3, lineWidth: 4})
-    s.line('Next session: Steve Gray', {bearing: -params.startHeading + 15, size: 2, lineWidth: 2})    
+    s.line('CASA Smart Cities — 100% awesome', bearing: -params.startHeading, size: 3, lineWidth: 3)
+    s.line('Next session: Steve Gray', bearing: -params.startHeading, size: 2, lineWidth: 2)    
     ge.getFeatures().appendChild(ge.parseKml(s.kml()))
-
+    
+    s = new SkyText(51.52038666343198, -0.13435721397399902, 140)
+    s.line('ø Goodge Street', bearing: params.startHeading, size: 3, lineWidth: 3)
+    s.line('W  West Ruislip  2 mins',  bearing: params.startHeading, size: 2, lineWidth: 2)
+    s.line('E  Hainault via Newbury Park  due', bearing: params.startHeading, size: 2, lineWidth: 2)   
+    ge.getFeatures().appendChild(ge.parseKml(s.kml()))
+    
+    connect()
   
   google.earth.createInstance('earth', earthInitCallback, -> console.log("Google Earth error: #{errorCode}"))
-  connect()
-  
+    

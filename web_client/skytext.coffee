@@ -4,20 +4,19 @@ class window.SkyText
   latFactor:  0.00001
   fontHeight: 5
 
-  constructor: (@lat, @lon, @alt, o = {}, text, textOpts) ->
+  constructor: (@lat, @lon, @alt, o = {}) ->
     o.lineWidth ?= 1
     o.colour    ?= 'ffffffff'
-    
     @allCoordSets = []
     @lineOpts = []
-    
     if o.lineWidth > 0
       @allCoordSets.push([[[@lon, @lat, 0], [@lon, @lat, @alt]]])
       @lineOpts.push(o)
-      
     lonRatio = 1 / Math.cos(@lat * @piOver180)
     @lonFactor = @latFactor * lonRatio
-    @line(line, textOpts) for line in text.split("\n") if text?
+    
+  text: (text, o) ->
+    @line(line, o) for line in text.split("\n")
     
   line: (text, o = {}) ->
     o.bearing   ?= 0
@@ -26,8 +25,9 @@ class window.SkyText
     o.colour    ?= 'ffffffff'
     o.lineSpace ?= 1
     o.charSpace ?= 1
+    o.font      ?= window.font
 
-    xCursor = o.charSpace * 2
+    xCursor = o.charSpace * 3
     bRad = o.bearing * @piOver180
     latFactor = Math.sin(bRad) * o.size * @latFactor
     lonFactor = Math.cos(bRad) * o.size * @lonFactor
@@ -38,7 +38,7 @@ class window.SkyText
       if char is ' '
         xCursor += 2 + o.charSpace
         continue
-      paths = font[char]
+      paths = o.font[char]
       maxX = 0
       for path in paths
         coords = for x, i in path by 2

@@ -278,6 +278,15 @@
             <path d="M 28.35 0.00 L 0.00 56.69 " stroke="#000000" stroke-width="3.00" fill="none"/>\
         </g>\
         <path d="M 0.00 0.00 L 28.35 0.00 L 0.00 56.69 L 28.35 56.69 " stroke="#000000" stroke-width="3.00" fill="none"/>\
+        <g>\
+            <path d="M 14.17 14.17 L 28.35 0.00 L 56.69 0.00 L 70.87 14.17 L 70.87 42.52 L 56.69 56.69 L 28.35 56.69 L 14.17 42.52 Z M 14.17 14.17 " stroke="#000000" stroke-width="3.00" fill="none"/>\
+            <path d="M 0.00 28.35 L 85.04 28.35 " stroke="#000000" stroke-width="3.00" fill="none"/>\
+        </g>\
+        <g>\
+            <path d="M 0.00 28.35 L 70.87 28.35 " stroke="#000000" stroke-width="3.00" fill="none"/>\
+            <path d="M 0.00 42.52 L 70.87 42.52 " stroke="#000000" stroke-width="3.00" fill="none"/>\
+            <path d="M 28.35 14.17 L 42.52 28.35 L 28.35 42.52 L 42.52 56.69 " stroke="#000000" stroke-width="3.00" fill="none"/>\
+        </g>\
     </g>\
 </svg>';
 

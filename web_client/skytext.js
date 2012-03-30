@@ -8,8 +8,8 @@
 
     SkyText.prototype.fontHeight = 5;
 
-    function SkyText(lat, lon, alt, o, text, textOpts) {
-      var line, lonRatio, _i, _len, _ref;
+    function SkyText(lat, lon, alt, o) {
+      var lonRatio;
       this.lat = lat;
       this.lon = lon;
       this.alt = alt;
@@ -24,14 +24,18 @@
       }
       lonRatio = 1 / Math.cos(this.lat * this.piOver180);
       this.lonFactor = this.latFactor * lonRatio;
-      if (text != null) {
-        _ref = text.split("\n");
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          line = _ref[_i];
-          this.line(line, textOpts);
-        }
-      }
     }
+
+    SkyText.prototype.text = function(text, o) {
+      var line, _i, _len, _ref, _results;
+      _ref = text.split("\n");
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        line = _ref[_i];
+        _results.push(this.line(line, o));
+      }
+      return _results;
+    };
 
     SkyText.prototype.line = function(text, o) {
       var alt, bRad, char, coords, i, lat, latFactor, lineCoordSets, lon, lonFactor, maxX, path, paths, x, xCursor, y, _i, _j, _len, _len2, _ref;
@@ -42,7 +46,8 @@
       if (o.colour == null) o.colour = 'ffffffff';
       if (o.lineSpace == null) o.lineSpace = 1;
       if (o.charSpace == null) o.charSpace = 1;
-      xCursor = o.charSpace * 2;
+      if (o.font == null) o.font = window.font;
+      xCursor = o.charSpace * 3;
       bRad = o.bearing * this.piOver180;
       latFactor = Math.sin(bRad) * o.size * this.latFactor;
       lonFactor = Math.cos(bRad) * o.size * this.lonFactor;
@@ -54,7 +59,7 @@
           xCursor += 2 + o.charSpace;
           continue;
         }
-        paths = font[char];
+        paths = o.font[char];
         maxX = 0;
         for (_j = 0, _len2 = paths.length; _j < _len2; _j++) {
           path = paths[_j];

@@ -80,6 +80,8 @@
       turnSpeed: 0.075,
       status: 1,
       debugData: 0,
+      atmosphere: 1,
+      sun: 0,
       timeControl: 0,
       reconnectWait: 2,
       ws: 'ws://127.0.0.1:8888/p5websocket'
@@ -209,11 +211,13 @@
       ws = new WebSocket(params.ws);
       titleStatus.style.color = '#ff0';
       ws.onopen = function() {
-        return titleStatus.style.color = '#fff';
+        titleStatus.style.color = '#fff';
+        return ge.getNavigationControl().setVisibility(ge.VISIBILITY_HIDE);
       };
       ws.onclose = function() {
         titleStatus.style.color = '#f00';
-        return setTimeout(connect, params.reconnectWait * 1000);
+        setTimeout(connect, params.reconnectWait * 1000);
+        return ge.getNavigationControl().setVisibility(ge.VISIBILITY_AUTO);
       };
       return ws.onmessage = function(e) {
         var data;
@@ -232,8 +236,8 @@
       window.ge = ge = instance;
       console.log("Google Earth plugin v" + (ge.getPluginVersion()) + ", API v" + (ge.getApiVersion()));
       addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION);
-      ge.getOptions().setAtmosphereVisibility(true);
-      ge.getSun().setVisibility(true);
+      ge.getOptions().setAtmosphereVisibility(params.atmosphere);
+      ge.getSun().setVisibility(params.sun);
       ge.getTime().getControl().setVisibility(params.timeControl ? ge.VISIBILITY_SHOW : ge.VISIBILITY_HIDE);
       ge.getOptions().setFlyToSpeed(ge.SPEED_TELEPORT);
       resetCam();
@@ -241,22 +245,39 @@
       animTick();
       google.earth.addEventListener(ge, 'frameend', animTick);
       s = new SkyText(51.52120111222482, -0.12885332107543945, 140);
-      s.line('CASA Smart Cities', {
+      s.line('CASA Smart Cities — 100% awesome', {
         bearing: -params.startHeading,
         size: 3,
-        lineWidth: 4
+        lineWidth: 3
       });
       s.line('Next session: Steve Gray', {
-        bearing: -params.startHeading + 15,
+        bearing: -params.startHeading,
         size: 2,
         lineWidth: 2
       });
-      return ge.getFeatures().appendChild(ge.parseKml(s.kml()));
+      ge.getFeatures().appendChild(ge.parseKml(s.kml()));
+      s = new SkyText(51.52038666343198, -0.13435721397399902, 140);
+      s.line('ø Goodge Street', {
+        bearing: params.startHeading,
+        size: 3,
+        lineWidth: 3
+      });
+      s.line('W  West Ruislip  2 mins', {
+        bearing: params.startHeading,
+        size: 2,
+        lineWidth: 2
+      });
+      s.line('E  Hainault via Newbury Park  due', {
+        bearing: params.startHeading,
+        size: 2,
+        lineWidth: 2
+      });
+      ge.getFeatures().appendChild(ge.parseKml(s.kml()));
+      return connect();
     };
-    google.earth.createInstance('earth', earthInitCallback, function() {
+    return google.earth.createInstance('earth', earthInitCallback, function() {
       return console.log("Google Earth error: " + errorCode);
     });
-    return connect();
   };
 
 }).call(this);
