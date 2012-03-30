@@ -35,10 +35,10 @@ class window.SkyText
     lineCoordSets = []
     
     for char in text.split('')
-      if char is ' '
+      if char in [" ", "\n", "\r", "\t"]
         xCursor += 2 + o.charSpace
         continue
-      paths = o.font[char]
+      paths = o.font[char] ? o.font['na']
       maxX = 0
       for path in paths
         coords = for x, i in path by 2

@@ -179,7 +179,7 @@ window.onload = ->
     google.earth.addEventListener(ge, 'frameend', animTick)
     
     s = new SkyText(51.52120111222482, -0.12885332107543945, 140)
-    s.line('CASA Smart Cities — 100% awesome', bearing: -params.startHeading, size: 3, lineWidth: 3)
+    s.line('CASA Smart Cities', bearing: -params.startHeading, size: 3, lineWidth: 3)
     s.line('Next session: Steve Gray', bearing: -params.startHeading, size: 2, lineWidth: 2)    
     ge.getFeatures().appendChild(ge.parseKml(s.kml()))
     

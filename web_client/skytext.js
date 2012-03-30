@@ -38,7 +38,7 @@
     };
 
     SkyText.prototype.line = function(text, o) {
-      var alt, bRad, char, coords, i, lat, latFactor, lineCoordSets, lon, lonFactor, maxX, path, paths, x, xCursor, y, _i, _j, _len, _len2, _ref;
+      var alt, bRad, char, coords, i, lat, latFactor, lineCoordSets, lon, lonFactor, maxX, path, paths, x, xCursor, y, _i, _j, _len, _len2, _ref, _ref2;
       if (o == null) o = {};
       if (o.bearing == null) o.bearing = 0;
       if (o.size == null) o.size = 2;
@@ -55,11 +55,11 @@
       _ref = text.split('');
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         char = _ref[_i];
-        if (char === ' ') {
+        if (char === " " || char === "\n" || char === "\r" || char === "\t") {
           xCursor += 2 + o.charSpace;
           continue;
         }
-        paths = o.font[char];
+        paths = (_ref2 = o.font[char]) != null ? _ref2 : o.font['na'];
         maxX = 0;
         for (_j = 0, _len2 = paths.length; _j < _len2; _j++) {
           path = paths[_j];

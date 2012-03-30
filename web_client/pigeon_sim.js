@@ -245,7 +245,7 @@
       animTick();
       google.earth.addEventListener(ge, 'frameend', animTick);
       s = new SkyText(51.52120111222482, -0.12885332107543945, 140);
-      s.line('CASA Smart Cities — 100% awesome', {
+      s.line('CASA Smart Cities', {
         bearing: -params.startHeading,
         size: 3,
         lineWidth: 3
