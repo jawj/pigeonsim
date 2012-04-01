@@ -125,7 +125,7 @@
     SkyText.prototype.kml = function() {
       var coordStr, coordStrs, coords, i, k, lineCoordSets, lineCoords, o;
       k = [];
-      k.push("<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document>");
+      k.push('<Document>');
       coordStrs = (function() {
         var _len, _ref, _results;
         _ref = this.allCoordSets;
@@ -155,8 +155,11 @@
         }
         return _results;
       }).call(this);
-      k.push("</Document></kml>");
+      k.push('</Document>');
       return k.join('');
+    };
+    SkyText.prototype.kmlDoc = function() {
+      return "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'>" + (this.kmlFragment()) + "</kml>";
     };
     SkyText.prototype.font = {
       "na": [[0, 2, 1, 2, 1, 3, 0, 3, 0, 2]],

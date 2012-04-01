@@ -70,7 +70,7 @@ class this.SkyText
        
   kml: ->
     k = []
-    k.push "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document>"
+    k.push('<Document>')
     coordStrs = for lineCoordSets, i in @allCoordSets
       o = @lineOpts[i]
       k.push "<Style id='l#{i}'><LineStyle><color>#{o.colour}</color><width>#{o.lineWidth}</width></LineStyle></Style>"
@@ -80,8 +80,12 @@ class this.SkyText
           <styleUrl>#l#{i}</styleUrl>
           <LineString><altitudeMode>absolute</altitudeMode><coordinates>#{coordStr}</coordinates></LineString>
         </Placemark>"
-    k.push "</Document></kml>"
+    k.push('</Document>')
     k.join('')
+    
+  kmlDoc: ->
+    "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'>#{@kmlFragment()}</kml>"
+    
     
   font: 
     "na": [[0,2,1,2,1,3,0,3,0,2]]  # small square for missing chars
