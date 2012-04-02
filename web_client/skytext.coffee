@@ -86,7 +86,6 @@ class this.SkyText
   kmlDoc: ->
     "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'>#{@kmlFragment()}</kml>"
     
-    
   font: 
     "na": [[0,2,1,2,1,3,0,3,0,2]]  # small square for missing chars
     "0":  [[0,1,0,3,1,4,2,3,2,1,1,0,0,1],[0,3,2,1]]
@@ -190,5 +189,3 @@ class this.SkyText
     "X":  [[0,0,2,4],[0,4,2,0]]
     "Y":  [[0,0,1,2],[2,0,0,4]]
     "Z":  [[0,0,2,0,0,4,2,4]]
-    "ø":  [[1,1,2,0,4,0,5,1,5,3,4,4,2,4,1,3,1,1],[0,2,6,2]]  # LU roundel
-    "₦":  [[0,2,5,2],[0,3,5,3],[2,1,3,2,2,3,3,4]]            # Network Rail logo

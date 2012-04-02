@@ -356,5 +356,5 @@ class this.TubeStationSet extends FeatureSet
     for row in csv.split("\n")
       [code, dummy, lon, lat, name] = row.split(',')
       station = new TubeStation("tube-#{code}", parseFloat(lat), parseFloat(lon))
-      station.name = "ø #{name}"
+      station.name = "\uF000 #{name}"
       @addFeature(station)

@@ -1,13 +1,9 @@
 (function() {
-  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
+  var __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
   this.FeatureManager = (function() {
+
     function FeatureManager(ge) {
       this.ge = ge;
       this.featureTree = new RTree();
@@ -15,17 +11,18 @@
       this.maxVisible = 20;
       this.featureFifo = [];
     }
+
     FeatureManager.prototype.addFeature = function(f) {
       return this.featureTree.insert(f.rect(), f);
     };
+
     FeatureManager.prototype.removeFeature = function(f) {
       this.hideFeature(f);
       return this.featureTree.remove(f.rect(), f);
     };
+
     FeatureManager.prototype.showFeature = function(f, cam) {
-      if (this.visibleFeatures[f.id] != null) {
-        return false;
-      }
+      if (this.visibleFeatures[f.id] != null) return false;
       this.visibleFeatures[f.id] = f;
       this.featureFifo.unshift(f);
       f.show(this.ge, cam);
@@ -34,14 +31,14 @@
       }
       return true;
     };
+
     FeatureManager.prototype.hideFeature = function(f) {
-      if (this.visibleFeatures[f.id] == null) {
-        return false;
-      }
+      if (this.visibleFeatures[f.id] == null) return false;
       delete this.visibleFeatures[f.id];
       f.hide(this.ge);
       return true;
     };
+
     FeatureManager.prototype.featuresInBBox = function(lat1, lon1, lat2, lon2) {
       var h, w, x, y;
       x = Math.min(lon1, lon2);
@@ -55,6 +52,7 @@
         h: h
       });
     };
+
     FeatureManager.prototype.updateWithBBox = function(lat1, lon1, lat2, lon2, cam) {
       var f, _i, _len, _ref, _results;
       _ref = this.featuresInBBox(lat1, lon1, lat2, lon2);
@@ -65,21 +63,28 @@
       }
       return _results;
     };
+
     return FeatureManager;
+
   })();
+
   this.FeatureSet = (function() {
+
     function FeatureSet(featureManager) {
       this.featureManager = featureManager;
       this.features = {};
     }
+
     FeatureSet.prototype.addFeature = function(f) {
       this.features[f.id] = f;
       return this.featureManager.addFeature(f);
     };
+
     FeatureSet.prototype.removeFeature = function() {
       this.featureManager.removeFeature(f);
       return delete this.features[f.id];
     };
+
     FeatureSet.prototype.clearFeatures = function() {
       var f, _ref, _results;
       _ref = this.features;
@@ -90,15 +95,20 @@
       }
       return _results;
     };
+
     return FeatureSet;
+
   })();
+
   this.Feature = (function() {
+
     function Feature(id, lat, lon, alt) {
       this.id = id;
       this.lat = lat;
       this.lon = lon;
       this.alt = alt != null ? alt : 100;
     }
+
     Feature.prototype.rect = function() {
       return {
         x: this.lon,
@@ -107,6 +117,7 @@
         h: 0
       };
     };
+
     Feature.prototype.show = function(ge, cam) {
       var st;
       st = new SkyText(this.lat, this.lon, this.alt);
@@ -116,22 +127,31 @@
       this.geNode = ge.parseKml(st.kml());
       return ge.getFeatures().appendChild(this.geNode);
     };
+
     Feature.prototype.hide = function(ge) {
-      if (this.geNode) {
-        return ge.getFeatures().removeChild(this.geNode);
-      }
+      if (this.geNode) return ge.getFeatures().removeChild(this.geNode);
     };
+
     return Feature;
+
   })();
-  this.TubeStation = (function() {
-    __extends(TubeStation, Feature);
+
+  this.TubeStation = (function(_super) {
+
+    __extends(TubeStation, _super);
+
     function TubeStation() {
       TubeStation.__super__.constructor.apply(this, arguments);
     }
+
     return TubeStation;
-  })();
-  this.TubeStationSet = (function() {
-    __extends(TubeStationSet, FeatureSet);
+
+  })(Feature);
+
+  this.TubeStationSet = (function(_super) {
+
+    __extends(TubeStationSet, _super);
+
     function TubeStationSet(featureManager) {
       var code, csv, dummy, lat, lon, name, row, station, _i, _len, _ref, _ref2;
       TubeStationSet.__super__.constructor.call(this, featureManager);
@@ -141,10 +161,13 @@
         row = _ref[_i];
         _ref2 = row.split(','), code = _ref2[0], dummy = _ref2[1], lon = _ref2[2], lat = _ref2[3], name = _ref2[4];
         station = new TubeStation("tube-" + code, parseFloat(lat), parseFloat(lon));
-        station.name = "ø " + name;
+        station.name = "\uF000 " + name;
         this.addFeature(station);
       }
     }
+
     return TubeStationSet;
-  })();
+
+  })(FeatureSet);
+
 }).call(this);

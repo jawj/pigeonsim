@@ -183,8 +183,14 @@ window.onload = ->
     s.line('Next session: Steve Gray', bearing: -params.startHeading, size: 2, lineWidth: 2)    
     ge.getFeatures().appendChild(ge.parseKml(s.kml()))
     
+    
+    
+    s = new SkyText(51.52192375643773, -0.13593167066574097, 180)
+    s.line('\uF002', bearing: params.startHeading, size: 0.8, lineWidth: 2)
+    ge.getFeatures().appendChild(ge.parseKml(s.kml()))
+    
     s = new SkyText(51.52038666343198, -0.13435721397399902, 140)
-    s.line('ø Goodge Street', bearing: params.startHeading, size: 3, lineWidth: 3)
+    s.line('\uF000 Goodge Street', bearing: params.startHeading, size: 3, lineWidth: 3)
     s.line('W\tWest Ruislip  2 mins',  bearing: params.startHeading, size: 2, lineWidth: 2)
     s.line('E\tHainault via Newbury Park  due', bearing: params.startHeading, size: 2, lineWidth: 2)   
     ge.getFeatures().appendChild(ge.parseKml(s.kml()))

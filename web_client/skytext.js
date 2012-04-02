@@ -1,22 +1,21 @@
 (function() {
+
   this.SkyText = (function() {
+
     SkyText.prototype.piOver180 = Math.PI / 180;
+
     SkyText.prototype.latFactor = 0.00001;
+
     SkyText.prototype.fontHeight = 5;
+
     function SkyText(lat, lon, alt, o) {
-      var lonRatio, _ref, _ref2;
+      var lonRatio;
       this.lat = lat;
       this.lon = lon;
       this.alt = alt;
-      if (o == null) {
-        o = {};
-      }
-      if ((_ref = o.lineWidth) == null) {
-        o.lineWidth = 1;
-      }
-      if ((_ref2 = o.colour) == null) {
-        o.colour = 'ffffffff';
-      }
+      if (o == null) o = {};
+      if (o.lineWidth == null) o.lineWidth = 1;
+      if (o.colour == null) o.colour = 'ffffffff';
       this.allCoordSets = [];
       this.lineOpts = [];
       if (o.lineWidth > 0) {
@@ -26,6 +25,7 @@
       lonRatio = 1 / Math.cos(this.lat * this.piOver180);
       this.lonFactor = this.latFactor * lonRatio;
     }
+
     SkyText.prototype.text = function(text, o) {
       var line, _i, _len, _ref, _results;
       _ref = text.split("\n");
@@ -36,41 +36,20 @@
       }
       return _results;
     };
+
     SkyText.prototype.line = function(text, o) {
-      var absX, alt, bRad, char, coords, cosB, i, lat, latFactor, latStart, lineCoordSets, lon, lonFactor, lonStart, maxX, path, paths, sinB, tabWidth, x, xCursor, y, _i, _j, _len, _len2, _ref, _ref10, _ref11, _ref12, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
-      if (o == null) {
-        o = {};
-      }
-      if ((_ref = o.bearing) == null) {
-        o.bearing = 0;
-      }
-      if ((_ref2 = o.size) == null) {
-        o.size = 2;
-      }
-      if ((_ref3 = o.lineWidth) == null) {
-        o.lineWidth = 2;
-      }
-      if ((_ref4 = o.colour) == null) {
-        o.colour = 'ffffffff';
-      }
-      if ((_ref5 = o.lineSpace) == null) {
-        o.lineSpace = 1;
-      }
-      if ((_ref6 = o.charSpace) == null) {
-        o.charSpace = 1;
-      }
-      if ((_ref7 = o.spaceWidth) == null) {
-        o.spaceWidth = 2;
-      }
-      if ((_ref8 = o.tabSpaces) == null) {
-        o.tabSpaces = 4;
-      }
-      if ((_ref9 = o.offset) == null) {
-        o.offset = 5;
-      }
-      if ((_ref10 = o.font) == null) {
-        o.font = this.font;
-      }
+      var absX, alt, bRad, char, coords, cosB, i, lat, latFactor, latStart, lineCoordSets, lon, lonFactor, lonStart, maxX, path, paths, sinB, tabWidth, x, xCursor, y, _i, _j, _len, _len2, _ref, _ref2;
+      if (o == null) o = {};
+      if (o.bearing == null) o.bearing = 0;
+      if (o.size == null) o.size = 2;
+      if (o.lineWidth == null) o.lineWidth = 2;
+      if (o.colour == null) o.colour = 'ffffffff';
+      if (o.lineSpace == null) o.lineSpace = 1;
+      if (o.charSpace == null) o.charSpace = 1;
+      if (o.spaceWidth == null) o.spaceWidth = 2;
+      if (o.tabSpaces == null) o.tabSpaces = 4;
+      if (o.offset == null) o.offset = 5;
+      if (o.font == null) o.font = this.font;
       bRad = o.bearing * this.piOver180;
       sinB = Math.sin(bRad);
       cosB = Math.cos(bRad);
@@ -81,9 +60,9 @@
       xCursor = 0;
       tabWidth = o.tabSpaces * o.spaceWidth;
       lineCoordSets = [];
-      _ref11 = text.split('');
-      for (_i = 0, _len = _ref11.length; _i < _len; _i++) {
-        char = _ref11[_i];
+      _ref = text.split('');
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        char = _ref[_i];
         if (char === " " || char === "\n" || char === "\r") {
           xCursor += o.spaceWidth;
           continue;
@@ -92,7 +71,7 @@
           xCursor = Math.ceil((xCursor + 1) / tabWidth) * tabWidth;
           continue;
         }
-        paths = (_ref12 = o.font[char]) != null ? _ref12 : o.font['na'];
+        paths = (_ref2 = o.font[char]) != null ? _ref2 : o.font['na'];
         maxX = 0;
         for (_j = 0, _len2 = paths.length; _j < _len2; _j++) {
           path = paths[_j];
@@ -102,9 +81,7 @@
             for (i = 0, _len3 = path.length, _step = 2; i < _len3; i += _step) {
               x = path[i];
               y = path[i + 1];
-              if (x > maxX) {
-                maxX = x;
-              }
+              if (x > maxX) maxX = x;
               absX = xCursor + x;
               lat = latStart + absX * latFactor;
               lon = lonStart + absX * lonFactor;
@@ -122,6 +99,7 @@
       this.allCoordSets.push(lineCoordSets);
       return this;
     };
+
     SkyText.prototype.kml = function() {
       var coordStr, coordStrs, coords, i, k, lineCoordSets, lineCoords, o;
       k = [];
@@ -158,9 +136,11 @@
       k.push('</Document>');
       return k.join('');
     };
+
     SkyText.prototype.kmlDoc = function() {
       return "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'>" + (this.kmlFragment()) + "</kml>";
     };
+
     SkyText.prototype.font = {
       "na": [[0, 2, 1, 2, 1, 3, 0, 3, 0, 2]],
       "0": [[0, 1, 0, 3, 1, 4, 2, 3, 2, 1, 1, 0, 0, 1], [0, 3, 2, 1]],
@@ -263,10 +243,11 @@
       "W": [[0, 0, 1, 4, 2, 1, 3, 4, 3, 0]],
       "X": [[0, 0, 2, 4], [0, 4, 2, 0]],
       "Y": [[0, 0, 1, 2], [2, 0, 0, 4]],
-      "Z": [[0, 0, 2, 0, 0, 4, 2, 4]],
-      "ø": [[1, 1, 2, 0, 4, 0, 5, 1, 5, 3, 4, 4, 2, 4, 1, 3, 1, 1], [0, 2, 6, 2]],
-      "₦": [[0, 2, 5, 2], [0, 3, 5, 3], [2, 1, 3, 2, 2, 3, 3, 4]]
+      "Z": [[0, 0, 2, 0, 0, 4, 2, 4]]
     };
+
     return SkyText;
+
   })();
+
 }).call(this);
