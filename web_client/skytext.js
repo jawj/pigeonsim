@@ -50,7 +50,7 @@
       if (o.tabSpaces == null) o.tabSpaces = 4;
       if (o.offset == null) o.offset = 5;
       if (o.font == null) o.font = this.font;
-      bRad = o.bearing * this.piOver180;
+      bRad = -o.bearing * this.piOver180;
       sinB = Math.sin(bRad);
       cosB = Math.cos(bRad);
       latFactor = sinB * o.size * this.latFactor;

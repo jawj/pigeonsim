@@ -5,13 +5,16 @@
   google.load('earth', '1.x');
 
   window.onload = function() {
-    var addLayers, altStatus, animTick, animTicks, animTimeout, cam, camMoves, compassPts, connect, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, flapAmount, flown, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, latFactor, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref2, _ref3;
+    var addLayers, altStatus, animTick, animTicks, animTimeout, cam, camMoves, compassPts, connect, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, els, flapAmount, flown, fm, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, latFactor, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref2, _ref3;
     if (!window.WebSocket) {
       alert('This app needs browser WebSocket support');
       return;
     }
     el = function(id) {
       return document.getElementById(id);
+    };
+    els = function(sel) {
+      return document.querySelectorAll(sel);
     };
     w = function(s) {
       return s.split(/\s+/);
@@ -104,7 +107,7 @@
       }
       return _results;
     })(), titleStatus = _ref3[0], altStatus = _ref3[1], debugDataStatus = _ref3[2], debugEarthAPIStatus = _ref3[3], debugTicksStatus = _ref3[4], headingStatus = _ref3[5];
-    ge = cam = seenCam = flown = animTimeout = null;
+    ge = cam = seenCam = flown = animTimeout = fm = null;
     animTicks = camMoves = inMsgs = 0;
     lastFlap = flapAmount = 0;
     pi = Math.PI;
@@ -132,6 +135,7 @@
       if (params.debugData) debugEarthAPIStatus.innerHTML = camMoves;
       unmoved = objsEq(cam, seenCam);
       if (unmoved) return false;
+      fm.update(cam);
       view = ge.getView();
       c = view.copyAsCamera(ge.ALTITUDE_ABSOLUTE);
       c.setLatitude(cam.lat);
@@ -232,7 +236,7 @@
       };
     };
     earthInitCallback = function(instance) {
-      var s;
+      var tss;
       window.ge = ge = instance;
       console.log("Google Earth plugin v" + (ge.getPluginVersion()) + ", API v" + (ge.getApiVersion()));
       addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION);
@@ -242,44 +246,26 @@
       ge.getOptions().setFlyToSpeed(ge.SPEED_TELEPORT);
       resetCam();
       ge.getWindow().setVisibility(true);
+      /*
+          s = new SkyText(51.52120111222482, -0.12885332107543945, 140)
+          s.line('CASA Smart Cities', bearing: -params.startHeading, size: 3, lineWidth: 3)
+          s.line('Next session: Steve Gray', bearing: -params.startHeading, size: 2, lineWidth: 2)    
+          ge.getFeatures().appendChild(ge.parseKml(s.kml()))
+      
+          s = new SkyText(51.52192375643773, -0.13593167066574097, 180)
+          s.line('\uF002', bearing: params.startHeading, size: 0.8, lineWidth: 2)
+          ge.getFeatures().appendChild(ge.parseKml(s.kml()))
+          
+          s = new SkyText(51.52038666343198, -0.13435721397399902, 140)
+          s.line('\uF000 Goodge Street', bearing: params.startHeading, size: 3, lineWidth: 3)
+          s.line('W\tWest Ruislip  2 mins',  bearing: params.startHeading, size: 2, lineWidth: 2)
+          s.line('E\tHainault via Newbury Park  due', bearing: params.startHeading, size: 2, lineWidth: 2)   
+          ge.getFeatures().appendChild(ge.parseKml(s.kml()))
+      */
+      fm = new FeatureManager(ge, lonRatio);
+      tss = new TubeStationSet(fm);
       animTick();
       google.earth.addEventListener(ge, 'frameend', animTick);
-      s = new SkyText(51.52120111222482, -0.12885332107543945, 140);
-      s.line('CASA Smart Cities', {
-        bearing: -params.startHeading,
-        size: 3,
-        lineWidth: 3
-      });
-      s.line('Next session: Steve Gray', {
-        bearing: -params.startHeading,
-        size: 2,
-        lineWidth: 2
-      });
-      ge.getFeatures().appendChild(ge.parseKml(s.kml()));
-      s = new SkyText(51.52192375643773, -0.13593167066574097, 180);
-      s.line('\uF002', {
-        bearing: params.startHeading,
-        size: 0.8,
-        lineWidth: 2
-      });
-      ge.getFeatures().appendChild(ge.parseKml(s.kml()));
-      s = new SkyText(51.52038666343198, -0.13435721397399902, 140);
-      s.line('\uF000 Goodge Street', {
-        bearing: params.startHeading,
-        size: 3,
-        lineWidth: 3
-      });
-      s.line('W\tWest Ruislip  2 mins', {
-        bearing: params.startHeading,
-        size: 2,
-        lineWidth: 2
-      });
-      s.line('E\tHainault via Newbury Park  due', {
-        bearing: params.startHeading,
-        size: 2,
-        lineWidth: 2
-      });
-      ge.getFeatures().appendChild(ge.parseKml(s.kml()));
       return connect();
     };
     return google.earth.createInstance('earth', earthInitCallback, function() {

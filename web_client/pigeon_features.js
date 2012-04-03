@@ -1,11 +1,45 @@
 (function() {
-  var __hasProp = Object.prototype.hasOwnProperty,
+  var box, load,
+    __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  load = function(url, callback, opts) {
+    var k, kvps, v, xhr;
+    if (opts == null) opts = {};
+    if (opts.method == null) opts.method = 'GET';
+    if (opts.search != null) {
+      kvps = (function() {
+        var _ref, _results;
+        _ref = opts.search;
+        _results = [];
+        for (k in _ref) {
+          if (!__hasProp.call(_ref, k)) continue;
+          v = _ref[k];
+          _results.push("" + (escape(k)) + "=" + (escape(v)));
+        }
+        return _results;
+      })();
+      url += '?' + kvps.join('&');
+    }
+    xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      var obj;
+      if (xhr.readyState === 4) {
+        obj = opts.json != null ? JSON.parse(xhr.responseText) : opts.xml != null ? xhr.responseXML : xhr.responseText;
+        return callback(obj);
+      }
+    };
+    xhr.open(opts.method, url, true);
+    return xhr.send(opts.data);
+  };
+
+  box = null;
 
   this.FeatureManager = (function() {
 
-    function FeatureManager(ge) {
+    function FeatureManager(ge, lonRatio) {
       this.ge = ge;
+      this.lonRatio = lonRatio;
       this.featureTree = new RTree();
       this.visibleFeatures = {};
       this.maxVisible = 20;
@@ -41,10 +75,10 @@
 
     FeatureManager.prototype.featuresInBBox = function(lat1, lon1, lat2, lon2) {
       var h, w, x, y;
-      x = Math.min(lon1, lon2);
-      y = Math.min(lat1, lat2);
-      w = Math.abs(lon1 - lon2);
-      h = Math.abs(lat1 - lat2);
+      x = lon1;
+      y = lat1;
+      w = lon2 - lon1;
+      h = lat2 - lat1;
       return this.featureTree.search({
         x: x,
         y: y,
@@ -53,8 +87,30 @@
       });
     };
 
-    FeatureManager.prototype.updateWithBBox = function(lat1, lon1, lat2, lon2, cam) {
-      var f, _i, _len, _ref, _results;
+    FeatureManager.prototype.update = function(cam) {
+      var camLat, camLon, f, lat1, lat2, latDiff, latSize, lon1, lon2, lonDiff, lonSize, lookAt, lookLat, lookLon, midLat, midLon, _i, _len, _ref, _results;
+      lookAt = this.ge.getView().copyAsLookAt(ge.ALTITUDE_ABSOLUTE);
+      lookLat = lookAt.getLatitude();
+      lookLon = lookAt.getLongitude();
+      camLat = cam.lat;
+      camLon = cam.lon;
+      midLat = (camLat + lookLat) / 2;
+      midLon = (camLon + lookLon) / 2;
+      latDiff = Math.abs(camLat - midLat);
+      lonDiff = Math.abs(camLon - midLon);
+      latSize = Math.max(latDiff / this.lonRatio, lonDiff);
+      lonSize = latSize * this.lonRatio;
+      lat1 = midLat - latSize;
+      lat2 = midLat + latSize;
+      lon1 = midLon - lonSize;
+      lon2 = midLon + lonSize;
+      /*
+          ge.getFeatures().removeChild(box) if box
+          kml = "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document><Placemark><name>lookAt</name><Point><coordinates>#{lookLon},#{lookLat},0</coordinates></Point></Placemark><Placemark><name>camera</name><Point><coordinates>#{camLon},#{camLat},0</coordinates></Point></Placemark><Placemark><name>middle</name><Point><coordinates>#{midLon},#{midLat},0</coordinates></Point></Placemark><Placemark><LineString><altitudeMode>absolute</altitudeMode><coordinates>#{lon1},#{lat1},100 #{lon1},#{lat2},100 #{lon2},#{lat2},100 #{lon2},#{lat1},50 #{lon1},#{lat1},100</coordinates></LineString></Placemark></Document></kml>"
+          box = ge.parseKml(kml)
+          ge.getFeatures().appendChild(box)
+          console.log(kml)
+      */
       _ref = this.featuresInBBox(lat1, lon1, lat2, lon2);
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -129,7 +185,10 @@
     };
 
     Feature.prototype.hide = function(ge) {
-      if (this.geNode) return ge.getFeatures().removeChild(this.geNode);
+      if (this.geNode) {
+        ge.getFeatures().removeChild(this.geNode);
+        return delete this.geNode;
+      }
     };
 
     return Feature;

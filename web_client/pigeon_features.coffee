@@ -1,6 +1,23 @@
 
+load = (url, callback, opts = {}) ->
+  opts.method ?= 'GET'
+  if opts.search?
+    kvps = ("#{escape(k)}=#{escape(v)}" for own k, v of opts.search)
+    url += '?' + kvps.join('&')
+  xhr = new XMLHttpRequest()
+  xhr.onreadystatechange = ->
+    if xhr.readyState is 4
+      obj = if opts.json? then JSON.parse(xhr.responseText)
+      else if opts.xml? then xhr.responseXML
+      else xhr.responseText
+      callback(obj)
+  xhr.open(opts.method, url, yes)
+  xhr.send(opts.data)
+
+box = null
+
 class this.FeatureManager
-  constructor: (@ge) ->
+  constructor: (@ge, @lonRatio) ->
     @featureTree = new RTree()
     @visibleFeatures = {}
     @maxVisible = 20
@@ -28,15 +45,40 @@ class this.FeatureManager
     return yes
   
   featuresInBBox: (lat1, lon1, lat2, lon2) ->
-    x = Math.min(lon1, lon2)
-    y = Math.min(lat1, lat2)
-    w = Math.abs(lon1 - lon2)
-    h = Math.abs(lat1 - lat2)
+    x = lon1 #Math.min(lon1, lon2)
+    y = lat1 #Math.min(lat1, lat2)
+    w = lon2 - lon1 #Math.abs(lon1 - lon2)
+    h = lat2 - lat1 #Math.abs(lat1 - lat2)
     @featureTree.search({x, y, w, h})
     
-  updateWithBBox: (lat1, lon1, lat2, lon2, cam) ->
+  update: (cam) ->
+    lookAt = @ge.getView().copyAsLookAt(ge.ALTITUDE_ABSOLUTE)
+    lookLat = lookAt.getLatitude()
+    lookLon = lookAt.getLongitude()
+    camLat = cam.lat
+    camLon = cam.lon
+    midLat = (camLat + lookLat) / 2
+    midLon = (camLon + lookLon) / 2
+    
+    latDiff = Math.abs(camLat - midLat)
+    lonDiff = Math.abs(camLon - midLon)
+    latSize = Math.max(latDiff / @lonRatio, lonDiff)
+    lonSize = latSize * @lonRatio
+    # console.log(latDiff, lonDiff, latSize, lonSize)
+    lat1 = midLat - latSize
+    lat2 = midLat + latSize
+    lon1 = midLon - lonSize
+    lon2 = midLon + lonSize
+    
+    ###
+    ge.getFeatures().removeChild(box) if box
+    kml = "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document><Placemark><name>lookAt</name><Point><coordinates>#{lookLon},#{lookLat},0</coordinates></Point></Placemark><Placemark><name>camera</name><Point><coordinates>#{camLon},#{camLat},0</coordinates></Point></Placemark><Placemark><name>middle</name><Point><coordinates>#{midLon},#{midLat},0</coordinates></Point></Placemark><Placemark><LineString><altitudeMode>absolute</altitudeMode><coordinates>#{lon1},#{lat1},100 #{lon1},#{lat2},100 #{lon2},#{lat2},100 #{lon2},#{lat1},50 #{lon1},#{lat1},100</coordinates></LineString></Placemark></Document></kml>"
+    box = ge.parseKml(kml)
+    ge.getFeatures().appendChild(box)
+    console.log(kml)
+    ###
+    
     @showFeature(f, cam) for f in @featuresInBBox(lat1, lon1, lat2, lon2)
-        
 
 class this.FeatureSet
   constructor: (@featureManager) ->
@@ -65,7 +107,9 @@ class this.Feature
     ge.getFeatures().appendChild(@geNode)
     
   hide: (ge) ->
-    ge.getFeatures().removeChild(@geNode) if @geNode
+    if @geNode
+      ge.getFeatures().removeChild(@geNode)
+      delete @geNode
 
 
 class this.TubeStation extends Feature
@@ -358,3 +402,4 @@ class this.TubeStationSet extends FeatureSet
       station = new TubeStation("tube-#{code}", parseFloat(lat), parseFloat(lon))
       station.name = "\uF000 #{name}"
       @addFeature(station)
+

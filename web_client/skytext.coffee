@@ -29,7 +29,7 @@ class this.SkyText
     o.offset     ?= 5  # horizontal space at start of line (independent of o.size)
     o.font       ?= @font
 
-    bRad = o.bearing * @piOver180
+    bRad = -o.bearing * @piOver180
     sinB = Math.sin(bRad)
     cosB = Math.cos(bRad)
     latFactor = sinB * o.size * @latFactor

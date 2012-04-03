@@ -6,7 +6,8 @@ window.onload = ->
     alert('This app needs browser WebSocket support')
     return
   
-  el = (id) -> document.getElementById(id)
+  el  = (id)  -> document.getElementById(id)
+  els = (sel) -> document.querySelectorAll(sel)
   w = (s) -> s.split(/\s+/)
   objsEq = (o1, o2 = {}) -> (return no if o2[k] isnt v) for own k, v of o1; yes
   objClone = (o1, o2 = {}) -> (o2[k] = v) for own k, v of o1; o2
@@ -50,7 +51,7 @@ window.onload = ->
   [titleStatus, altStatus, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, headingStatus] =
     (el(id) for id in w('title alt debugData debugEarthAPI debugTicks heading'))
 
-  ge = cam = seenCam = flown = animTimeout = null
+  ge = cam = seenCam = flown = animTimeout = fm = null
   animTicks = camMoves = inMsgs = 0
   lastFlap = flapAmount = 0
   
@@ -79,6 +80,9 @@ window.onload = ->
     debugEarthAPIStatus.innerHTML = camMoves if params.debugData
     unmoved = objsEq(cam, seenCam)
     return no if unmoved
+    
+    fm.update(cam)
+  
     view = ge.getView()
     c = view.copyAsCamera(ge.ALTITUDE_ABSOLUTE)
     c.setLatitude(cam.lat)
@@ -136,7 +140,7 @@ window.onload = ->
     cam.roll     = roll
     cam.tilt     = params.cruiseTilt - data.dive
   
-  animTick = ->
+  animTick = ->    
     animTicks += 1
     debugTicksStatus.innerHTML = animTicks if params.debugData
     headingStatus.innerHTML    = compassPts[Math.round(wrapDegs360(cam.heading) / 45)]
@@ -175,16 +179,12 @@ window.onload = ->
     ge.getOptions().setFlyToSpeed(ge.SPEED_TELEPORT)
     resetCam()
     ge.getWindow().setVisibility(yes)
-    animTick()
-    google.earth.addEventListener(ge, 'frameend', animTick)
-    
+    ###
     s = new SkyText(51.52120111222482, -0.12885332107543945, 140)
     s.line('CASA Smart Cities', bearing: -params.startHeading, size: 3, lineWidth: 3)
     s.line('Next session: Steve Gray', bearing: -params.startHeading, size: 2, lineWidth: 2)    
     ge.getFeatures().appendChild(ge.parseKml(s.kml()))
-    
-    
-    
+
     s = new SkyText(51.52192375643773, -0.13593167066574097, 180)
     s.line('\uF002', bearing: params.startHeading, size: 0.8, lineWidth: 2)
     ge.getFeatures().appendChild(ge.parseKml(s.kml()))
@@ -194,6 +194,12 @@ window.onload = ->
     s.line('W\tWest Ruislip  2 mins',  bearing: params.startHeading, size: 2, lineWidth: 2)
     s.line('E\tHainault via Newbury Park  due', bearing: params.startHeading, size: 2, lineWidth: 2)   
     ge.getFeatures().appendChild(ge.parseKml(s.kml()))
+    ###
+    fm = new FeatureManager(ge, lonRatio)
+    tss = new TubeStationSet(fm)
+    
+    animTick()
+    google.earth.addEventListener(ge, 'frameend', animTick)
     
     connect()
   
