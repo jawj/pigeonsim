@@ -1,5 +1,5 @@
 (function() {
-  var box, load,
+  var box, load, oneEightyOverPi,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -33,6 +33,8 @@
     return xhr.send(opts.data);
   };
 
+  oneEightyOverPi = 180 / Math.PI;
+
   box = null;
 
   this.FeatureManager = (function() {
@@ -42,8 +44,7 @@
       this.lonRatio = lonRatio;
       this.featureTree = new RTree();
       this.visibleFeatures = {};
-      this.maxVisible = 20;
-      this.featureFifo = [];
+      this.updateMoment = 0;
     }
 
     FeatureManager.prototype.addFeature = function(f) {
@@ -58,11 +59,7 @@
     FeatureManager.prototype.showFeature = function(f, cam) {
       if (this.visibleFeatures[f.id] != null) return false;
       this.visibleFeatures[f.id] = f;
-      this.featureFifo.unshift(f);
       f.show(this.ge, cam);
-      if (this.featureFifo.length > this.maxVisible) {
-        this.hideFeature(this.featureFifo.pop());
-      }
       return true;
     };
 
@@ -74,21 +71,16 @@
     };
 
     FeatureManager.prototype.featuresInBBox = function(lat1, lon1, lat2, lon2) {
-      var h, w, x, y;
-      x = lon1;
-      y = lat1;
-      w = lon2 - lon1;
-      h = lat2 - lat1;
       return this.featureTree.search({
-        x: x,
-        y: y,
-        w: w,
-        h: h
+        x: lon1,
+        y: lat1,
+        w: lon2 - lon1,
+        h: lat2 - lat1
       });
     };
 
     FeatureManager.prototype.update = function(cam) {
-      var camLat, camLon, f, lat1, lat2, latDiff, latSize, lon1, lon2, lonDiff, lonSize, lookAt, lookLat, lookLon, midLat, midLon, _i, _len, _ref, _results;
+      var camLat, camLon, f, id, lat1, lat2, latDiff, latSize, lon1, lon2, lonDiff, lonSize, lookAt, lookLat, lookLon, midLat, midLon, _i, _len, _ref, _ref2;
       lookAt = this.ge.getView().copyAsLookAt(ge.ALTITUDE_ABSOLUTE);
       lookLat = lookAt.getLatitude();
       lookLon = lookAt.getLongitude();
@@ -98,7 +90,7 @@
       midLon = (camLon + lookLon) / 2;
       latDiff = Math.abs(camLat - midLat);
       lonDiff = Math.abs(camLon - midLon);
-      latSize = Math.max(latDiff / this.lonRatio, lonDiff);
+      latSize = Math.max(latDiff / this.lonRatio, lonDiff) * 1.1;
       lonSize = latSize * this.lonRatio;
       lat1 = midLat - latSize;
       lat2 = midLat + latSize;
@@ -112,12 +104,17 @@
           console.log(kml)
       */
       _ref = this.featuresInBBox(lat1, lon1, lat2, lon2);
-      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         f = _ref[_i];
-        _results.push(this.showFeature(f, cam));
+        this.showFeature(f, cam);
+        f.updateMoment = this.updateMoment;
       }
-      return _results;
+      _ref2 = this.visibleFeatures;
+      for (id in _ref2) {
+        f = _ref2[id];
+        if (f.updateMoment < this.updateMoment) this.hideFeature(f);
+      }
+      return this.updateMoment += 1;
     };
 
     return FeatureManager;
@@ -175,10 +172,12 @@
     };
 
     Feature.prototype.show = function(ge, cam) {
-      var st;
+      var angleToCamDeg, angleToCamRad, st;
       st = new SkyText(this.lat, this.lon, this.alt);
+      angleToCamRad = Math.atan2(this.lon - cam.lon, this.lat - cam.lat);
+      angleToCamDeg = angleToCamRad * oneEightyOverPi;
       st.line(this.name, {
-        bearing: cam.heading
+        bearing: angleToCamDeg
       });
       this.geNode = ge.parseKml(st.kml());
       return ge.getFeatures().appendChild(this.geNode);

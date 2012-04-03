@@ -14,14 +14,14 @@ load = (url, callback, opts = {}) ->
   xhr.open(opts.method, url, yes)
   xhr.send(opts.data)
 
+oneEightyOverPi = 180 / Math.PI
 box = null
 
 class this.FeatureManager
   constructor: (@ge, @lonRatio) ->
     @featureTree = new RTree()
     @visibleFeatures = {}
-    @maxVisible = 20
-    @featureFifo = []
+    @updateMoment = 0
     
   addFeature: (f) ->
     @featureTree.insert(f.rect(), f)
@@ -33,9 +33,7 @@ class this.FeatureManager
   showFeature: (f, cam) ->
     return no if @visibleFeatures[f.id]?
     @visibleFeatures[f.id] = f
-    @featureFifo.unshift(f)
     f.show(@ge, cam)
-    @hideFeature(@featureFifo.pop()) if @featureFifo.length > @maxVisible
     return yes
   
   hideFeature: (f) ->
@@ -44,12 +42,8 @@ class this.FeatureManager
     f.hide(@ge)
     return yes
   
-  featuresInBBox: (lat1, lon1, lat2, lon2) ->
-    x = lon1 #Math.min(lon1, lon2)
-    y = lat1 #Math.min(lat1, lat2)
-    w = lon2 - lon1 #Math.abs(lon1 - lon2)
-    h = lat2 - lat1 #Math.abs(lat1 - lat2)
-    @featureTree.search({x, y, w, h})
+  featuresInBBox: (lat1, lon1, lat2, lon2) ->  # ones must be SW of (i.e. lower than) twos
+    @featureTree.search({x: lon1, y: lat1, w: lon2 - lon1, h: lat2 - lat1})
     
   update: (cam) ->
     lookAt = @ge.getView().copyAsLookAt(ge.ALTITUDE_ABSOLUTE)
@@ -62,9 +56,9 @@ class this.FeatureManager
     
     latDiff = Math.abs(camLat - midLat)
     lonDiff = Math.abs(camLon - midLon)
-    latSize = Math.max(latDiff / @lonRatio, lonDiff)
+    latSize = Math.max(latDiff / @lonRatio, lonDiff) * 1.1
     lonSize = latSize * @lonRatio
-    # console.log(latDiff, lonDiff, latSize, lonSize)
+    
     lat1 = midLat - latSize
     lat2 = midLat + latSize
     lon1 = midLon - lonSize
@@ -78,7 +72,14 @@ class this.FeatureManager
     console.log(kml)
     ###
     
-    @showFeature(f, cam) for f in @featuresInBBox(lat1, lon1, lat2, lon2)
+    for f in @featuresInBBox(lat1, lon1, lat2, lon2)
+      @showFeature(f, cam)
+      f.updateMoment = @updateMoment
+    
+    for id, f of @visibleFeatures
+      @hideFeature(f) if f.updateMoment < @updateMoment
+    
+    @updateMoment += 1
 
 class this.FeatureSet
   constructor: (@featureManager) ->
@@ -102,7 +103,11 @@ class this.Feature
     
   show: (ge, cam) ->
     st = new SkyText(@lat, @lon, @alt)
-    st.line(@name, {bearing: cam.heading})
+    
+    angleToCamRad = Math.atan2(@lon - cam.lon, @lat - cam.lat)
+    angleToCamDeg = angleToCamRad * oneEightyOverPi
+
+    st.line(@name, {bearing: angleToCamDeg})
     @geNode = ge.parseKml(st.kml())
     ge.getFeatures().appendChild(@geNode)
     
