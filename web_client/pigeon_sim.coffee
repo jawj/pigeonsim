@@ -197,6 +197,7 @@ window.onload = ->
     ###
     fm = new FeatureManager(ge, lonRatio)
     tss = new TubeStationSet(fm)
+    rss = new RailStationSet(fm)
     
     animTick()
     google.earth.addEventListener(ge, 'frameend', animTick)
