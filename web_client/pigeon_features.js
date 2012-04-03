@@ -221,7 +221,7 @@
       _ref = csv.split("\n");
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         row = _ref[_i];
-        _ref2 = row.split(','), code = _ref2[0], name = _ref2[1], lon = _ref2[2], lat = _ref2[3];
+        _ref2 = row.split(','), code = _ref2[0], name = _ref2[1], lat = _ref2[2], lon = _ref2[3];
         station = new TubeStation("rail-" + code, parseFloat(lat), parseFloat(lon));
         station.name = "\uF001 " + name;
         this.addFeature(station);
