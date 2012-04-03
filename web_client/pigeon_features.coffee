@@ -49,16 +49,19 @@ class this.FeatureManager
     lookAt = @ge.getView().copyAsLookAt(ge.ALTITUDE_ABSOLUTE)
     lookLat = lookAt.getLatitude()
     lookLon = lookAt.getLongitude()
-    camLat = cam.lat
-    camLon = cam.lon
-    midLat = (camLat + lookLat) / 2
-    midLon = (camLon + lookLon) / 2
+    midLat = (cam.lat + lookLat) / 2
+    midLon = (cam.lon + lookLon) / 2
     
-    latDiff = Math.abs(camLat - midLat)
-    lonDiff = Math.abs(camLon - midLon)
-    latSize = Math.max(latDiff / @lonRatio, lonDiff) * 1.1
-    lonSize = latSize * @lonRatio
+    latDiff = Math.abs(cam.lat - midLat)
+    lonDiff = Math.abs(cam.lon - midLon)
     
+    if latDiff > lonDiff * @lonRatio
+      latSize = latDiff
+      lonSize = latDiff * @lonRatio
+    else
+      lonSize = lonDiff
+      latSize = lonDiff / @lonRatio
+
     lat1 = midLat - latSize
     lat2 = midLat + latSize
     lon1 = midLon - lonSize
@@ -66,17 +69,17 @@ class this.FeatureManager
     
     ###
     ge.getFeatures().removeChild(box) if box
-    kml = "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document><Placemark><name>lookAt</name><Point><coordinates>#{lookLon},#{lookLat},0</coordinates></Point></Placemark><Placemark><name>camera</name><Point><coordinates>#{camLon},#{camLat},0</coordinates></Point></Placemark><Placemark><name>middle</name><Point><coordinates>#{midLon},#{midLat},0</coordinates></Point></Placemark><Placemark><LineString><altitudeMode>absolute</altitudeMode><coordinates>#{lon1},#{lat1},100 #{lon1},#{lat2},100 #{lon2},#{lat2},100 #{lon2},#{lat1},50 #{lon1},#{lat1},100</coordinates></LineString></Placemark></Document></kml>"
+    kml = "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document><Placemark><name>lookAt</name><Point><coordinates>#{lookLon},#{lookLat},0</coordinates></Point></Placemark><Placemark><name>camera</name><Point><coordinates>#{cam.lon},#{cam.lat},0</coordinates></Point></Placemark><Placemark><name>middle</name><Point><coordinates>#{midLon},#{midLat},0</coordinates></Point></Placemark><Placemark><LineString><altitudeMode>absolute</altitudeMode><coordinates>#{lon1},#{lat1},100 #{lon1},#{lat2},100 #{lon2},#{lat2},100 #{lon2},#{lat1},50 #{lon1},#{lat1},100</coordinates></LineString></Placemark></Document></kml>"
     box = ge.parseKml(kml)
     ge.getFeatures().appendChild(box)
-    console.log(kml)
+    #console.log(kml)
     ###
     
     for f in @featuresInBBox(lat1, lon1, lat2, lon2)
       @showFeature(f, cam)
       f.updateMoment = @updateMoment
     
-    for id, f of @visibleFeatures
+    for own id, f of @visibleFeatures
       @hideFeature(f) if f.updateMoment < @updateMoment
     
     @updateMoment += 1
@@ -97,7 +100,7 @@ class this.FeatureSet
 
     
 class this.Feature
-  constructor: (@id, @lat, @lon, @alt = 100) ->
+  constructor: (@id, @lat, @lon, @alt = 120) ->
   
   rect: -> {x: @lon, y: @lat, w: 0, h: 0}
     

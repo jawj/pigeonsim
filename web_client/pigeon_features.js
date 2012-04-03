@@ -80,28 +80,31 @@
     };
 
     FeatureManager.prototype.update = function(cam) {
-      var camLat, camLon, f, id, lat1, lat2, latDiff, latSize, lon1, lon2, lonDiff, lonSize, lookAt, lookLat, lookLon, midLat, midLon, _i, _len, _ref, _ref2;
+      var f, id, lat1, lat2, latDiff, latSize, lon1, lon2, lonDiff, lonSize, lookAt, lookLat, lookLon, midLat, midLon, _i, _len, _ref, _ref2;
       lookAt = this.ge.getView().copyAsLookAt(ge.ALTITUDE_ABSOLUTE);
       lookLat = lookAt.getLatitude();
       lookLon = lookAt.getLongitude();
-      camLat = cam.lat;
-      camLon = cam.lon;
-      midLat = (camLat + lookLat) / 2;
-      midLon = (camLon + lookLon) / 2;
-      latDiff = Math.abs(camLat - midLat);
-      lonDiff = Math.abs(camLon - midLon);
-      latSize = Math.max(latDiff / this.lonRatio, lonDiff) * 1.1;
-      lonSize = latSize * this.lonRatio;
+      midLat = (cam.lat + lookLat) / 2;
+      midLon = (cam.lon + lookLon) / 2;
+      latDiff = Math.abs(cam.lat - midLat);
+      lonDiff = Math.abs(cam.lon - midLon);
+      if (latDiff > lonDiff * this.lonRatio) {
+        latSize = latDiff;
+        lonSize = latDiff * this.lonRatio;
+      } else {
+        lonSize = lonDiff;
+        latSize = lonDiff / this.lonRatio;
+      }
       lat1 = midLat - latSize;
       lat2 = midLat + latSize;
       lon1 = midLon - lonSize;
       lon2 = midLon + lonSize;
       /*
           ge.getFeatures().removeChild(box) if box
-          kml = "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document><Placemark><name>lookAt</name><Point><coordinates>#{lookLon},#{lookLat},0</coordinates></Point></Placemark><Placemark><name>camera</name><Point><coordinates>#{camLon},#{camLat},0</coordinates></Point></Placemark><Placemark><name>middle</name><Point><coordinates>#{midLon},#{midLat},0</coordinates></Point></Placemark><Placemark><LineString><altitudeMode>absolute</altitudeMode><coordinates>#{lon1},#{lat1},100 #{lon1},#{lat2},100 #{lon2},#{lat2},100 #{lon2},#{lat1},50 #{lon1},#{lat1},100</coordinates></LineString></Placemark></Document></kml>"
+          kml = "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document><Placemark><name>lookAt</name><Point><coordinates>#{lookLon},#{lookLat},0</coordinates></Point></Placemark><Placemark><name>camera</name><Point><coordinates>#{cam.lon},#{cam.lat},0</coordinates></Point></Placemark><Placemark><name>middle</name><Point><coordinates>#{midLon},#{midLat},0</coordinates></Point></Placemark><Placemark><LineString><altitudeMode>absolute</altitudeMode><coordinates>#{lon1},#{lat1},100 #{lon1},#{lat2},100 #{lon2},#{lat2},100 #{lon2},#{lat1},50 #{lon1},#{lat1},100</coordinates></LineString></Placemark></Document></kml>"
           box = ge.parseKml(kml)
           ge.getFeatures().appendChild(box)
-          console.log(kml)
+          #console.log(kml)
       */
       _ref = this.featuresInBBox(lat1, lon1, lat2, lon2);
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -111,6 +114,7 @@
       }
       _ref2 = this.visibleFeatures;
       for (id in _ref2) {
+        if (!__hasProp.call(_ref2, id)) continue;
         f = _ref2[id];
         if (f.updateMoment < this.updateMoment) this.hideFeature(f);
       }
@@ -159,7 +163,7 @@
       this.id = id;
       this.lat = lat;
       this.lon = lon;
-      this.alt = alt != null ? alt : 100;
+      this.alt = alt != null ? alt : 120;
     }
 
     Feature.prototype.rect = function() {
