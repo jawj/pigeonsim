@@ -2732,7 +2732,7 @@ class this.RailStationSet extends FeatureSet
       CAC,Caldercruix,55.887937,-3.887701"""
     for row in csv.split("\n")
       [code, name, lat, lon] = row.split(',')
-      station = new TubeStation("rail-#{code}", parseFloat(lat), parseFloat(lon))
+      station = new TubeStation("rail-#{code}", parseFloat(lat), parseFloat(lon), 180)
       station.name = "\uF001 #{name}"
       @addFeature(station)
 
