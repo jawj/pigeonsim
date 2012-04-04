@@ -105,7 +105,7 @@
         lonSize = lonDiff;
         latSize = lonDiff / this.lonRatio;
       }
-      sizeFactor = 1.1;
+      sizeFactor = 1;
       latSize *= sizeFactor;
       lonSize *= sizeFactor;
       lat1 = midLat - latSize;
@@ -378,7 +378,9 @@
         _ref = data.results;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           t = _ref[_i];
-          dedupedTweets["" + t.lat + "/" + t.lon] = t;
+          if (t.twitterPost.match(/london/i)) {
+            dedupedTweets["" + t.lat + "/" + t.lon] = t;
+          }
         }
         return _this.features = (function() {
           var _results;

@@ -67,7 +67,7 @@ class @FeatureManager
       lonSize = lonDiff
       latSize = lonDiff / @lonRatio
 
-    sizeFactor = 1.1  # 1 = a box with the camera and lookAt points on its borders
+    sizeFactor = 1  # 1 = a box with the camera and lookAt points on its borders
     latSize *= sizeFactor
     lonSize *= sizeFactor
 
@@ -184,11 +184,11 @@ class @LondonTweetSet extends FeatureSet
     load {url: 'http://128.40.47.96/~sjg/LondonTwitterStream/', json: yes}, (data) =>
       @clearFeatures()
       dedupedTweets = {}
-      (dedupedTweets["#{t.lat}/#{t.lon}"] = t) for t in data.results
+      for t in data.results
+        dedupedTweets["#{t.lat}/#{t.lon}"] = t if t.twitterPost.match(/london/i)
       @features = for own k, t of dedupedTweets
         tweet = new Tweet("tweet-#{t.twitterID}", parseFloat(t.lat), parseFloat(t.lon))
         tweet.name = '@' + t.name
         tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n')
         @addFeature(tweet)
-    
 

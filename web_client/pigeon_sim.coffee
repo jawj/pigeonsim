@@ -37,6 +37,7 @@ window.onload = ->
     atmosphere:     1       # show atmosphere
     sun:            0       # show sun
     timeControl:    0       # show Google Earth time controller (if sun is 1)
+    featureSkip:    5       # update features every n movement frames
     
     reconnectWait:  2       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
@@ -81,7 +82,7 @@ window.onload = ->
     unmoved = objsEq(cam, seenCam)
     return no if unmoved
     
-    fm.update(cam)
+    fm.update(cam) if camMoves % params.featureSkip is 0
   
     view = ge.getView()
     c = view.copyAsCamera(ge.ALTITUDE_ABSOLUTE)
@@ -179,22 +180,14 @@ window.onload = ->
     ge.getOptions().setFlyToSpeed(ge.SPEED_TELEPORT)
     resetCam()
     ge.getWindow().setVisibility(yes)
+    
     ###
     s = new SkyText(51.52120111222482, -0.12885332107543945, 140)
     s.line('CASA Smart Cities', bearing: -params.startHeading, size: 3, lineWidth: 3)
     s.line('Next session: Steve Gray', bearing: -params.startHeading, size: 2, lineWidth: 2)    
     ge.getFeatures().appendChild(ge.parseKml(s.kml()))
-
-    s = new SkyText(51.52192375643773, -0.13593167066574097, 180)
-    s.line('\uF002', bearing: params.startHeading, size: 0.8, lineWidth: 2)
-    ge.getFeatures().appendChild(ge.parseKml(s.kml()))
-    
-    s = new SkyText(51.52038666343198, -0.13435721397399902, 140)
-    s.line('\uF000 Goodge Street', bearing: params.startHeading, size: 3, lineWidth: 3)
-    s.line('W\tWest Ruislip  2 mins',  bearing: params.startHeading, size: 2, lineWidth: 2)
-    s.line('E\tHainault via Newbury Park  due', bearing: params.startHeading, size: 2, lineWidth: 2)   
-    ge.getFeatures().appendChild(ge.parseKml(s.kml()))
     ###
+    
     fm = new FeatureManager(ge, lonRatio)
     tss = new TubeStationSet(fm)
     rss = new RailStationSet(fm)

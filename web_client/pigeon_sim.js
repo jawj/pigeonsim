@@ -86,6 +86,7 @@
       atmosphere: 1,
       sun: 0,
       timeControl: 0,
+      featureSkip: 5,
       reconnectWait: 2,
       ws: 'ws://127.0.0.1:8888/p5websocket'
     };
@@ -135,7 +136,7 @@
       if (params.debugData) debugEarthAPIStatus.innerHTML = camMoves;
       unmoved = objsEq(cam, seenCam);
       if (unmoved) return false;
-      fm.update(cam);
+      if (camMoves % params.featureSkip === 0) fm.update(cam);
       view = ge.getView();
       c = view.copyAsCamera(ge.ALTITUDE_ABSOLUTE);
       c.setLatitude(cam.lat);
@@ -250,16 +251,6 @@
           s = new SkyText(51.52120111222482, -0.12885332107543945, 140)
           s.line('CASA Smart Cities', bearing: -params.startHeading, size: 3, lineWidth: 3)
           s.line('Next session: Steve Gray', bearing: -params.startHeading, size: 2, lineWidth: 2)    
-          ge.getFeatures().appendChild(ge.parseKml(s.kml()))
-      
-          s = new SkyText(51.52192375643773, -0.13593167066574097, 180)
-          s.line('\uF002', bearing: params.startHeading, size: 0.8, lineWidth: 2)
-          ge.getFeatures().appendChild(ge.parseKml(s.kml()))
-          
-          s = new SkyText(51.52038666343198, -0.13435721397399902, 140)
-          s.line('\uF000 Goodge Street', bearing: params.startHeading, size: 3, lineWidth: 3)
-          s.line('W\tWest Ruislip  2 mins',  bearing: params.startHeading, size: 2, lineWidth: 2)
-          s.line('E\tHainault via Newbury Park  due', bearing: params.startHeading, size: 2, lineWidth: 2)   
           ge.getFeatures().appendChild(ge.parseKml(s.kml()))
       */
       fm = new FeatureManager(ge, lonRatio);
