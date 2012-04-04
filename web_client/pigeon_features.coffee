@@ -76,13 +76,13 @@ class @FeatureManager
     lon1 = midLon - lonSize
     lon2 = midLon + lonSize
     
-    ###
+    
     ge.getFeatures().removeChild(box) if box
     kml = "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document><Placemark><name>lookAt</name><Point><coordinates>#{lookLon},#{lookLat},0</coordinates></Point></Placemark><Placemark><name>camera</name><Point><coordinates>#{cam.lon},#{cam.lat},0</coordinates></Point></Placemark><Placemark><name>middle</name><Point><coordinates>#{midLon},#{midLat},0</coordinates></Point></Placemark><Placemark><LineString><altitudeMode>absolute</altitudeMode><coordinates>#{lon1},#{lat1},100 #{lon1},#{lat2},100 #{lon2},#{lat2},100 #{lon2},#{lat1},50 #{lon1},#{lat1},100</coordinates></LineString></Placemark></Document></kml>"
     box = ge.parseKml(kml)
     ge.getFeatures().appendChild(box)
     #console.log(kml)
-    ###
+    
     
     for f in @featuresInBBox(lat1, lon1, lat2, lon2)
       @showFeature(f, cam)
