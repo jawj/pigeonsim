@@ -105,7 +105,7 @@
         lonSize = lonDiff;
         latSize = lonDiff / this.lonRatio;
       }
-      sizeFactor = 1;
+      sizeFactor = 1.25;
       latSize *= sizeFactor;
       lonSize *= sizeFactor;
       lat1 = midLat - latSize;

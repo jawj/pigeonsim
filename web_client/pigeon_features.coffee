@@ -67,7 +67,7 @@ class @FeatureManager
       lonSize = lonDiff
       latSize = lonDiff / @lonRatio
 
-    sizeFactor = 1  # 1 = a box with the camera and lookAt points on its borders
+    sizeFactor = 1.25  # 1 = a box with the camera and lookAt points on its borders
     latSize *= sizeFactor
     lonSize *= sizeFactor
 
