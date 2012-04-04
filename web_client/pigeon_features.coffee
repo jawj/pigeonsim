@@ -133,18 +133,18 @@ class this.Feature
 
 
 class @TubeStation extends Feature
-  alt: 120
+  alt: 100
   
 class @RailStation extends Feature
-  alt: 180
+  alt: 130
   nameTextOpts: {size: 3}
   
 class @CASALogo extends Feature
-  alt: 200
+  alt: 130
   nameTextOpts: {size: 1}
 
 class @Tweet extends Feature
-  alt: 240
+  alt: 160
   nameTextOpts: {size: 1, lineWidth: 3}
   descTextOpts: {size: 1}
 
@@ -182,9 +182,10 @@ class @LondonTweetSet extends FeatureSet
       
   update: ->
     load {url: 'http://128.40.47.96/~sjg/LondonTwitterStream/', json: yes}, (data) =>
-      tweets = data.results
       @clearFeatures()
-      @features = for t in tweets
+      dedupedTweets = {}
+      (dedupedTweets["#{t.lat}/#{t.lon}"] = t) for t in data.results
+      @features = for own k, t of dedupedTweets
         tweet = new Tweet("tweet-#{t.twitterID}", parseFloat(t.lat), parseFloat(t.lon))
         tweet.name = '@' + t.name
         tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n')

@@ -231,7 +231,7 @@
       TubeStation.__super__.constructor.apply(this, arguments);
     }
 
-    TubeStation.prototype.alt = 120;
+    TubeStation.prototype.alt = 100;
 
     return TubeStation;
 
@@ -245,7 +245,7 @@
       RailStation.__super__.constructor.apply(this, arguments);
     }
 
-    RailStation.prototype.alt = 180;
+    RailStation.prototype.alt = 130;
 
     RailStation.prototype.nameTextOpts = {
       size: 3
@@ -263,7 +263,7 @@
       CASALogo.__super__.constructor.apply(this, arguments);
     }
 
-    CASALogo.prototype.alt = 200;
+    CASALogo.prototype.alt = 130;
 
     CASALogo.prototype.nameTextOpts = {
       size: 1
@@ -281,7 +281,7 @@
       Tweet.__super__.constructor.apply(this, arguments);
     }
 
-    Tweet.prototype.alt = 240;
+    Tweet.prototype.alt = 160;
 
     Tweet.prototype.nameTextOpts = {
       size: 1,
@@ -372,14 +372,20 @@
         url: 'http://128.40.47.96/~sjg/LondonTwitterStream/',
         json: true
       }, function(data) {
-        var t, tweet, tweets;
-        tweets = data.results;
+        var dedupedTweets, k, t, tweet, _i, _len, _ref;
         _this.clearFeatures();
+        dedupedTweets = {};
+        _ref = data.results;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          t = _ref[_i];
+          dedupedTweets["" + t.lat + "/" + t.lon] = t;
+        }
         return _this.features = (function() {
-          var _i, _len, _results;
+          var _results;
           _results = [];
-          for (_i = 0, _len = tweets.length; _i < _len; _i++) {
-            t = tweets[_i];
+          for (k in dedupedTweets) {
+            if (!__hasProp.call(dedupedTweets, k)) continue;
+            t = dedupedTweets[k];
             tweet = new Tweet("tweet-" + t.twitterID, parseFloat(t.lat), parseFloat(t.lon));
             tweet.name = '@' + t.name;
             tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n');
