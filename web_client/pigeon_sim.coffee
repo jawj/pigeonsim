@@ -198,6 +198,8 @@ window.onload = ->
     fm = new FeatureManager(ge, lonRatio)
     tss = new TubeStationSet(fm)
     rss = new RailStationSet(fm)
+    cls = new CASALogoSet(fm)
+    lts = new LondonTweetSet(fm)
     
     animTick()
     google.earth.addEventListener(ge, 'frameend', animTick)

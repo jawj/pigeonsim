@@ -236,7 +236,7 @@
       };
     };
     earthInitCallback = function(instance) {
-      var rss, tss;
+      var cls, lts, rss, tss;
       window.ge = ge = instance;
       console.log("Google Earth plugin v" + (ge.getPluginVersion()) + ", API v" + (ge.getApiVersion()));
       addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION);
@@ -265,6 +265,8 @@
       fm = new FeatureManager(ge, lonRatio);
       tss = new TubeStationSet(fm);
       rss = new RailStationSet(fm);
+      cls = new CASALogoSet(fm);
+      lts = new LondonTweetSet(fm);
       animTick();
       google.earth.addEventListener(ge, 'frameend', animTick);
       return connect();
