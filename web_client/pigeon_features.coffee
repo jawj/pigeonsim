@@ -140,7 +140,7 @@ class @RailStation extends Feature
   nameTextOpts: {size: 3}
   
 class @CASALogo extends Feature
-  alt: 130
+  alt: 200
   nameTextOpts: {size: 1}
 
 class @Tweet extends Feature
@@ -184,11 +184,12 @@ class @LondonTweetSet extends FeatureSet
     load {url: 'http://128.40.47.96/~sjg/LondonTwitterStream/', json: yes}, (data) =>
       @clearFeatures()
       dedupedTweets = {}
-      for t in data.results
-        dedupedTweets["#{t.lat}/#{t.lon}"] = t if t.twitterPost.match(/london/i)
+      for t, i in data.results.reverse()
+        dedupedTweets["#{t.lat}/#{t.lon}"] = t
+        break if i > 150
       @features = for own k, t of dedupedTweets
         tweet = new Tweet("tweet-#{t.twitterID}", parseFloat(t.lat), parseFloat(t.lon))
-        tweet.name = '@' + t.name
+        tweet.name = "@#{t.name} — #{t.dateT.split(' ')[1]}" 
         tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n')
         @addFeature(tweet)
 

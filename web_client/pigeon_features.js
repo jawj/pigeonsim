@@ -263,7 +263,7 @@
       CASALogo.__super__.constructor.apply(this, arguments);
     }
 
-    CASALogo.prototype.alt = 130;
+    CASALogo.prototype.alt = 200;
 
     CASALogo.prototype.nameTextOpts = {
       size: 1
@@ -372,15 +372,14 @@
         url: 'http://128.40.47.96/~sjg/LondonTwitterStream/',
         json: true
       }, function(data) {
-        var dedupedTweets, k, t, tweet, _i, _len, _ref;
+        var dedupedTweets, i, k, t, tweet, _len, _ref;
         _this.clearFeatures();
         dedupedTweets = {};
-        _ref = data.results;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          t = _ref[_i];
-          if (t.twitterPost.match(/london/i)) {
-            dedupedTweets["" + t.lat + "/" + t.lon] = t;
-          }
+        _ref = data.results.reverse();
+        for (i = 0, _len = _ref.length; i < _len; i++) {
+          t = _ref[i];
+          dedupedTweets["" + t.lat + "/" + t.lon] = t;
+          if (i > 150) break;
         }
         return _this.features = (function() {
           var _results;
@@ -389,7 +388,7 @@
             if (!__hasProp.call(dedupedTweets, k)) continue;
             t = dedupedTweets[k];
             tweet = new Tweet("tweet-" + t.twitterID, parseFloat(t.lat), parseFloat(t.lon));
-            tweet.name = '@' + t.name;
+            tweet.name = "@" + t.name + " — " + (t.dateT.split(' ')[1]);
             tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n');
             _results.push(this.addFeature(tweet));
           }
