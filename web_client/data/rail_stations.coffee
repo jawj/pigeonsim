@@ -1118,7 +1118,6 @@
   HIP,Highams Park,51.60835,-0.000196
   HIG,Highbridge & Burnham-on-Sea,51.21815,-2.972163
   HII,Highbury & Islington,51.546088,-0.103741
-  HHY,Highbury & Islington,51.546178,-0.103737
   HTO,Hightown,53.525121,-3.057065
   HLB,Hildenborough,51.214482,0.227617
   HLF,Hillfoot,55.920085,-4.320259
@@ -2604,3 +2603,4 @@
   CAC,Caldercruix,55.887937,-3.887701"""
 
 # SPL,London St Pancras International LL,51.532168,-0.127317
+# HHY,Highbury & Islington,51.546178,-0.103737

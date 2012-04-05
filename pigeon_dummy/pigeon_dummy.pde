@@ -4,6 +4,7 @@ import org.webbitserver.*;
 
 int wsPort = 8888;
 boolean mousedown = false;
+int mouseXOffset;
 WebSocketP5 ws;
 
 void setup() {
@@ -12,7 +13,7 @@ void setup() {
 
 void draw() {
   if (! mousedown) return;
-  String data = "{\"roll\":" + (mouseX - width / 2) + ",\"dive\":0,\"flap\":0}";
+  String data = "{\"roll\":" + ((mouseXOffset - mouseX) / 2) + ",\"dive\":0,\"flap\":0}";
   ws.broadcast(data);
 }
 
@@ -31,6 +32,7 @@ void websocketOnClosed(WebSocketConnection c) {
 
 void mousePressed() {
   mousedown = true;
+  mouseXOffset = mouseX;
 }
 
 void mouseReleased() {

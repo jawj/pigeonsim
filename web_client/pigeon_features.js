@@ -25,7 +25,7 @@
     xhr.onreadystatechange = function() {
       var obj;
       if (xhr.readyState === 4) {
-        obj = opts.json != null ? JSON.parse(xhr.responseText) : opts.xml != null ? xhr.responseXML : xhr.responseText;
+        obj = opts.type === 'json' ? JSON.parse(xhr.responseText) : opts.type === 'xml' ? xhr.responseXML : xhr.responseText;
         return callback(obj);
       }
     };
@@ -49,9 +49,10 @@
 
   this.FeatureManager = (function() {
 
-    function FeatureManager(ge, lonRatio) {
+    function FeatureManager(ge, lonRatio, params) {
       this.ge = ge;
       this.lonRatio = lonRatio;
+      this.params = params;
       this.featureTree = new RTree();
       this.visibleFeatures = {};
       this.updateMoment = 0;
@@ -98,24 +99,19 @@
       midLon = (cam.lon + lookLon) / 2;
       latDiff = Math.abs(cam.lat - midLat);
       lonDiff = Math.abs(cam.lon - midLon);
-      if (latDiff > lonDiff * this.lonRatio) {
-        latSize = latDiff;
-        lonSize = latDiff * this.lonRatio;
-      } else {
-        lonSize = lonDiff;
-        latSize = lonDiff / this.lonRatio;
-      }
-      sizeFactor = 1.25;
-      latSize *= sizeFactor;
-      lonSize *= sizeFactor;
+      sizeFactor = 1.2;
+      latSize = Math.max(latDiff, lonDiff / this.lonRatio) * sizeFactor;
+      lonSize = latSize * this.lonRatio;
       lat1 = midLat - latSize;
       lat2 = midLat + latSize;
       lon1 = midLon - lonSize;
       lon2 = midLon + lonSize;
-      if (box) ge.getFeatures().removeChild(box);
-      kml = "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document><Placemark><name>lookAt</name><Point><coordinates>" + lookLon + "," + lookLat + ",0</coordinates></Point></Placemark><Placemark><name>camera</name><Point><coordinates>" + cam.lon + "," + cam.lat + ",0</coordinates></Point></Placemark><Placemark><name>middle</name><Point><coordinates>" + midLon + "," + midLat + ",0</coordinates></Point></Placemark><Placemark><LineString><altitudeMode>absolute</altitudeMode><coordinates>" + lon1 + "," + lat1 + ",100 " + lon1 + "," + lat2 + ",100 " + lon2 + "," + lat2 + ",100 " + lon2 + "," + lat1 + ",50 " + lon1 + "," + lat1 + ",100</coordinates></LineString></Placemark></Document></kml>";
-      box = ge.parseKml(kml);
-      ge.getFeatures().appendChild(box);
+      if (this.params.debugBox) {
+        if (box) ge.getFeatures().removeChild(box);
+        kml = "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document><Placemark><name>lookAt</name><Point><coordinates>" + lookLon + "," + lookLat + ",0</coordinates></Point></Placemark><Placemark><name>camera</name><Point><coordinates>" + cam.lon + "," + cam.lat + ",0</coordinates></Point></Placemark><Placemark><name>middle</name><Point><coordinates>" + midLon + "," + midLat + ",0</coordinates></Point></Placemark><Placemark><LineString><altitudeMode>absolute</altitudeMode><coordinates>" + lon1 + "," + lat1 + ",100 " + lon1 + "," + lat2 + ",100 " + lon2 + "," + lat2 + ",100 " + lon2 + "," + lat1 + ",50 " + lon1 + "," + lat1 + ",100</coordinates></LineString></Placemark></Document></kml>";
+        box = ge.parseKml(kml);
+        ge.getFeatures().appendChild(box);
+      }
       _ref = this.featuresInBBox(lat1, lon1, lat2, lon2);
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         f = _ref[_i];
@@ -139,7 +135,7 @@
 
     function FeatureSet(featureManager) {
       this.featureManager = featureManager;
-      this.features = {};
+      window.f = this.features = {};
     }
 
     FeatureSet.prototype.addFeature = function(f) {
@@ -147,17 +143,18 @@
       return this.featureManager.addFeature(f);
     };
 
-    FeatureSet.prototype.removeFeature = function() {
+    FeatureSet.prototype.removeFeature = function(f) {
       this.featureManager.removeFeature(f);
       return delete this.features[f.id];
     };
 
     FeatureSet.prototype.clearFeatures = function() {
-      var f, _ref, _results;
+      var f, k, _ref, _results;
       _ref = this.features;
       _results = [];
-      for (f in _ref) {
-        if (!__hasProp.call(_ref, f)) continue;
+      for (k in _ref) {
+        if (!__hasProp.call(_ref, k)) continue;
+        f = _ref[k];
         _results.push(this.removeFeature(f));
       }
       return _results;
@@ -220,79 +217,6 @@
 
   })();
 
-  this.TubeStation = (function(_super) {
-
-    __extends(TubeStation, _super);
-
-    function TubeStation() {
-      TubeStation.__super__.constructor.apply(this, arguments);
-    }
-
-    TubeStation.prototype.alt = 100;
-
-    return TubeStation;
-
-  })(Feature);
-
-  this.RailStation = (function(_super) {
-
-    __extends(RailStation, _super);
-
-    function RailStation() {
-      RailStation.__super__.constructor.apply(this, arguments);
-    }
-
-    RailStation.prototype.alt = 130;
-
-    RailStation.prototype.nameTextOpts = {
-      size: 3
-    };
-
-    return RailStation;
-
-  })(Feature);
-
-  this.CASALogo = (function(_super) {
-
-    __extends(CASALogo, _super);
-
-    function CASALogo() {
-      CASALogo.__super__.constructor.apply(this, arguments);
-    }
-
-    CASALogo.prototype.alt = 200;
-
-    CASALogo.prototype.nameTextOpts = {
-      size: 1
-    };
-
-    return CASALogo;
-
-  })(Feature);
-
-  this.Tweet = (function(_super) {
-
-    __extends(Tweet, _super);
-
-    function Tweet() {
-      Tweet.__super__.constructor.apply(this, arguments);
-    }
-
-    Tweet.prototype.alt = 160;
-
-    Tweet.prototype.nameTextOpts = {
-      size: 1,
-      lineWidth: 3
-    };
-
-    Tweet.prototype.descTextOpts = {
-      size: 1
-    };
-
-    return Tweet;
-
-  })(Feature);
-
   this.RailStationSet = (function(_super) {
 
     __extends(RailStationSet, _super);
@@ -313,6 +237,24 @@
     return RailStationSet;
 
   })(FeatureSet);
+
+  this.RailStation = (function(_super) {
+
+    __extends(RailStation, _super);
+
+    function RailStation() {
+      RailStation.__super__.constructor.apply(this, arguments);
+    }
+
+    RailStation.prototype.alt = 130;
+
+    RailStation.prototype.nameTextOpts = {
+      size: 3
+    };
+
+    return RailStation;
+
+  })(Feature);
 
   this.TubeStationSet = (function(_super) {
 
@@ -335,6 +277,25 @@
 
   })(FeatureSet);
 
+  this.TubeStation = (function(_super) {
+
+    __extends(TubeStation, _super);
+
+    function TubeStation() {
+      TubeStation.__super__.constructor.apply(this, arguments);
+    }
+
+    TubeStation.prototype.alt = 100;
+
+    TubeStation.prototype.nameTextOpts = {
+      size: 2,
+      lineWidth: 1
+    };
+
+    return TubeStation;
+
+  })(Feature);
+
   this.CASALogoSet = (function(_super) {
 
     __extends(CASALogoSet, _super);
@@ -351,6 +312,25 @@
 
   })(FeatureSet);
 
+  this.CASALogo = (function(_super) {
+
+    __extends(CASALogo, _super);
+
+    function CASALogo() {
+      CASALogo.__super__.constructor.apply(this, arguments);
+    }
+
+    CASALogo.prototype.alt = 220;
+
+    CASALogo.prototype.nameTextOpts = {
+      size: 1,
+      lineWidth: 1
+    };
+
+    return CASALogo;
+
+  })(Feature);
+
   this.LondonTweetSet = (function(_super) {
     var lineChars;
 
@@ -364,12 +344,13 @@
     }
 
     LondonTweetSet.prototype.update = function() {
-      var _this = this;
-      return load({
-        url: 'http://128.40.47.96/~sjg/LondonTwitterStream/',
-        json: true
+      var self,
+        _this = this;
+      load({
+        url: 'http://www.casa.ucl.ac.uk/tom/ajax-live/lon_last_hour.json',
+        type: 'json'
       }, function(data) {
-        var dedupedTweets, i, k, t, tweet, _len, _ref;
+        var dedupedTweets, i, k, t, tweet, _len, _ref, _results;
         _this.clearFeatures();
         dedupedTweets = {};
         _ref = data.results.reverse();
@@ -378,24 +359,46 @@
           dedupedTweets["" + t.lat + "/" + t.lon] = t;
           if (i > 150) break;
         }
-        return _this.features = (function() {
-          var _results;
-          _results = [];
-          for (k in dedupedTweets) {
-            if (!__hasProp.call(dedupedTweets, k)) continue;
-            t = dedupedTweets[k];
-            tweet = new Tweet("tweet-" + t.twitterID, parseFloat(t.lat), parseFloat(t.lon));
-            tweet.name = "@" + t.name + " — " + (t.dateT.split(' ')[1]);
-            tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n');
-            _results.push(this.addFeature(tweet));
-          }
-          return _results;
-        }).call(_this);
+        _results = [];
+        for (k in dedupedTweets) {
+          if (!__hasProp.call(dedupedTweets, k)) continue;
+          t = dedupedTweets[k];
+          tweet = new Tweet("tweet-" + t.twitterID, parseFloat(t.lat), parseFloat(t.lon));
+          tweet.name = "@" + t.name + " — " + (t.dateT.split(' ')[1]);
+          tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n');
+          _results.push(_this.addFeature(tweet));
+        }
+        return _results;
       });
+      self = arguments.callee.bind(this);
+      return setTimeout(self, 5 * 60 * 1000);
     };
 
     return LondonTweetSet;
 
   })(FeatureSet);
+
+  this.Tweet = (function(_super) {
+
+    __extends(Tweet, _super);
+
+    function Tweet() {
+      Tweet.__super__.constructor.apply(this, arguments);
+    }
+
+    Tweet.prototype.alt = 160;
+
+    Tweet.prototype.nameTextOpts = {
+      size: 1
+    };
+
+    Tweet.prototype.descTextOpts = {
+      size: 1,
+      lineWidth: 1
+    };
+
+    return Tweet;
+
+  })(Feature);
 
 }).call(this);

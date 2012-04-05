@@ -8,8 +8,8 @@ load = (opts, callback) ->
   xhr = new XMLHttpRequest()
   xhr.onreadystatechange = ->
     if xhr.readyState is 4
-      obj = if opts.json? then JSON.parse(xhr.responseText)
-      else if opts.xml? then xhr.responseXML
+      obj = if opts.type is 'json' then JSON.parse(xhr.responseText)
+      else if opts.type is 'xml' then xhr.responseXML
       else xhr.responseText
       callback(obj)
   xhr.open(opts.method, url, yes)
@@ -22,8 +22,9 @@ mergeObj = (o1, o2) ->
 oneEightyOverPi = 180 / Math.PI
 box = null
 
+
 class @FeatureManager
-  constructor: (@ge, @lonRatio) ->
+  constructor: (@ge, @lonRatio, @params) ->
     @featureTree = new RTree()
     @visibleFeatures = {}
     @updateMoment = 0
@@ -60,29 +61,20 @@ class @FeatureManager
     latDiff = Math.abs(cam.lat - midLat)
     lonDiff = Math.abs(cam.lon - midLon)
     
-    if latDiff > lonDiff * @lonRatio
-      latSize = latDiff
-      lonSize = latDiff * @lonRatio
-    else
-      lonSize = lonDiff
-      latSize = lonDiff / @lonRatio
-
-    sizeFactor = 1.25  # 1 = a box with the camera and lookAt points on its borders
-    latSize *= sizeFactor
-    lonSize *= sizeFactor
-
+    sizeFactor = 1.2  # 1 = a box with the camera and lookAt points on its borders
+    latSize = Math.max(latDiff, lonDiff / @lonRatio) * sizeFactor
+    lonSize = latSize * @lonRatio
+    
     lat1 = midLat - latSize
     lat2 = midLat + latSize
     lon1 = midLon - lonSize
     lon2 = midLon + lonSize
     
-    
-    ge.getFeatures().removeChild(box) if box
-    kml = "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document><Placemark><name>lookAt</name><Point><coordinates>#{lookLon},#{lookLat},0</coordinates></Point></Placemark><Placemark><name>camera</name><Point><coordinates>#{cam.lon},#{cam.lat},0</coordinates></Point></Placemark><Placemark><name>middle</name><Point><coordinates>#{midLon},#{midLat},0</coordinates></Point></Placemark><Placemark><LineString><altitudeMode>absolute</altitudeMode><coordinates>#{lon1},#{lat1},100 #{lon1},#{lat2},100 #{lon2},#{lat2},100 #{lon2},#{lat1},50 #{lon1},#{lat1},100</coordinates></LineString></Placemark></Document></kml>"
-    box = ge.parseKml(kml)
-    ge.getFeatures().appendChild(box)
-    #console.log(kml)
-    
+    if @params.debugBox
+      ge.getFeatures().removeChild(box) if box
+      kml = "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document><Placemark><name>lookAt</name><Point><coordinates>#{lookLon},#{lookLat},0</coordinates></Point></Placemark><Placemark><name>camera</name><Point><coordinates>#{cam.lon},#{cam.lat},0</coordinates></Point></Placemark><Placemark><name>middle</name><Point><coordinates>#{midLon},#{midLat},0</coordinates></Point></Placemark><Placemark><LineString><altitudeMode>absolute</altitudeMode><coordinates>#{lon1},#{lat1},100 #{lon1},#{lat2},100 #{lon2},#{lat2},100 #{lon2},#{lat1},50 #{lon1},#{lat1},100</coordinates></LineString></Placemark></Document></kml>"
+      box = ge.parseKml(kml)
+      ge.getFeatures().appendChild(box)
     
     for f in @featuresInBBox(lat1, lon1, lat2, lon2)
       @showFeature(f, cam)
@@ -93,22 +85,22 @@ class @FeatureManager
     
     @updateMoment += 1
 
+
 class @FeatureSet
   constructor: (@featureManager) ->
-    @features = {}
+    window.f = @features = {}
   
   addFeature: (f) ->
     @features[f.id] = f
     @featureManager.addFeature(f)
     
-  removeFeature: () ->
+  removeFeature: (f) ->
     @featureManager.removeFeature(f)
     delete @features[f.id]
   
-  clearFeatures: -> @removeFeature(f) for own f of @features
-
-    
-class this.Feature
+  clearFeatures: -> @removeFeature(f) for own k, f of @features
+  
+class @Feature
   alt: 100
   nameTextOpts: {}
   descTextOpts: {}
@@ -132,22 +124,6 @@ class this.Feature
       delete @geNode
 
 
-class @TubeStation extends Feature
-  alt: 100
-  
-class @RailStation extends Feature
-  alt: 130
-  nameTextOpts: {size: 3}
-  
-class @CASALogo extends Feature
-  alt: 200
-  nameTextOpts: {size: 1}
-
-class @Tweet extends Feature
-  alt: 160
-  nameTextOpts: {size: 1, lineWidth: 3}
-  descTextOpts: {size: 1}
-
 class @RailStationSet extends FeatureSet
   constructor: (featureManager) ->
     super(featureManager)
@@ -156,6 +132,11 @@ class @RailStationSet extends FeatureSet
       station = new RailStation("rail-#{code}", parseFloat(lat), parseFloat(lon))
       station.name = "\uF001 #{name}"
       @addFeature(station)
+
+class @RailStation extends Feature
+  alt: 130
+  nameTextOpts: {size: 3}
+
 
 class @TubeStationSet extends FeatureSet
   constructor: (featureManager) ->
@@ -166,12 +147,22 @@ class @TubeStationSet extends FeatureSet
       station.name = "\uF000 #{name}"
       @addFeature(station)
 
+class @TubeStation extends Feature
+  alt: 100
+  nameTextOpts: {size: 2, lineWidth: 1}
+
+
 class @CASALogoSet extends FeatureSet
   constructor: (featureManager) ->
     super(featureManager)
     logo = new CASALogo("casa-logo", 51.52192375643773, -0.13593167066574097)
     logo.name = "\uF002"
     @addFeature(logo)
+
+class @CASALogo extends Feature
+  alt: 220
+  nameTextOpts: {size: 1, lineWidth: 1}
+  
 
 class @LondonTweetSet extends FeatureSet
   lineChars = 35
@@ -181,15 +172,22 @@ class @LondonTweetSet extends FeatureSet
     @update()
       
   update: ->
-    load {url: 'http://128.40.47.96/~sjg/LondonTwitterStream/', json: yes}, (data) =>
+    load {url: 'http://www.casa.ucl.ac.uk/tom/ajax-live/lon_last_hour.json', type: 'json'}, (data) =>
       @clearFeatures()
       dedupedTweets = {}
       for t, i in data.results.reverse()
         dedupedTweets["#{t.lat}/#{t.lon}"] = t
         break if i > 150
-      @features = for own k, t of dedupedTweets
+      for own k, t of dedupedTweets
         tweet = new Tweet("tweet-#{t.twitterID}", parseFloat(t.lat), parseFloat(t.lon))
         tweet.name = "@#{t.name} — #{t.dateT.split(' ')[1]}" 
-        tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n')
+        tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n')  # bug: adds an extra newlines where there's one already
         @addFeature(tweet)
+    self = arguments.callee.bind(@)
+    setTimeout(self, 5 * 60 * 1000)  # update every 5 mins
+
+class @Tweet extends Feature
+  alt: 160
+  nameTextOpts: {size: 1}
+  descTextOpts: {size: 1, lineWidth: 1}
 

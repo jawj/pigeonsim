@@ -87,6 +87,7 @@
       sun: 0,
       timeControl: 0,
       featureSkip: 5,
+      debugBox: 0,
       reconnectWait: 2,
       ws: 'ws://127.0.0.1:8888/p5websocket'
     };
@@ -253,7 +254,7 @@
           s.line('Next session: Steve Gray', bearing: -params.startHeading, size: 2, lineWidth: 2)    
           ge.getFeatures().appendChild(ge.parseKml(s.kml()))
       */
-      fm = new FeatureManager(ge, lonRatio);
+      fm = new FeatureManager(ge, lonRatio, params);
       tss = new TubeStationSet(fm);
       rss = new RailStationSet(fm);
       cls = new CASALogoSet(fm);

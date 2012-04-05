@@ -270,8 +270,6 @@
   XPRD,M,-0.29525630015897,51.57203799181500,Preston Road,Preston Road fast
   XLRD,H,-0.21777930179215,51.51354359389710,Latimer Road
   XGRD,H,-0.22674832920358,51.50195219730120,Goldhawk Road
-  PADc,H,-0.1774,51.5173,Paddington Circle
-  PADs,H,-0.1774,51.5173,Paddington H & C
   XXX5,B,-0.207778,51.533611,North Sidings between Queen's park and
   XXX9,B,-0.207778,51.533611,Queen's Park North Sidings
   XXX6,B,-0.104722,51.498333,London Road Depot
@@ -279,3 +277,5 @@
   XKRI,B,-0.2208,51.5342,Kensal Rise"""
   
 # MON,DH,-0.08894273274156,51.51334781918420,Monument
+# PADc,H,-0.1774,51.5173,Paddington Circle
+# PADs,H,-0.1774,51.5173,Paddington H & C

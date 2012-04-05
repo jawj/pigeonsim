@@ -38,6 +38,7 @@ window.onload = ->
     sun:            0       # show sun
     timeControl:    0       # show Google Earth time controller (if sun is 1)
     featureSkip:    5       # update features every n movement frames
+    debugBox:       0       # show the box that determines visibility of features
     
     reconnectWait:  2       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
@@ -188,7 +189,7 @@ window.onload = ->
     ge.getFeatures().appendChild(ge.parseKml(s.kml()))
     ###
     
-    fm = new FeatureManager(ge, lonRatio)
+    fm  = new FeatureManager(ge, lonRatio, params)
     tss = new TubeStationSet(fm)
     rss = new RailStationSet(fm)
     cls = new CASALogoSet(fm)
