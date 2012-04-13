@@ -1,6 +1,6 @@
 
+Add feature selection to params
 Add Big Ben (time)
-Add Senate House (now & next)
 Add Tower Bridge (next lift time)
 Add tide gauges
 Add pollution sensors
@@ -12,3 +12,4 @@ Add a keypress for home, and for reload (i.e. 'soft' and 'hard' reset)? (in Proc
 Impose upper altitude limit?
 Add KML region and level of detail to each feature?
 Add mouse or keypress navigation in the HTML?
+

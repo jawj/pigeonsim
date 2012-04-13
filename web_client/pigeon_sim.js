@@ -82,7 +82,7 @@
       minAlt: 5,
       speed: 3,
       maxSpeed: 6,
-      cruiseTilt: 85,
+      cruiseTilt: 88,
       diveSpeed: 0.15,
       diveAccel: 0.05,
       diveDecel: 0.05,
@@ -95,7 +95,7 @@
       atmosphere: 1,
       sun: 0,
       timeControl: 0,
-      featureSkip: 5,
+      featureSkip: 10,
       debugBox: 0,
       reconnectWait: 2,
       ws: 'ws://127.0.0.1:8888/p5websocket'
@@ -122,7 +122,8 @@
       }
       return _results;
     })(), titleStatus = _ref2[0], altStatus = _ref2[1], debugDataStatus = _ref2[2], debugEarthAPIStatus = _ref2[3], debugTicksStatus = _ref2[4], headingStatus = _ref2[5];
-    ge = cam = seenCam = flown = animTimeout = fm = null;
+    cam = {};
+    ge = seenCam = flown = animTimeout = fm = null;
     animTicks = camMoves = inMsgs = 0;
     lastFlap = flapAmount = 0;
     pi = Math.PI;
@@ -134,14 +135,12 @@
     lonRatio = 1 / Math.cos(params.startLat * piOver180);
     lonFactor = latFactor * lonRatio;
     resetCam = function() {
-      cam = {
-        lat: params.startLat,
-        lon: params.startLon,
-        heading: params.startHeading,
-        alt: params.startAlt,
-        roll: 0.0000001,
-        tilt: params.cruiseTilt
-      };
+      cam.lat = params.startLat;
+      cam.lon = params.startLon;
+      cam.heading = params.startHeading;
+      cam.alt = params.startAlt;
+      cam.roll = 0.0000001;
+      cam.tilt = params.cruiseTilt;
       return flown = false;
     };
     moveCam = function() {
@@ -245,7 +244,7 @@
       altStatus.innerHTML = "" + (Math.round(cam.alt)) + "m";
       moved = moveCam();
       if (animTicks % params.featureSkip === 0) {
-        fm.update(cam);
+        fm.update();
       }
       if (animTimeout != null) {
         clearTimeout(animTimeout);
@@ -281,7 +280,7 @@
       };
     };
     earthInitCallback = function(instance) {
-      var ccs, cls, lts, rss;
+      var ccs, lts, rss;
       window.ge = ge = instance;
       console.log("Google Earth plugin v" + (ge.getPluginVersion()) + ", API v" + (ge.getApiVersion()));
       addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION);
@@ -291,10 +290,9 @@
       ge.getOptions().setFlyToSpeed(ge.SPEED_TELEPORT);
       resetCam();
       ge.getWindow().setVisibility(true);
-      fm = new FeatureManager(ge, lonRatio, params);
+      fm = new FeatureManager(ge, lonRatio, cam, params);
       rss = new RailStationSet(fm);
-      cls = new CASALogoSet(fm);
-      ccs = new CASAConfSet(fm);
+      ccs = new MiscSet(fm);
       lts = new LondonTweetSet(fm);
       animTick();
       google.earth.addEventListener(ge, 'frameend', animTick);

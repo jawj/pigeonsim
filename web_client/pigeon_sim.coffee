@@ -24,7 +24,7 @@ window.onload = ->
     minAlt:         5       # metres above "sea level"
     speed:          3       # = when flying straight
     maxSpeed:       6       # = when diving
-    cruiseTilt:    85       # degrees up from straight down
+    cruiseTilt:    88       # degrees up from straight down
     diveSpeed:      0.15    # speed multiplier for diving (dive speed also a function of lean angle and general speed)
     diveAccel:      0.05    # rate at which diving increases general speed
     diveDecel:      0.05    # rate at which speed decreases again after levelling out
@@ -37,7 +37,7 @@ window.onload = ->
     atmosphere:     1       # show atmosphere
     sun:            0       # show sun
     timeControl:    0       # show Google Earth time controller (if sun is 1)
-    featureSkip:    5       # update features every n movement frames
+    featureSkip:   10       # update features every n movement frames
     debugBox:       0       # show the box that determines visibility of features
     
     reconnectWait:  2       # seconds to wait between connection attempts
@@ -52,8 +52,9 @@ window.onload = ->
   
   [titleStatus, altStatus, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, headingStatus] =
     (el(id) for id in w('title alt debugData debugEarthAPI debugTicks heading'))
-
-  ge = cam = seenCam = flown = animTimeout = fm = null
+    
+  cam = {}
+  ge = seenCam = flown = animTimeout = fm = null
   animTicks = camMoves = inMsgs = 0
   lastFlap = flapAmount = 0
   
@@ -68,13 +69,12 @@ window.onload = ->
   lonFactor   = latFactor * lonRatio
   
   resetCam = ->
-    cam = 
-      lat:      params.startLat
-      lon:      params.startLon
-      heading:  params.startHeading
-      alt:      params.startAlt
-      roll:     0.0000001  # a plain 0 is ignored
-      tilt:     params.cruiseTilt
+    cam.lat     = params.startLat
+    cam.lon     = params.startLon
+    cam.heading = params.startHeading
+    cam.alt     = params.startAlt
+    cam.roll    = 0.0000001  # a plain 0 is ignored
+    cam.tilt    = params.cruiseTilt
     flown = no
   
   moveCam = ->
@@ -147,7 +147,7 @@ window.onload = ->
     altStatus.innerHTML        = "#{Math.round(cam.alt)}m"
     
     moved = moveCam()
-    fm.update(cam) if animTicks % params.featureSkip is 0
+    fm.update() if animTicks % params.featureSkip is 0
     
     clearTimeout(animTimeout) if animTimeout?
     animTimeout = null
@@ -181,11 +181,10 @@ window.onload = ->
     resetCam()
     ge.getWindow().setVisibility(yes)
     
-    fm  = new FeatureManager(ge, lonRatio, params)
+    fm  = new FeatureManager(ge, lonRatio, cam, params)
     #tss = new TubeStationSet(fm)
     rss = new RailStationSet(fm)
-    cls = new CASALogoSet(fm)
-    ccs = new CASAConfSet(fm)
+    ccs = new MiscSet(fm)
     lts = new LondonTweetSet(fm)
     
     animTick()

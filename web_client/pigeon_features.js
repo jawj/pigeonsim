@@ -54,30 +54,33 @@
 
     FeatureManager.name = 'FeatureManager';
 
-    function FeatureManager(ge, lonRatio, params) {
+    function FeatureManager(ge, lonRatio, cam, params) {
       this.ge = ge;
       this.lonRatio = lonRatio;
+      this.cam = cam;
       this.params = params;
-      this.featureTree = new RTree();
+      this.featureTree = new RTree(10);
       this.visibleFeatures = {};
       this.updateMoment = 0;
     }
 
     FeatureManager.prototype.addFeature = function(f) {
+      f.fm = this;
       return this.featureTree.insert(f.rect(), f);
     };
 
     FeatureManager.prototype.removeFeature = function(f) {
       this.hideFeature(f);
-      return this.featureTree.remove(f.rect(), f);
+      this.featureTree.remove(f.rect(), f);
+      return delete f.fm;
     };
 
-    FeatureManager.prototype.showFeature = function(f, cam) {
+    FeatureManager.prototype.showFeature = function(f) {
       if (this.visibleFeatures[f.id] != null) {
         return false;
       }
       this.visibleFeatures[f.id] = f;
-      f.show(this.ge, cam);
+      f.show();
       return true;
     };
 
@@ -86,7 +89,7 @@
         return false;
       }
       delete this.visibleFeatures[f.id];
-      f.hide(this.ge);
+      f.hide();
       return true;
     };
 
@@ -99,8 +102,9 @@
       });
     };
 
-    FeatureManager.prototype.update = function(cam) {
-      var f, id, kml, lat1, lat2, latDiff, latSize, lon1, lon2, lonDiff, lonSize, lookAt, lookLat, lookLon, midLat, midLon, sizeFactor, _i, _len, _ref, _ref1;
+    FeatureManager.prototype.update = function() {
+      var cam, f, id, kml, lat1, lat2, latDiff, latSize, lon1, lon2, lonDiff, lonSize, lookAt, lookLat, lookLon, midLat, midLon, sizeFactor, _i, _len, _ref, _ref1;
+      cam = this.cam;
       lookAt = this.ge.getView().copyAsLookAt(ge.ALTITUDE_ABSOLUTE);
       lookLat = lookAt.getLatitude();
       lookLon = lookAt.getLongitude();
@@ -108,7 +112,7 @@
       midLon = (cam.lon + lookLon) / 2;
       latDiff = Math.abs(cam.lat - midLat);
       lonDiff = Math.abs(cam.lon - midLon);
-      sizeFactor = 1.2;
+      sizeFactor = 1.1;
       latSize = Math.max(latDiff, lonDiff / this.lonRatio) * sizeFactor;
       lonSize = latSize * this.lonRatio;
       lat1 = midLat - latSize;
@@ -117,16 +121,16 @@
       lon2 = midLon + lonSize;
       if (this.params.debugBox) {
         if (box) {
-          ge.getFeatures().removeChild(box);
+          this.ge.getFeatures().removeChild(box);
         }
         kml = "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document><Placemark><name>lookAt</name><Point><coordinates>" + lookLon + "," + lookLat + ",0</coordinates></Point></Placemark><Placemark><name>camera</name><Point><coordinates>" + cam.lon + "," + cam.lat + ",0</coordinates></Point></Placemark><Placemark><name>middle</name><Point><coordinates>" + midLon + "," + midLat + ",0</coordinates></Point></Placemark><Placemark><LineString><altitudeMode>absolute</altitudeMode><coordinates>" + lon1 + "," + lat1 + ",100 " + lon1 + "," + lat2 + ",100 " + lon2 + "," + lat2 + ",100 " + lon2 + "," + lat1 + ",50 " + lon1 + "," + lat1 + ",100</coordinates></LineString></Placemark></Document></kml>";
-        box = ge.parseKml(kml);
-        ge.getFeatures().appendChild(box);
+        box = this.ge.parseKml(kml);
+        this.ge.getFeatures().appendChild(box);
       }
       _ref = this.featuresInBBox(lat1, lon1, lat2, lon2);
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         f = _ref[_i];
-        this.showFeature(f, cam);
+        this.showFeature(f);
         f.updateMoment = this.updateMoment;
       }
       _ref1 = this.visibleFeatures;
@@ -204,8 +208,11 @@
       };
     };
 
-    Feature.prototype.show = function(ge, cam) {
-      var angleToCamDeg, angleToCamRad, st;
+    Feature.prototype.show = function() {
+      var angleToCamDeg, angleToCamRad, cam, fm, ge, geNode, st;
+      fm = this.fm;
+      cam = fm.cam;
+      ge = fm.ge;
       angleToCamRad = Math.atan2(this.lon - cam.lon, this.lat - cam.lat);
       angleToCamDeg = angleToCamRad * oneEightyOverPi;
       st = new SkyText(this.lat, this.lon, this.alt);
@@ -219,13 +226,15 @@
           bearing: angleToCamDeg
         }, this.descTextOpts));
       }
-      this.geNode = ge.parseKml(st.kml());
-      return ge.getFeatures().appendChild(this.geNode);
+      geNode = ge.parseKml(st.kml());
+      ge.getFeatures().appendChild(geNode);
+      this.hide();
+      return this.geNode = geNode;
     };
 
-    Feature.prototype.hide = function(ge) {
+    Feature.prototype.hide = function() {
       if (this.geNode != null) {
-        ge.getFeatures().removeChild(this.geNode);
+        this.fm.ge.getFeatures().removeChild(this.geNode);
         return delete this.geNode;
       }
     };
@@ -321,21 +330,26 @@
 
   })(Feature);
 
-  this.CASALogoSet = (function(_super) {
+  this.MiscSet = (function(_super) {
 
-    __extends(CASALogoSet, _super);
+    __extends(MiscSet, _super);
 
-    CASALogoSet.name = 'CASALogoSet';
+    MiscSet.name = 'MiscSet';
 
-    function CASALogoSet(featureManager) {
-      var logo;
-      CASALogoSet.__super__.constructor.call(this, featureManager);
+    function MiscSet(featureManager) {
+      var bb, conf, logo;
+      MiscSet.__super__.constructor.call(this, featureManager);
       logo = new CASALogo("casa-logo", 51.52192375643773, -0.13593167066574097);
-      logo.name = "\uF002";
       this.addFeature(logo);
+      conf = new CASAConf('casa-conf', 51.5210609212573, -0.1287245750427246);
+      conf.update();
+      this.addFeature(conf);
+      bb = new BigBen('big-ben', 51.5007286626542, -0.12459531426429749);
+      bb.update();
+      this.addFeature(bb);
     }
 
-    return CASALogoSet;
+    return MiscSet;
 
   })(FeatureSet);
 
@@ -356,51 +370,11 @@
       lineWidth: 1
     };
 
+    CASALogo.prototype.name = "\uF002";
+
     return CASALogo;
 
   })(Feature);
-
-  this.CASAConfSet = (function(_super) {
-
-    __extends(CASAConfSet, _super);
-
-    CASAConfSet.name = 'CASAConfSet';
-
-    function CASAConfSet(featureManager) {
-      CASAConfSet.__super__.constructor.call(this, featureManager);
-      this.conf = new CASAConf('casa-conf', 51.5210609212573, -0.1287245750427246);
-      this.conf.name = 'CASA Smart Cities';
-      this.update();
-      this.addFeature(this.conf);
-    }
-
-    CASAConfSet.prototype.update = function() {
-      var changed, d, d0, dayHrs, dayMs, desc, i, self, session, _i, _len, _ref;
-      d = new Date();
-      d0 = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      dayMs = d - d0;
-      dayHrs = dayMs / 1000 / 60 / 60;
-      _ref = this.schedule;
-      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-        session = _ref[i];
-        if (dayHrs < session[0]) {
-          desc = "Now:\t" + this.schedule[i - 1][1] + "\nNext:\t" + session[1];
-          break;
-        }
-      }
-      changed = this.conf.desc !== desc;
-      this.conf.desc = desc;
-      if (changed && (this.geNode != null)) {
-        this.hide();
-        this.show();
-      }
-      self = arguments.callee.bind(this);
-      return setTimeout(self, 1 * 60 * 1000);
-    };
-
-    return CASAConfSet;
-
-  })(FeatureSet);
 
   this.CASAConf = (function(_super) {
 
@@ -424,7 +398,67 @@
       lineWidth: 1
     };
 
+    CASAConf.prototype.name = 'CASA Smart Cities';
+
+    CASAConf.prototype.update = function() {
+      var changed, d, d0, dayHrs, dayMs, desc, i, self, session, _i, _len, _ref;
+      d = new Date();
+      d0 = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      dayMs = d - d0;
+      dayHrs = dayMs / 1000 / 60 / 60;
+      _ref = this.schedule;
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        session = _ref[i];
+        if (dayHrs < session[0]) {
+          desc = "Now:\t" + this.schedule[i - 1][1] + "\nNext:\t" + session[1];
+          break;
+        }
+      }
+      changed = this.desc !== desc;
+      this.desc = desc;
+      if (changed && (this.geNode != null)) {
+        this.show();
+      }
+      self = arguments.callee.bind(this);
+      if (this.interval == null) {
+        return this.interval = setInterval(self, 1 * 60 * 1000);
+      }
+    };
+
     return CASAConf;
+
+  })(Feature);
+
+  this.BigBen = (function(_super) {
+
+    __extends(BigBen, _super);
+
+    BigBen.name = 'BigBen';
+
+    function BigBen() {
+      return BigBen.__super__.constructor.apply(this, arguments);
+    }
+
+    BigBen.prototype.alt = 200;
+
+    BigBen.prototype.nameTextOpts = {
+      size: 3,
+      lineWidth: 3
+    };
+
+    BigBen.prototype.update = function() {
+      var self;
+      this.name = new Date().strftime('%H.%M');
+      if (this.geNode != null) {
+        this.show();
+      }
+      self = arguments.callee.bind(this);
+      if (this.interval == null) {
+        return this.interval = setInterval(self, 1 * 60 * 1000);
+      }
+    };
+
+    return BigBen;
 
   })(Feature);
 
@@ -456,9 +490,6 @@
         for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
           t = _ref[i];
           dedupedTweets["" + t.lat + "/" + t.lon] = t;
-          if (i > 150) {
-            break;
-          }
         }
         _results = [];
         for (k in dedupedTweets) {

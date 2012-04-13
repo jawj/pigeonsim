@@ -23,35 +23,39 @@ oneEightyOverPi = 180 / Math.PI
 box = null
 
 
+
 class @FeatureManager
-  constructor: (@ge, @lonRatio, @params) ->
-    @featureTree = new RTree()
+  constructor: (@ge, @lonRatio, @cam, @params) ->
+    @featureTree = new RTree(10)
     @visibleFeatures = {}
     @updateMoment = 0
     
   addFeature: (f) ->
+    f.fm = @
     @featureTree.insert(f.rect(), f)
     
   removeFeature: (f) ->
     @hideFeature(f)
     @featureTree.remove(f.rect(), f)
+    delete f.fm
   
-  showFeature: (f, cam) ->
+  showFeature: (f) ->
     return no if @visibleFeatures[f.id]?
     @visibleFeatures[f.id] = f
-    f.show(@ge, cam)
+    f.show()
     return yes
   
   hideFeature: (f) ->
     return no unless @visibleFeatures[f.id]?
     delete @visibleFeatures[f.id]
-    f.hide(@ge)
+    f.hide()
     return yes
   
   featuresInBBox: (lat1, lon1, lat2, lon2) ->  # ones must be SW of (i.e. lower than) twos
     @featureTree.search({x: lon1, y: lat1, w: lon2 - lon1, h: lat2 - lat1})
     
-  update: (cam) ->
+  update: ->
+    cam = @cam
     lookAt = @ge.getView().copyAsLookAt(ge.ALTITUDE_ABSOLUTE)
     lookLat = lookAt.getLatitude()
     lookLon = lookAt.getLongitude()
@@ -61,7 +65,7 @@ class @FeatureManager
     latDiff = Math.abs(cam.lat - midLat)
     lonDiff = Math.abs(cam.lon - midLon)
     
-    sizeFactor = 1.2  # 1 = a box with the camera and lookAt points on its borders
+    sizeFactor = 1.1  # 1 = a box with the camera and lookAt points on its borders
     latSize = Math.max(latDiff, lonDiff / @lonRatio) * sizeFactor
     lonSize = latSize * @lonRatio
     
@@ -71,19 +75,20 @@ class @FeatureManager
     lon2 = midLon + lonSize
     
     if @params.debugBox
-      ge.getFeatures().removeChild(box) if box
+      @ge.getFeatures().removeChild(box) if box
       kml = "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'><Document><Placemark><name>lookAt</name><Point><coordinates>#{lookLon},#{lookLat},0</coordinates></Point></Placemark><Placemark><name>camera</name><Point><coordinates>#{cam.lon},#{cam.lat},0</coordinates></Point></Placemark><Placemark><name>middle</name><Point><coordinates>#{midLon},#{midLat},0</coordinates></Point></Placemark><Placemark><LineString><altitudeMode>absolute</altitudeMode><coordinates>#{lon1},#{lat1},100 #{lon1},#{lat2},100 #{lon2},#{lat2},100 #{lon2},#{lat1},50 #{lon1},#{lat1},100</coordinates></LineString></Placemark></Document></kml>"
-      box = ge.parseKml(kml)
-      ge.getFeatures().appendChild(box)
+      box = @ge.parseKml(kml)
+      @ge.getFeatures().appendChild(box)
     
     for f in @featuresInBBox(lat1, lon1, lat2, lon2)
-      @showFeature(f, cam)
+      @showFeature(f)
       f.updateMoment = @updateMoment
     
     for own id, f of @visibleFeatures
       @hideFeature(f) if f.updateMoment < @updateMoment
     
     @updateMoment += 1
+    
 
 
 class @FeatureSet
@@ -99,7 +104,8 @@ class @FeatureSet
     delete @features[f.id]
   
   clearFeatures: -> @removeFeature(f) for own k, f of @features
-  
+
+
 class @Feature
   alt: 100
   nameTextOpts: {}
@@ -109,19 +115,25 @@ class @Feature
   
   rect: -> {x: @lon, y: @lat, w: 0, h: 0}
     
-  show: (ge, cam) ->
+  show: ->
+    fm  = @fm
+    cam = fm.cam
+    ge  = fm.ge
     angleToCamRad = Math.atan2(@lon - cam.lon, @lat - cam.lat)
     angleToCamDeg = angleToCamRad * oneEightyOverPi
     st = new SkyText(@lat, @lon, @alt)
     st.text(@name, mergeObj({bearing: angleToCamDeg}, @nameTextOpts)) if @name
     st.text(@desc, mergeObj({bearing: angleToCamDeg}, @descTextOpts)) if @desc
-    @geNode = ge.parseKml(st.kml())
-    ge.getFeatures().appendChild(@geNode)
+    geNode = ge.parseKml(st.kml())
+    ge.getFeatures().appendChild(geNode)
+    @hide() 
+    @geNode = geNode
     
-  hide: (ge) ->
+  hide: ->
     if @geNode?
-      ge.getFeatures().removeChild(@geNode)
+      @fm.ge.getFeatures().removeChild(@geNode)
       delete @geNode
+
 
 
 class @RailStationSet extends FeatureSet
@@ -152,25 +164,31 @@ class @TubeStation extends Feature
   nameTextOpts: {size: 2, lineWidth: 1}
 
 
-class @CASALogoSet extends FeatureSet
+class @MiscSet extends FeatureSet
   constructor: (featureManager) ->
     super(featureManager)
+    
     logo = new CASALogo("casa-logo", 51.52192375643773, -0.13593167066574097)
-    logo.name = "\uF002"
     @addFeature(logo)
+    
+    conf = new CASAConf('casa-conf', 51.5210609212573, -0.1287245750427246)
+    conf.update()
+    @addFeature(conf)
+    
+    bb = new BigBen('big-ben', 51.5007286626542, -0.12459531426429749)
+    bb.update()
+    @addFeature(bb)
 
 class @CASALogo extends Feature
   alt: 220
   nameTextOpts: {size: 1, lineWidth: 1}
-  
-
-class @CASAConfSet extends FeatureSet
-  constructor: (featureManager) ->
-    super(featureManager)
-    @conf = new CASAConf('casa-conf', 51.5210609212573, -0.1287245750427246)
-    @conf.name = 'CASA Smart Cities'
-    @update()
-    @addFeature(@conf)
+  name: "\uF002"
+      
+class @CASAConf extends Feature
+  alt: 130
+  nameTextOpts: {size: 2, lineWidth: 2}
+  descTextOpts: {size: 1, lineWidth: 1}
+  name: 'CASA Smart Cities'
   
   update: ->
     d = new Date() 
@@ -182,19 +200,22 @@ class @CASAConfSet extends FeatureSet
       if dayHrs < session[0]
         desc = "Now:\t#{@schedule[i - 1][1]}\nNext:\t#{session[1]}"
         break
-    changed = @conf.desc isnt desc
-    @conf.desc = desc
-    if changed and @geNode?
-      @hide()
-      @show()
+    changed = @desc isnt desc
+    @desc = desc
+    @show() if changed and @geNode?
     self = arguments.callee.bind(@)
-    setTimeout(self, 1 * 60 * 1000)  # update minute
+    @interval = setInterval(self, 1 * 60 * 1000) unless @interval? # update every minute
 
-class @CASAConf extends Feature
-  alt: 130
-  nameTextOpts: {size: 2, lineWidth: 2}
-  descTextOpts: {size: 1, lineWidth: 1}
-
+class @BigBen extends Feature
+  alt: 200
+  nameTextOpts: {size: 3, lineWidth: 3}
+  
+  update: ->
+    @name = new Date().strftime('%H.%M')
+    @show() if @geNode?
+    self = arguments.callee.bind(@)
+    @interval = setInterval(self, 1 * 60 * 1000) unless @interval?  # update every minute
+    
 
 class @LondonTweetSet extends FeatureSet
   lineChars = 35
@@ -209,7 +230,7 @@ class @LondonTweetSet extends FeatureSet
       dedupedTweets = {}
       for t, i in data.results.reverse()
         dedupedTweets["#{t.lat}/#{t.lon}"] = t
-        break if i > 150
+        # break if i > 150
       for own k, t of dedupedTweets
         tweet = new Tweet("tweet-#{t.twitterID}", parseFloat(t.lat), parseFloat(t.lon))
         tweet.name = "@#{t.name} — #{t.dateT.split(' ')[1]}" 

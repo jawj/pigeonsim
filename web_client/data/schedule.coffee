@@ -1,4 +1,4 @@
-@CASAConfSet::schedule = [
+@CASAConf::schedule = [
   [-1,          '—']
   [9,           'Registration']
   [9.5,         'Smart Cities: an emerging research agenda']
