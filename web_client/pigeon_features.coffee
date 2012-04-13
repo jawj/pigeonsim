@@ -119,7 +119,7 @@ class @Feature
     ge.getFeatures().appendChild(@geNode)
     
   hide: (ge) ->
-    if @geNode
+    if @geNode?
       ge.getFeatures().removeChild(@geNode)
       delete @geNode
 
@@ -163,6 +163,38 @@ class @CASALogo extends Feature
   alt: 220
   nameTextOpts: {size: 1, lineWidth: 1}
   
+
+class @CASAConfSet extends FeatureSet
+  constructor: (featureManager) ->
+    super(featureManager)
+    @conf = new CASAConf('casa-conf', 51.5210609212573, -0.1287245750427246)
+    @conf.name = 'CASA Smart Cities'
+    @update()
+    @addFeature(@conf)
+  
+  update: ->
+    d = new Date() 
+    # d = new Date(2012, 4, 13, 10, 25)
+    d0 = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+    dayMs = d - d0
+    dayHrs = dayMs / 1000 / 60 / 60
+    for session, i in @schedule
+      if dayHrs < session[0]
+        desc = "Now:\t#{@schedule[i - 1][1]}\nNext:\t#{session[1]}"
+        break
+    changed = @conf.desc isnt desc
+    @conf.desc = desc
+    if changed and @geNode?
+      @hide()
+      @show()
+    self = arguments.callee.bind(@)
+    setTimeout(self, 1 * 60 * 1000)  # update minute
+
+class @CASAConf extends Feature
+  alt: 130
+  nameTextOpts: {size: 2, lineWidth: 2}
+  descTextOpts: {size: 1, lineWidth: 1}
+
 
 class @LondonTweetSet extends FeatureSet
   lineChars = 35

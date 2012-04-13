@@ -1,5 +1,4 @@
 
-Redo features every nth frame, not every nth camera move (so Tweets don't disappear on refresh, for example)
 Add Big Ben (time)
 Add Senate House (now & next)
 Add Tower Bridge (next lift time)

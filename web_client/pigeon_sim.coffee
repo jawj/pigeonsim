@@ -16,15 +16,15 @@ window.onload = ->
   wrapDegs180 = (d) -> d += 360 while d < -180; d -= 360 while d >= 180; d
   
   params =  # all these default params may be over-ridden in the query string
-    startLat:      51.520113
-    startLon:      -0.130956
+    startLat:      51.51928846966326
+    startLon:      -0.13097763061523438
     startHeading:  55       # degrees
-    startAlt:      80       # metres above "sea level"
+    startAlt:     100       # metres above "sea level"
 
     minAlt:         5       # metres above "sea level"
     speed:          3       # = when flying straight
     maxSpeed:       6       # = when diving
-    cruiseTilt:    87.5     # degrees up from straight down
+    cruiseTilt:    85       # degrees up from straight down
     diveSpeed:      0.15    # speed multiplier for diving (dive speed also a function of lean angle and general speed)
     diveAccel:      0.05    # rate at which diving increases general speed
     diveDecel:      0.05    # rate at which speed decreases again after levelling out
@@ -83,8 +83,6 @@ window.onload = ->
     unmoved = objsEq(cam, seenCam)
     return no if unmoved
     
-    fm.update(cam) if camMoves % params.featureSkip is 0
-  
     view = ge.getView()
     c = view.copyAsCamera(ge.ALTITUDE_ABSOLUTE)
     c.setLatitude(cam.lat)
@@ -149,6 +147,7 @@ window.onload = ->
     altStatus.innerHTML        = "#{Math.round(cam.alt)}m"
     
     moved = moveCam()
+    fm.update(cam) if animTicks % params.featureSkip is 0
     
     clearTimeout(animTimeout) if animTimeout?
     animTimeout = null
@@ -182,17 +181,11 @@ window.onload = ->
     resetCam()
     ge.getWindow().setVisibility(yes)
     
-    ###
-    s = new SkyText(51.52120111222482, -0.12885332107543945, 140)
-    s.line('CASA Smart Cities', bearing: -params.startHeading, size: 3, lineWidth: 3)
-    s.line('Next session: Steve Gray', bearing: -params.startHeading, size: 2, lineWidth: 2)    
-    ge.getFeatures().appendChild(ge.parseKml(s.kml()))
-    ###
-    
     fm  = new FeatureManager(ge, lonRatio, params)
-    tss = new TubeStationSet(fm)
+    #tss = new TubeStationSet(fm)
     rss = new RailStationSet(fm)
     cls = new CASALogoSet(fm)
+    ccs = new CASAConfSet(fm)
     lts = new LondonTweetSet(fm)
     
     animTick()
