@@ -16,10 +16,10 @@ window.onload = ->
   wrapDegs180 = (d) -> d += 360 while d < -180; d -= 360 while d >= 180; d
   
   params =  # all these default params may be over-ridden in the query string
-    startLat:      51.51928846966326
-    startLon:      -0.13097763061523438
-    startHeading:  55       # degrees
-    startAlt:     100       # metres above "sea level"
+    startLat:      51.522609673708466
+    startLon:      -0.13099908828735352
+    startHeading: 155       # degrees
+    startAlt:     90       # metres above "sea level"
 
     minAlt:         5       # metres above "sea level"
     speed:          3       # = when flying straight

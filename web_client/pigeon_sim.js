@@ -75,10 +75,10 @@
       return d;
     };
     params = {
-      startLat: 51.51928846966326,
-      startLon: -0.13097763061523438,
-      startHeading: 55,
-      startAlt: 100,
+      startLat: 51.522609673708466,
+      startLon: -0.13099908828735352,
+      startHeading: 155,
+      startAlt: 90,
       minAlt: 5,
       speed: 3,
       maxSpeed: 6,
