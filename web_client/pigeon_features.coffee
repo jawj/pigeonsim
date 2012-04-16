@@ -222,8 +222,7 @@ class @BigBen extends Feature
     
 
 class @LondonTweetSet extends FeatureSet
-  lineChars = 35
-  maxTweets = 1000
+  maxTweets: 500
   
   constructor: (featureManager) ->
     super(featureManager)
@@ -236,7 +235,10 @@ class @LondonTweetSet extends FeatureSet
       for t, i in data.results.slice(-@maxTweets)
         dedupedTweets["#{parseFloat(t.lat).toFixed(4)}/#{parseFloat(t.lon).toFixed(4)}"] = t
       for own k, t of dedupedTweets
-        tweet = new Tweet("tweet-#{t.twitterID}", parseFloat(t.lat), parseFloat(t.lon))
+        lat = parseFloat(t.lat)
+        lon = parseFloat(t.lon)
+        continue if isNaN(lat) or isNaN(lon)
+        tweet = new Tweet("tweet-#{t.twitterID}", lat, lon)
         tweet.name = t.name
         tweet.desc = t.twitterPost.replace(/&gt;/g, '>').replace(/&lt;/g, '<')
                       .match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n')  # bug: many \ns collapsed to one

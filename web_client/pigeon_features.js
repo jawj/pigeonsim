@@ -474,15 +474,12 @@
   })(Feature);
 
   this.LondonTweetSet = (function(_super) {
-    var lineChars, maxTweets;
 
     __extends(LondonTweetSet, _super);
 
     LondonTweetSet.name = 'LondonTweetSet';
 
-    lineChars = 35;
-
-    maxTweets = 1000;
+    LondonTweetSet.prototype.maxTweets = 500;
 
     function LondonTweetSet(featureManager) {
       LondonTweetSet.__super__.constructor.call(this, featureManager);
@@ -496,7 +493,7 @@
         url: 'http://www.casa.ucl.ac.uk/tom/ajax-live/lon_last_hour.json',
         type: 'json'
       }, function(data) {
-        var dedupedTweets, i, k, t, tweet, _i, _len, _ref, _results;
+        var dedupedTweets, i, k, lat, lon, t, tweet, _i, _len, _ref, _results;
         _this.clearFeatures();
         dedupedTweets = {};
         _ref = data.results.slice(-_this.maxTweets);
@@ -508,7 +505,12 @@
         for (k in dedupedTweets) {
           if (!__hasProp.call(dedupedTweets, k)) continue;
           t = dedupedTweets[k];
-          tweet = new Tweet("tweet-" + t.twitterID, parseFloat(t.lat), parseFloat(t.lon));
+          lat = parseFloat(t.lat);
+          lon = parseFloat(t.lon);
+          if (isNaN(lat) || isNaN(lon)) {
+            continue;
+          }
+          tweet = new Tweet("tweet-" + t.twitterID, lat, lon);
           tweet.name = t.name;
           tweet.desc = t.twitterPost.replace(/&gt;/g, '>').replace(/&lt;/g, '<').match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n');
           _results.push(_this.addFeature(tweet));

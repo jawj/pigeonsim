@@ -3,7 +3,9 @@ class this.SkyText
   piOver180:  Math.PI / 180
   latFactor:  0.00001
   fontHeight: 5
-
+  
+  nbsp: String.fromCharCode(160)
+  
   constructor: (@lat, @lon, @alt, o = {}) ->
     o.lineWidth ?= 1
     o.colour    ?= 'ffffffff'
@@ -42,7 +44,7 @@ class this.SkyText
     lineCoordSets = []
     
     for char in text.split('')
-      if char in [" ", "\n", "\r"]
+      if char in [" ", "\n", "\r", @nbsp]
         xCursor += o.spaceWidth
         continue
       if char is "\t"
@@ -71,7 +73,7 @@ class this.SkyText
     @allCoordSets.push(lineCoordSets)
     @
        
-  kml: ->
+  kmlFragment: ->
     k = []
     k.push('<Document>')
     coordStrs = for lineCoordSets, i in @allCoordSets
@@ -86,7 +88,7 @@ class this.SkyText
     k.push('</Document>')
     k.join('')
     
-  kmlDoc: ->
+  kml: ->
     "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'>#{@kmlFragment()}</kml>"
     
   font: 
@@ -200,4 +202,5 @@ class this.SkyText
     "₂":  [[0,3,1,3,2,4,0,5,2,5]]
     "₃":  [[0,3,2,3,1,4,2,4,1,5,0,5]]
     "³":  [[0,0,2,0,1,1,2,1,1,2,0,2]]
+    "…":  [[0,3,0,4],[1,3,1,4],[2,3,2,4]]
     "\u2764": [[0,1,2,4,4,1,3,0,2,1,1,0,0,1]]  # heart 

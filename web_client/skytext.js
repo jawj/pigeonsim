@@ -11,6 +11,8 @@
 
     SkyText.prototype.fontHeight = 5;
 
+    SkyText.prototype.nbsp = String.fromCharCode(160);
+
     function SkyText(lat, lon, alt, o) {
       var lonRatio;
       this.lat = lat;
@@ -94,7 +96,7 @@
       _ref = text.split('');
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         char = _ref[_i];
-        if (char === " " || char === "\n" || char === "\r") {
+        if (char === " " || char === "\n" || char === "\r" || char === this.nbsp) {
           xCursor += o.spaceWidth;
           continue;
         }
@@ -137,7 +139,7 @@
       return this;
     };
 
-    SkyText.prototype.kml = function() {
+    SkyText.prototype.kmlFragment = function() {
       var coordStr, coordStrs, coords, i, k, lineCoordSets, lineCoords, o;
       k = [];
       k.push('<Document>');
@@ -174,7 +176,7 @@
       return k.join('');
     };
 
-    SkyText.prototype.kmlDoc = function() {
+    SkyText.prototype.kml = function() {
       return "<?xml version='1.0' encoding='UTF-8'?><kml xmlns='http://www.opengis.net/kml/2.2'>" + (this.kmlFragment()) + "</kml>";
     };
 
@@ -289,6 +291,7 @@
       "₂": [[0, 3, 1, 3, 2, 4, 0, 5, 2, 5]],
       "₃": [[0, 3, 2, 3, 1, 4, 2, 4, 1, 5, 0, 5]],
       "³": [[0, 0, 2, 0, 1, 1, 2, 1, 1, 2, 0, 2]],
+      "…": [[0, 3, 0, 4], [1, 3, 1, 4], [2, 3, 2, 4]],
       "\u2764": [[0, 1, 2, 4, 4, 1, 3, 0, 2, 1, 1, 0, 0, 1]]
     };
 
