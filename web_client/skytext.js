@@ -103,6 +103,10 @@
           continue;
         }
         paths = (_ref1 = o.font[char]) != null ? _ref1 : o.font['na'];
+        if (!paths) {
+          console.log('Unsupported character: ', char);
+          paths = o.font['na'];
+        }
         maxX = 0;
         for (_j = 0, _len1 = paths.length; _j < _len1; _j++) {
           path = paths[_j];

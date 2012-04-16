@@ -49,6 +49,9 @@ class this.SkyText
         xCursor = Math.ceil((xCursor + 1) / tabWidth) * tabWidth
         continue
       paths = o.font[char] ? o.font['na']
+      unless paths
+        console.log('Unsupported character: ', char)
+        paths = o.font['na']
       maxX = 0
       for path in paths
         coords = for x, i in path by 2

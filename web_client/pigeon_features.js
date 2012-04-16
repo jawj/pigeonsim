@@ -59,7 +59,7 @@
       this.lonRatio = lonRatio;
       this.cam = cam;
       this.params = params;
-      this.featureTree = new RTree(10);
+      this.featureTree = new RTree();
       this.visibleFeatures = {};
       this.updateMoment = 0;
     }
@@ -100,6 +100,17 @@
         w: lon2 - lon1,
         h: lat2 - lat1
       });
+    };
+
+    FeatureManager.prototype.reset = function() {
+      var f, id, _ref;
+      _ref = this.visibleFeatures;
+      for (id in _ref) {
+        if (!__hasProp.call(_ref, id)) continue;
+        f = _ref[id];
+        this.hideFeature(f);
+      }
+      return this.update();
     };
 
     FeatureManager.prototype.update = function() {
@@ -154,7 +165,7 @@
 
     function FeatureSet(featureManager) {
       this.featureManager = featureManager;
-      window.f = this.features = {};
+      this.features = {};
     }
 
     FeatureSet.prototype.addFeature = function(f) {
@@ -463,13 +474,15 @@
   })(Feature);
 
   this.LondonTweetSet = (function(_super) {
-    var lineChars;
+    var lineChars, maxTweets;
 
     __extends(LondonTweetSet, _super);
 
     LondonTweetSet.name = 'LondonTweetSet';
 
     lineChars = 35;
+
+    maxTweets = 1000;
 
     function LondonTweetSet(featureManager) {
       LondonTweetSet.__super__.constructor.call(this, featureManager);
@@ -486,18 +499,18 @@
         var dedupedTweets, i, k, t, tweet, _i, _len, _ref, _results;
         _this.clearFeatures();
         dedupedTweets = {};
-        _ref = data.results.reverse();
+        _ref = data.results.slice(-_this.maxTweets);
         for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
           t = _ref[i];
-          dedupedTweets["" + t.lat + "/" + t.lon] = t;
+          dedupedTweets["" + (parseFloat(t.lat).toFixed(4)) + "/" + (parseFloat(t.lon).toFixed(4))] = t;
         }
         _results = [];
         for (k in dedupedTweets) {
           if (!__hasProp.call(dedupedTweets, k)) continue;
           t = dedupedTweets[k];
           tweet = new Tweet("tweet-" + t.twitterID, parseFloat(t.lat), parseFloat(t.lon));
-          tweet.name = "@" + t.name + " — " + (t.dateT.split(' ')[1]);
-          tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n');
+          tweet.name = t.name;
+          tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n');
           _results.push(_this.addFeature(tweet));
         }
         return _results;

@@ -13,7 +13,9 @@ void setup() {
 
 void draw() {
   if (! mousedown) return;
-  String data = "{\"roll\":" + ((mouseXOffset - mouseX) / 2) + ",\"dive\":0,\"flap\":0}";
+  float dive = keyPressed && keyCode == DOWN ? 1.0 : 0.0;
+  float flap = keyPressed && keyCode == UP   ? 2.0 : 0.0;
+  String data = "{\"roll\":" + ((mouseXOffset - mouseX) / 2) + ",\"dive\":" + dive + ",\"flap\":" + flap + "}";
   ws.broadcast(data);
 }
 
@@ -38,3 +40,8 @@ void mousePressed() {
 void mouseReleased() {
   mousedown = false;
 }
+void keyPressed() {
+  if      (key == ' ')     ws.broadcast("{\"reset\": 1}");
+  else if (key == 'r') ws.broadcast("{\"reset\": 2}");
+}
+

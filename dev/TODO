@@ -1,4 +1,7 @@
 
+Two-handed hard reset (location.reload)
+Reset after 60s no activity
+Reset all features on reset (add reset method to feature manager -- which just hides every feature, then calls update)
 Add feature selection to params
 Add Tower Bridge (next lift time)
 Add tide gauges

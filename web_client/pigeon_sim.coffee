@@ -43,9 +43,14 @@ window.onload = ->
     reconnectWait:  2       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
     
+    features:      'rail,twitter,misc'
+    
+    
   for kvp in window.location.search.substring(1).split('&')
     [k, v] = kvp.split('=')
-    params[k] = if k is 'ws' then v else parseFloat(v)
+    params[k] = if k in ['ws', 'features'] then v else parseFloat(v)
+  
+  features = params.features.split(',')
   
   el('statusOuter').style.display = 'block' if params.status
   el('credit').style.display = 'none' if params.debugData
@@ -99,7 +104,13 @@ window.onload = ->
   addLayers = (layers...) -> ge.getLayerRoot().enableLayerById(l, yes) for l in layers
 
   updateCam = (data) ->
-    resetCam() if data.reset and flown
+    if data.reset and flown
+      if data.reset is 2
+        location.reload()
+      else
+        resetCam()
+        fm.reset()  # otherwise angles are wrong if we're already near reset point
+      
     return unless data.roll?
     
     flown        = yes  # since last resetCam()
@@ -141,7 +152,6 @@ window.onload = ->
     cam.tilt     = params.cruiseTilt - data.dive
   
   animTick = ->    
-    animTicks += 1
     debugTicksStatus.innerHTML = animTicks if params.debugData
     headingStatus.innerHTML    = compassPts[Math.round(wrapDegs360(cam.heading) / 45)]
     altStatus.innerHTML        = "#{Math.round(cam.alt)}m"
@@ -153,6 +163,9 @@ window.onload = ->
     animTimeout = null
     unless moved  # can't rely on frameend event if no movement made
       animTimeout = setTimeout(animTick, 200)
+    
+    animTicks += 1
+    
   
   connect = ->
     ws = new WebSocket(params.ws)
@@ -178,17 +191,18 @@ window.onload = ->
     ge.getSun().setVisibility(params.sun)
     ge.getTime().getControl().setVisibility(if params.timeControl then ge.VISIBILITY_SHOW else ge.VISIBILITY_HIDE)
     ge.getOptions().setFlyToSpeed(ge.SPEED_TELEPORT)
+    
     resetCam()
     ge.getWindow().setVisibility(yes)
     
     fm  = new FeatureManager(ge, lonRatio, cam, params)
-    #tss = new TubeStationSet(fm)
-    rss = new RailStationSet(fm)
-    ccs = new MiscSet(fm)
-    lts = new LondonTweetSet(fm)
-    
-    animTick()
+    tss = new TubeStationSet(fm) if 'tube'    in features
+    rss = new RailStationSet(fm) if 'rail'    in features
+    ccs = new MiscSet(fm)        if 'misc'    in features
+    lts = new LondonTweetSet(fm) if 'twitter' in features
+
     google.earth.addEventListener(ge, 'frameend', animTick)
+    animTick()
     
     connect()
   

@@ -26,7 +26,7 @@ box = null
 
 class @FeatureManager
   constructor: (@ge, @lonRatio, @cam, @params) ->
-    @featureTree = new RTree(10)
+    @featureTree = new RTree()
     @visibleFeatures = {}
     @updateMoment = 0
     
@@ -53,7 +53,11 @@ class @FeatureManager
   
   featuresInBBox: (lat1, lon1, lat2, lon2) ->  # ones must be SW of (i.e. lower than) twos
     @featureTree.search({x: lon1, y: lat1, w: lon2 - lon1, h: lat2 - lat1})
-    
+  
+  reset: ->
+    @hideFeature(f) for own id, f of @visibleFeatures
+    @update()
+  
   update: ->
     cam = @cam
     lookAt = @ge.getView().copyAsLookAt(ge.ALTITUDE_ABSOLUTE)
@@ -93,7 +97,7 @@ class @FeatureManager
 
 class @FeatureSet
   constructor: (@featureManager) ->
-    window.f = @features = {}
+    @features = {}
   
   addFeature: (f) ->
     @features[f.id] = f
@@ -103,7 +107,8 @@ class @FeatureSet
     @featureManager.removeFeature(f)
     delete @features[f.id]
   
-  clearFeatures: -> @removeFeature(f) for own k, f of @features
+  clearFeatures: -> 
+    @removeFeature(f) for own k, f of @features
 
 
 class @Feature
@@ -191,8 +196,7 @@ class @CASAConf extends Feature
   name: 'CASA Smart Cities'
   
   update: ->
-    d = new Date() 
-    # d = new Date(2012, 4, 13, 10, 25)
+    d = new Date()  # testing: d = new Date(2012, 4, 13, 10, 25)
     d0 = new Date(d.getFullYear(), d.getMonth(), d.getDate())
     dayMs = d - d0
     dayHrs = dayMs / 1000 / 60 / 60
@@ -219,6 +223,7 @@ class @BigBen extends Feature
 
 class @LondonTweetSet extends FeatureSet
   lineChars = 35
+  maxTweets = 1000
   
   constructor: (featureManager) ->
     super(featureManager)
@@ -228,13 +233,12 @@ class @LondonTweetSet extends FeatureSet
     load {url: 'http://www.casa.ucl.ac.uk/tom/ajax-live/lon_last_hour.json', type: 'json'}, (data) =>
       @clearFeatures()
       dedupedTweets = {}
-      for t, i in data.results.reverse()
-        dedupedTweets["#{t.lat}/#{t.lon}"] = t
-        # break if i > 150
+      for t, i in data.results.slice(-@maxTweets)
+        dedupedTweets["#{parseFloat(t.lat).toFixed(4)}/#{parseFloat(t.lon).toFixed(4)}"] = t
       for own k, t of dedupedTweets
         tweet = new Tweet("tweet-#{t.twitterID}", parseFloat(t.lat), parseFloat(t.lon))
-        tweet.name = "@#{t.name} — #{t.dateT.split(' ')[1]}" 
-        tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n')  # bug: adds an extra newlines where there's one already
+        tweet.name = t.name 
+        tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n')  # bug: many \ns collapsed to one
         @addFeature(tweet)
     self = arguments.callee.bind(@)
     setTimeout(self, 5 * 60 * 1000)  # update every 5 mins
