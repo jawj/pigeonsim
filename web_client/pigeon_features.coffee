@@ -249,3 +249,40 @@ class @Tweet extends Feature
   nameTextOpts: {size: 1}
   descTextOpts: {size: 1, lineWidth: 1}
 
+
+class @LondonAirSet extends FeatureSet
+  constructor: (featureManager) ->
+    super(featureManager)
+    @update()
+  
+  update: ->
+    load {url: 'http://orca.casa.ucl.ac.uk/~ollie/citydb/modules/airquality.php?city=london&format=csv'}, (csv) =>
+      @clearFeatures()
+      lines = csv.split('\n')
+      metadata = lines.shift()
+      headers  = lines.shift()
+      for line in lines
+        cells = line.split(',')
+        continue if cells.length < 10
+        a = new LondonAir("air-#{cells[0]}", parseFloat(cells[2]), parseFloat(cells[3]))
+        a.name = cells[1] + ' air'
+        desc = ''
+        no2ugm3 = cells[8]
+        if no2ugm3 isnt ''
+          no2desc = cells[10]
+          desc += "NO₂:\t#{no2ugm3} μg/m³ (#{no2desc})\n"
+        o3ugm3 = cells[4]
+        if o3ugm3 isnt ''
+          o3desc = cells[6]
+          desc += "O₃: \t#{o3ugm3} μg/m³ (#{o3desc})\n"
+        a.desc = desc
+        @addFeature(a)
+    self = arguments.callee.bind(@)
+    setTimeout(self, 10 * 60 * 1000)  # update every 10 mins
+  
+class @LondonAir extends Feature
+  alt: 180
+  nameTextOpts: {size: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  
+  

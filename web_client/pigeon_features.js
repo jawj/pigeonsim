@@ -548,4 +548,84 @@
 
   })(Feature);
 
+  this.LondonAirSet = (function(_super) {
+
+    __extends(LondonAirSet, _super);
+
+    LondonAirSet.name = 'LondonAirSet';
+
+    function LondonAirSet(featureManager) {
+      LondonAirSet.__super__.constructor.call(this, featureManager);
+      this.update();
+    }
+
+    LondonAirSet.prototype.update = function() {
+      var self,
+        _this = this;
+      load({
+        url: 'http://orca.casa.ucl.ac.uk/~ollie/citydb/modules/airquality.php?city=london&format=csv'
+      }, function(csv) {
+        var a, cells, desc, headers, line, lines, metadata, no2desc, no2ugm3, o3desc, o3ugm3, _i, _len, _results;
+        _this.clearFeatures();
+        lines = csv.split('\n');
+        metadata = lines.shift();
+        headers = lines.shift();
+        _results = [];
+        for (_i = 0, _len = lines.length; _i < _len; _i++) {
+          line = lines[_i];
+          cells = line.split(',');
+          if (cells.length < 10) {
+            continue;
+          }
+          a = new LondonAir("air-" + cells[0], parseFloat(cells[2]), parseFloat(cells[3]));
+          a.name = cells[1] + ' air';
+          desc = '';
+          no2ugm3 = cells[8];
+          if (no2ugm3 !== '') {
+            no2desc = cells[10];
+            desc += "NO₂:\t" + no2ugm3 + " μg/m³ (" + no2desc + ")\n";
+          }
+          o3ugm3 = cells[4];
+          if (o3ugm3 !== '') {
+            o3desc = cells[6];
+            desc += "O₃: \t" + o3ugm3 + " μg/m³ (" + o3desc + ")\n";
+          }
+          a.desc = desc;
+          _results.push(_this.addFeature(a));
+        }
+        return _results;
+      });
+      self = arguments.callee.bind(this);
+      return setTimeout(self, 10 * 60 * 1000);
+    };
+
+    return LondonAirSet;
+
+  })(FeatureSet);
+
+  this.LondonAir = (function(_super) {
+
+    __extends(LondonAir, _super);
+
+    LondonAir.name = 'LondonAir';
+
+    function LondonAir() {
+      return LondonAir.__super__.constructor.apply(this, arguments);
+    }
+
+    LondonAir.prototype.alt = 180;
+
+    LondonAir.prototype.nameTextOpts = {
+      size: 2
+    };
+
+    LondonAir.prototype.descTextOpts = {
+      size: 2,
+      lineWidth: 1
+    };
+
+    return LondonAir;
+
+  })(Feature);
+
 }).call(this);

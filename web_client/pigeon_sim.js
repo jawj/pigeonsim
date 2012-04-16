@@ -100,7 +100,7 @@
       debugBox: 0,
       reconnectWait: 2,
       ws: 'ws://127.0.0.1:8888/p5websocket',
-      features: 'rail,twitter,misc'
+      features: 'air,rail,twitter,misc'
     };
     _ref = window.location.search.substring(1).split('&');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -288,7 +288,7 @@
       };
     };
     earthInitCallback = function(instance) {
-      var ccs, lts, rss, tss;
+      var ccs, las, lts, rss, tss;
       window.ge = ge = instance;
       console.log("Google Earth plugin v" + (ge.getPluginVersion()) + ", API v" + (ge.getApiVersion()));
       addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION);
@@ -299,6 +299,9 @@
       resetCam();
       ge.getWindow().setVisibility(true);
       fm = new FeatureManager(ge, lonRatio, cam, params);
+      if (__indexOf.call(features, 'air') >= 0) {
+        las = new LondonAirSet(fm);
+      }
       if (__indexOf.call(features, 'tube') >= 0) {
         tss = new TubeStationSet(fm);
       }

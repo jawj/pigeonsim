@@ -43,7 +43,7 @@ window.onload = ->
     reconnectWait:  2       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
     
-    features:      'rail,twitter,misc'
+    features:      'air,rail,twitter,misc'
     
     
   for kvp in window.location.search.substring(1).split('&')
@@ -196,6 +196,7 @@ window.onload = ->
     ge.getWindow().setVisibility(yes)
     
     fm  = new FeatureManager(ge, lonRatio, cam, params)
+    las = new LondonAirSet(fm)   if 'air'     in features
     tss = new TubeStationSet(fm) if 'tube'    in features
     rss = new RailStationSet(fm) if 'rail'    in features
     ccs = new MiscSet(fm)        if 'misc'    in features
