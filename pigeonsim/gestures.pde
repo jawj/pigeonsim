@@ -119,7 +119,8 @@ void identifyGestures(int userId) {
     drawText("HOME");
     stroke(resetCol);
     drawSkeleton(userId);
-    ws.broadcast("{\"reset\": 1}");
+    int val = (rHandOnHeart && lHandOnHeart) ? 2 : 1;
+    ws.broadcast("{\"reset\": " + val + "}");
     
   } else if (handsTogether && handsOverHead && confSum >= 8) {
     drawText("CALIBRATE");

@@ -47,7 +47,7 @@
     };
 
     SkyText.prototype.line = function(text, o) {
-      var absX, alt, bRad, char, coords, cosB, i, lat, latFactor, latStart, lineCoordSets, lon, lonFactor, lonStart, maxX, path, paths, sinB, tabWidth, x, xCursor, y, _i, _j, _len, _len1, _ref, _ref1;
+      var absX, alt, bRad, char, coords, cosB, i, lat, latFactor, latStart, lineCoordSets, lon, lonFactor, lonStart, maxX, path, paths, sinB, tabWidth, x, xCursor, y, _i, _j, _len, _len1, _ref;
       if (o == null) {
         o = {};
       }
@@ -102,9 +102,9 @@
           xCursor = Math.ceil((xCursor + 1) / tabWidth) * tabWidth;
           continue;
         }
-        paths = (_ref1 = o.font[char]) != null ? _ref1 : o.font['na'];
+        paths = o.font[char];
         if (!paths) {
-          console.log('Unsupported character: ', char);
+          console.log('Unsupported character: ', char, char.charCodeAt(0));
           paths = o.font['na'];
         }
         maxX = 0;
@@ -239,6 +239,8 @@
       "=": [[0, 1, 2, 1], [0, 3, 2, 3]],
       ">": [[0, 0, 2, 2, 0, 4]],
       "<": [[2, 0, 0, 2, 2, 4]],
+      "«": [[1, 1, 0, 2, 1, 3], [2, 1, 1, 2, 2, 3]],
+      "»": [[0, 1, 1, 2, 0, 3], [1, 1, 2, 2, 1, 3]],
       "^": [[0, 1, 1, 0, 2, 1]],
       "$": [[2, 1, 1, 1, 0, 2, 2, 3, 1, 4, 0, 4], [1, 0, 1, 5]],
       "¢": [[2, 1, 1, 1, 0, 2, 0, 3, 1, 4, 2, 4], [1, 0, 1, 5]],

@@ -237,8 +237,9 @@ class @LondonTweetSet extends FeatureSet
         dedupedTweets["#{parseFloat(t.lat).toFixed(4)}/#{parseFloat(t.lon).toFixed(4)}"] = t
       for own k, t of dedupedTweets
         tweet = new Tweet("tweet-#{t.twitterID}", parseFloat(t.lat), parseFloat(t.lon))
-        tweet.name = t.name 
-        tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n')  # bug: many \ns collapsed to one
+        tweet.name = t.name
+        tweet.desc = t.twitterPost.replace(/&gt;/g, '>').replace(/&lt;/g, '<')
+                      .match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n')  # bug: many \ns collapsed to one
         @addFeature(tweet)
     self = arguments.callee.bind(@)
     setTimeout(self, 5 * 60 * 1000)  # update every 5 mins

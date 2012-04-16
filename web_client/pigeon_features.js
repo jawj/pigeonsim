@@ -510,7 +510,7 @@
           t = dedupedTweets[k];
           tweet = new Tweet("tweet-" + t.twitterID, parseFloat(t.lat), parseFloat(t.lon));
           tweet.name = t.name;
-          tweet.desc = t.twitterPost.match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n');
+          tweet.desc = t.twitterPost.replace(/&gt;/g, '>').replace(/&lt;/g, '<').match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n');
           _results.push(_this.addFeature(tweet));
         }
         return _results;
