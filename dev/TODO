@@ -1,17 +1,11 @@
 
 Reset after 60s no activity
-Reset all features on reset (add reset method to feature manager -- which just hides every feature, then calls update)
 Add feature selection to params
-Add Tower Bridge (next lift time)
 Add tide gauges
-Add pollution sensors
 Add tube/rail status?
 Add coloured dashes for tube lines to tube stations?
 Eliminate diving acceleration, but add Turbo checkbox or key?
 Return to hands-over-head for home (and a keypress for calibration, with saving -- or just have it fixed?)
-Add a keypress for home, and for reload (i.e. 'soft' and 'hard' reset)? (in Processing)
 Impose upper altitude limit?
 Add KML region and level of detail to each feature?
 Add mouse or keypress navigation in the HTML?
-Eliminate too-close tweets by lat/long grid square, and make left- or right-aligned as appropriate?
-
