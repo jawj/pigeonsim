@@ -730,4 +730,78 @@
 
   })(Feature);
 
+  this.TideGaugeSet = (function(_super) {
+
+    __extends(TideGaugeSet, _super);
+
+    TideGaugeSet.name = 'TideGaugeSet';
+
+    function TideGaugeSet(featureManager) {
+      TideGaugeSet.__super__.constructor.call(this, featureManager);
+      this.update();
+    }
+
+    TideGaugeSet.prototype.update = function() {
+      var self,
+        _this = this;
+      load({
+        url: 'http://orca.casa.ucl.ac.uk/~ollie/citydb/modules/tide.php?city=london&format=csv'
+      }, function(csv) {
+        var a, cells, headers, line, lines, metadata, _i, _len, _results;
+        _this.clearFeatures();
+        lines = csv.split('\n');
+        metadata = lines.shift();
+        headers = lines.shift();
+        _results = [];
+        for (_i = 0, _len = lines.length; _i < _len; _i++) {
+          line = lines[_i];
+          cells = line.split(',');
+          if (cells.length < 3) {
+            continue;
+          }
+          a = new TideGauge("tide-" + cells[0], parseFloat(cells[2]), parseFloat(cells[3]), {
+            colour: 'ffffdddd'
+          });
+          a.name = cells[1];
+          a.desc = "Height:\t" + cells[4] + "m\nSurge:\t" + cells[5] + "m";
+          _results.push(_this.addFeature(a));
+        }
+        return _results;
+      });
+      self = arguments.callee.bind(this);
+      return setTimeout(self, 3 * 60 * 1000);
+    };
+
+    return TideGaugeSet;
+
+  })(FeatureSet);
+
+  this.TideGauge = (function(_super) {
+
+    __extends(TideGauge, _super);
+
+    TideGauge.name = 'TideGauge';
+
+    function TideGauge() {
+      return TideGauge.__super__.constructor.apply(this, arguments);
+    }
+
+    TideGauge.prototype.alt = 80;
+
+    TideGauge.prototype.nameTextOpts = {
+      size: 2,
+      lineWidth: 3,
+      colour: 'ffffdddd'
+    };
+
+    TideGauge.prototype.descTextOpts = {
+      size: 2,
+      lineWidth: 2,
+      colour: 'ffffdddd'
+    };
+
+    return TideGauge;
+
+  })(Feature);
+
 }).call(this);

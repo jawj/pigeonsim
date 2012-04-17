@@ -96,11 +96,11 @@
       atmosphere: 1,
       sun: 0,
       timeControl: 0,
-      featureSkip: 10,
+      featureSkip: 12,
       debugBox: 0,
       reconnectWait: 2,
       ws: 'ws://127.0.0.1:8888/p5websocket',
-      features: 'air,rail,traffic,twitter,misc'
+      features: 'air,rail,traffic,tide,twitter,misc'
     };
     _ref = window.location.search.substring(1).split('&');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -288,7 +288,7 @@
       };
     };
     earthInitCallback = function(instance) {
-      var ccs, las, lts, rss, trs, tss;
+      var ccs, las, lts, rss, tgs, trs, tss;
       window.ge = ge = instance;
       console.log("Google Earth plugin v" + (ge.getPluginVersion()) + ", API v" + (ge.getApiVersion()));
       addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION);
@@ -310,6 +310,9 @@
       }
       if (__indexOf.call(features, 'traffic') >= 0) {
         trs = new LondonTrafficSet(fm);
+      }
+      if (__indexOf.call(features, 'tide') >= 0) {
+        tgs = new TideGaugeSet(fm);
       }
       if (__indexOf.call(features, 'misc') >= 0) {
         ccs = new MiscSet(fm);

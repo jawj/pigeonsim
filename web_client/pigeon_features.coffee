@@ -318,4 +318,31 @@ class @LondonTraffic extends Feature
   alt: 110
   nameTextOpts: {size: 2, lineWidth: 3, colour: 'ff77ddff'}
   descTextOpts: {size: 2, lineWidth: 2, colour: 'ff77ddff'}
+
+
+class @TideGaugeSet extends FeatureSet
+  constructor: (featureManager) ->
+    super(featureManager)
+    @update()
+  
+  update: ->
+    load {url: 'http://orca.casa.ucl.ac.uk/~ollie/citydb/modules/tide.php?city=london&format=csv'}, (csv) =>
+      @clearFeatures()
+      lines = csv.split('\n')
+      metadata = lines.shift()
+      headers  = lines.shift()
+      for line in lines
+        cells = line.split(',')
+        continue if cells.length < 3
+        a = new TideGauge("tide-#{cells[0]}", parseFloat(cells[2]), parseFloat(cells[3]), {colour: 'ffffdddd'})
+        a.name = cells[1]
+        a.desc = "Height:\t#{cells[4]}m\nSurge:\t#{cells[5]}m"
+        @addFeature(a)
+    self = arguments.callee.bind(@)
+    setTimeout(self, 3 * 60 * 1000)  # update every 3 mins
+  
+class @TideGauge extends Feature
+  alt: 80
+  nameTextOpts: {size: 2, lineWidth: 3, colour: 'ffffdddd'}
+  descTextOpts: {size: 2, lineWidth: 2, colour: 'ffffdddd'}
   

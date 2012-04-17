@@ -37,13 +37,13 @@ window.onload = ->
     atmosphere:     1       # show atmosphere
     sun:            0       # show sun
     timeControl:    0       # show Google Earth time controller (if sun is 1)
-    featureSkip:   10       # update features every n movement frames
+    featureSkip:   12       # update features every n movement frames
     debugBox:       0       # show the box that determines visibility of features
     
     reconnectWait:  2       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
     
-    features:      'air,rail,traffic,twitter,misc'
+    features:      'air,rail,traffic,tide,twitter,misc'
     
     
   for kvp in window.location.search.substring(1).split('&')
@@ -200,6 +200,7 @@ window.onload = ->
     tss = new TubeStationSet(fm)   if 'tube'    in features
     rss = new RailStationSet(fm)   if 'rail'    in features
     trs = new LondonTrafficSet(fm) if 'traffic' in features
+    tgs = new TideGaugeSet(fm)     if 'tide'    in features
     ccs = new MiscSet(fm)          if 'misc'    in features
     lts = new LondonTweetSet(fm)   if 'twitter' in features
 
