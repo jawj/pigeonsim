@@ -74,12 +74,12 @@ void identifyGestures(int userId) {
   float maxHandShouldDistSq = shoulRadius * shoulRadius * 0.8;
   float rHandShoulXDelta = rHand.x - meanShoulX;
   float rHandShoulYDelta = rHand.y - meanShoulY;
-  boolean rHandOnHeart = (meanShoulZ - rHand.z) < 100 
+  boolean rHandOnHeart = (meanShoulZ - rHand.z) < 125 
                       && rHand.y < meanShoulY 
                       && (rHandShoulXDelta * rHandShoulXDelta) + (rHandShoulYDelta * rHandShoulYDelta) <= maxHandShouldDistSq;
   float lHandShoulXDelta = lHand.x - meanShoulX;
   float lHandShoulYDelta = lHand.y - meanShoulY;
-  boolean lHandOnHeart = (meanShoulZ - lHand.z) < 100 
+  boolean lHandOnHeart = (meanShoulZ - lHand.z) < 125 
                       && lHand.y < meanShoulY 
                       && (lHandShoulXDelta * lHandShoulXDelta) + (lHandShoulYDelta * lHandShoulYDelta) <= maxHandShouldDistSq;
   
