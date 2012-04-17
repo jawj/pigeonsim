@@ -405,12 +405,12 @@
 
     CASAConf.prototype.nameTextOpts = {
       size: 2,
-      lineWidth: 2
+      lineWidth: 3
     };
 
     CASAConf.prototype.descTextOpts = {
       size: 1,
-      lineWidth: 1
+      lineWidth: 2
     };
 
     CASAConf.prototype.name = 'CASA Smart Cities';
@@ -457,7 +457,7 @@
     BigBen.prototype.alt = 200;
 
     BigBen.prototype.nameTextOpts = {
-      size: 3,
+      size: 4,
       lineWidth: 3
     };
 

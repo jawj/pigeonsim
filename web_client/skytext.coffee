@@ -44,7 +44,7 @@ class this.SkyText
     lineCoordSets = []
     
     for char in text.split('')
-      if char in [" ", "\n", "\r", @nbsp]
+      if char in [" ", @nbsp, "\n", "\r"]
         xCursor += o.spaceWidth
         continue
       if char is "\t"
@@ -52,7 +52,7 @@ class this.SkyText
         continue
       paths = o.font[char]
       unless paths
-        console.log('Unsupported character: ', char, char.charCodeAt(0))
+        # console.log('Unsupported character: ', char, char.charCodeAt(0))
         paths = o.font['na']
       maxX = 0
       for path in paths

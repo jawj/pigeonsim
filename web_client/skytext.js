@@ -96,7 +96,7 @@
       _ref = text.split('');
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         char = _ref[_i];
-        if (char === " " || char === "\n" || char === "\r" || char === this.nbsp) {
+        if (char === " " || char === this.nbsp || char === "\n" || char === "\r") {
           xCursor += o.spaceWidth;
           continue;
         }
@@ -106,7 +106,6 @@
         }
         paths = o.font[char];
         if (!paths) {
-          console.log('Unsupported character: ', char, char.charCodeAt(0));
           paths = o.font['na'];
         }
         maxX = 0;

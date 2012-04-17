@@ -192,8 +192,8 @@ class @CASALogo extends Feature
       
 class @CASAConf extends Feature
   alt: 130
-  nameTextOpts: {size: 2, lineWidth: 2}
-  descTextOpts: {size: 1, lineWidth: 1}
+  nameTextOpts: {size: 2, lineWidth: 3}
+  descTextOpts: {size: 1, lineWidth: 2}
   name: 'CASA Smart Cities'
   
   update: ->
@@ -213,7 +213,7 @@ class @CASAConf extends Feature
 
 class @BigBen extends Feature
   alt: 200
-  nameTextOpts: {size: 3, lineWidth: 3}
+  nameTextOpts: {size: 4, lineWidth: 3}
   
   update: ->
     @name = new Date().strftime('%H.%M')
