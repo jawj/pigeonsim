@@ -1,11 +1,8 @@
 
 Reset after 60s no activity
-Add feature selection to params
 Add tide gauges
 Add tube/rail status?
 Add coloured dashes for tube lines to tube stations?
 Eliminate diving acceleration, but add Turbo checkbox or key?
-Return to hands-over-head for home (and a keypress for calibration, with saving -- or just have it fixed?)
 Impose upper altitude limit?
 Add KML region and level of detail to each feature?
-Add mouse or keypress navigation in the HTML?

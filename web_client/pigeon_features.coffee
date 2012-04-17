@@ -116,7 +116,7 @@ class @Feature
   nameTextOpts: {}
   descTextOpts: {}
   
-  constructor: (@id, @lat, @lon) ->
+  constructor: (@id, @lat, @lon, @opts) ->
   
   rect: -> {x: @lon, y: @lat, w: 0, h: 0}
     
@@ -126,7 +126,7 @@ class @Feature
     ge  = fm.ge
     angleToCamRad = Math.atan2(@lon - cam.lon, @lat - cam.lat)
     angleToCamDeg = angleToCamRad * oneEightyOverPi
-    st = new SkyText(@lat, @lon, @alt)
+    st = new SkyText(@lat, @lon, @alt, @opts)
     st.text(@name, mergeObj({bearing: angleToCamDeg}, @nameTextOpts)) if @name
     st.text(@desc, mergeObj({bearing: angleToCamDeg}, @descTextOpts)) if @desc
     geNode = ge.parseKml(st.kml())
@@ -146,12 +146,13 @@ class @RailStationSet extends FeatureSet
     super(featureManager)
     for row in @csv.split("\n")
       [code, name, lat, lon] = row.split(',')
+      continue if lat < 51.253320526331336 or lat > 51.73383267274113 or lon < -0.61248779296875 or lon > 0.32684326171875
       station = new RailStation("rail-#{code}", parseFloat(lat), parseFloat(lon))
       station.name = "\uF001 #{name}"
       @addFeature(station)
 
 class @RailStation extends Feature
-  alt: 130
+  alt: 120
   nameTextOpts: {size: 3}
 
 
@@ -238,7 +239,7 @@ class @LondonTweetSet extends FeatureSet
         lat = parseFloat(t.lat)
         lon = parseFloat(t.lon)
         continue if isNaN(lat) or isNaN(lon)
-        tweet = new Tweet("tweet-#{t.twitterID}", lat, lon)
+        tweet = new Tweet("tweet-#{t.twitterID}", lat, lon, {colour: 'ffffeecc'})
         tweet.name = t.name
         tweet.desc = t.twitterPost.replace(/&gt;/g, '>').replace(/&lt;/g, '<')
                       .match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n')  # bug: many \ns collapsed to one
@@ -248,8 +249,8 @@ class @LondonTweetSet extends FeatureSet
 
 class @Tweet extends Feature
   alt: 160
-  nameTextOpts: {size: 1}
-  descTextOpts: {size: 1, lineWidth: 1}
+  nameTextOpts: {size: 1, colour: 'ffffeecc'}
+  descTextOpts: {size: 1, lineWidth: 1, colour: 'ffffeecc'}
 
 
 class @LondonAirSet extends FeatureSet
@@ -266,9 +267,13 @@ class @LondonAirSet extends FeatureSet
       for line in lines
         cells = line.split(',')
         continue if cells.length < 10
-        a = new LondonAir("air-#{cells[0]}", parseFloat(cells[2]), parseFloat(cells[3]))
-        a.name = cells[1] + ' air'
+        a = new LondonAir("air-#{cells[0]}", parseFloat(cells[2]), parseFloat(cells[3]), {colour: 'ffccffcc'})
+        a.name = cells[1]
         desc = ''
+        pm10ugm3 = cells[20]
+        if pm10ugm3 isnt ''
+          pm10desc = cells[22]
+          desc += "PM10:\t#{pm10ugm3} μg/m³ (#{pm10desc})\n"
         no2ugm3 = cells[8]
         if no2ugm3 isnt ''
           no2desc = cells[10]
@@ -284,7 +289,33 @@ class @LondonAirSet extends FeatureSet
   
 class @LondonAir extends Feature
   alt: 180
-  nameTextOpts: {size: 2}
-  descTextOpts: {size: 2, lineWidth: 1}
+  nameTextOpts: {size: 2, colour: 'ffddffdd'}
+  descTextOpts: {size: 2, lineWidth: 1, colour: 'ffddffdd'}
   
+  
+class @LondonTrafficSet extends FeatureSet
+  constructor: (featureManager) ->
+    super(featureManager)
+    @update()
+  
+  update: ->
+    load {url: 'http://orca.casa.ucl.ac.uk/~ollie/citydb/modules/roadsigns.php?city=london&format=csv'}, (csv) =>
+      @clearFeatures()
+      lines = csv.split('\n')
+      metadata = lines.shift()
+      headers  = lines.shift()
+      for line in lines
+        cells = line.split(',')
+        continue if cells.length < 5
+        a = new LondonTraffic("trf-#{cells[0]}", parseFloat(cells[1]), parseFloat(cells[2]), {colour: 'ff77ddff'})
+        a.name = cells[9]
+        a.desc = (s.match(/^\s*(.*?)\s*$/)[1] for s in cells[3..6]).join('\n')
+        @addFeature(a)
+    self = arguments.callee.bind(@)
+    setTimeout(self, 3 * 60 * 1000)  # update every 3 mins
+  
+class @LondonTraffic extends Feature
+  alt: 110
+  nameTextOpts: {size: 2, lineWidth: 3, colour: 'ff77ddff'}
+  descTextOpts: {size: 2, lineWidth: 2, colour: 'ff77ddff'}
   

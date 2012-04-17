@@ -204,10 +204,11 @@
 
     Feature.prototype.descTextOpts = {};
 
-    function Feature(id, lat, lon) {
+    function Feature(id, lat, lon, opts) {
       this.id = id;
       this.lat = lat;
       this.lon = lon;
+      this.opts = opts;
     }
 
     Feature.prototype.rect = function() {
@@ -226,7 +227,7 @@
       ge = fm.ge;
       angleToCamRad = Math.atan2(this.lon - cam.lon, this.lat - cam.lat);
       angleToCamDeg = angleToCamRad * oneEightyOverPi;
-      st = new SkyText(this.lat, this.lon, this.alt);
+      st = new SkyText(this.lat, this.lon, this.alt, this.opts);
       if (this.name) {
         st.text(this.name, mergeObj({
           bearing: angleToCamDeg
@@ -267,6 +268,9 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         row = _ref[_i];
         _ref1 = row.split(','), code = _ref1[0], name = _ref1[1], lat = _ref1[2], lon = _ref1[3];
+        if (lat < 51.253320526331336 || lat > 51.73383267274113 || lon < -0.61248779296875 || lon > 0.32684326171875) {
+          continue;
+        }
         station = new RailStation("rail-" + code, parseFloat(lat), parseFloat(lon));
         station.name = "\uF001 " + name;
         this.addFeature(station);
@@ -287,7 +291,7 @@
       return RailStation.__super__.constructor.apply(this, arguments);
     }
 
-    RailStation.prototype.alt = 130;
+    RailStation.prototype.alt = 120;
 
     RailStation.prototype.nameTextOpts = {
       size: 3
@@ -510,7 +514,9 @@
           if (isNaN(lat) || isNaN(lon)) {
             continue;
           }
-          tweet = new Tweet("tweet-" + t.twitterID, lat, lon);
+          tweet = new Tweet("tweet-" + t.twitterID, lat, lon, {
+            colour: 'ffffeecc'
+          });
           tweet.name = t.name;
           tweet.desc = t.twitterPost.replace(/&gt;/g, '>').replace(/&lt;/g, '<').match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n');
           _results.push(_this.addFeature(tweet));
@@ -538,12 +544,14 @@
     Tweet.prototype.alt = 160;
 
     Tweet.prototype.nameTextOpts = {
-      size: 1
+      size: 1,
+      colour: 'ffffeecc'
     };
 
     Tweet.prototype.descTextOpts = {
       size: 1,
-      lineWidth: 1
+      lineWidth: 1,
+      colour: 'ffffeecc'
     };
 
     return Tweet;
@@ -567,7 +575,7 @@
       load({
         url: 'http://orca.casa.ucl.ac.uk/~ollie/citydb/modules/airquality.php?city=london&format=csv'
       }, function(csv) {
-        var a, cells, desc, headers, line, lines, metadata, no2desc, no2ugm3, o3desc, o3ugm3, _i, _len, _results;
+        var a, cells, desc, headers, line, lines, metadata, no2desc, no2ugm3, o3desc, o3ugm3, pm10desc, pm10ugm3, _i, _len, _results;
         _this.clearFeatures();
         lines = csv.split('\n');
         metadata = lines.shift();
@@ -579,9 +587,16 @@
           if (cells.length < 10) {
             continue;
           }
-          a = new LondonAir("air-" + cells[0], parseFloat(cells[2]), parseFloat(cells[3]));
-          a.name = cells[1] + ' air';
+          a = new LondonAir("air-" + cells[0], parseFloat(cells[2]), parseFloat(cells[3]), {
+            colour: 'ffccffcc'
+          });
+          a.name = cells[1];
           desc = '';
+          pm10ugm3 = cells[20];
+          if (pm10ugm3 !== '') {
+            pm10desc = cells[22];
+            desc += "PM10:\t" + pm10ugm3 + " μg/m³ (" + pm10desc + ")\n";
+          }
           no2ugm3 = cells[8];
           if (no2ugm3 !== '') {
             no2desc = cells[10];
@@ -618,15 +633,100 @@
     LondonAir.prototype.alt = 180;
 
     LondonAir.prototype.nameTextOpts = {
-      size: 2
+      size: 2,
+      colour: 'ffddffdd'
     };
 
     LondonAir.prototype.descTextOpts = {
       size: 2,
-      lineWidth: 1
+      lineWidth: 1,
+      colour: 'ffddffdd'
     };
 
     return LondonAir;
+
+  })(Feature);
+
+  this.LondonTrafficSet = (function(_super) {
+
+    __extends(LondonTrafficSet, _super);
+
+    LondonTrafficSet.name = 'LondonTrafficSet';
+
+    function LondonTrafficSet(featureManager) {
+      LondonTrafficSet.__super__.constructor.call(this, featureManager);
+      this.update();
+    }
+
+    LondonTrafficSet.prototype.update = function() {
+      var self,
+        _this = this;
+      load({
+        url: 'http://orca.casa.ucl.ac.uk/~ollie/citydb/modules/roadsigns.php?city=london&format=csv'
+      }, function(csv) {
+        var a, cells, headers, line, lines, metadata, s, _i, _len, _results;
+        _this.clearFeatures();
+        lines = csv.split('\n');
+        metadata = lines.shift();
+        headers = lines.shift();
+        _results = [];
+        for (_i = 0, _len = lines.length; _i < _len; _i++) {
+          line = lines[_i];
+          cells = line.split(',');
+          if (cells.length < 5) {
+            continue;
+          }
+          a = new LondonTraffic("trf-" + cells[0], parseFloat(cells[1]), parseFloat(cells[2]), {
+            colour: 'ff77ddff'
+          });
+          a.name = cells[9];
+          a.desc = ((function() {
+            var _j, _len1, _ref, _results1;
+            _ref = cells.slice(3, 7);
+            _results1 = [];
+            for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+              s = _ref[_j];
+              _results1.push(s.match(/^\s*(.*?)\s*$/)[1]);
+            }
+            return _results1;
+          })()).join('\n');
+          _results.push(_this.addFeature(a));
+        }
+        return _results;
+      });
+      self = arguments.callee.bind(this);
+      return setTimeout(self, 3 * 60 * 1000);
+    };
+
+    return LondonTrafficSet;
+
+  })(FeatureSet);
+
+  this.LondonTraffic = (function(_super) {
+
+    __extends(LondonTraffic, _super);
+
+    LondonTraffic.name = 'LondonTraffic';
+
+    function LondonTraffic() {
+      return LondonTraffic.__super__.constructor.apply(this, arguments);
+    }
+
+    LondonTraffic.prototype.alt = 110;
+
+    LondonTraffic.prototype.nameTextOpts = {
+      size: 2,
+      lineWidth: 3,
+      colour: 'ff77ddff'
+    };
+
+    LondonTraffic.prototype.descTextOpts = {
+      size: 2,
+      lineWidth: 2,
+      colour: 'ff77ddff'
+    };
+
+    return LondonTraffic;
 
   })(Feature);
 
