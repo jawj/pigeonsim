@@ -7,7 +7,7 @@
   google.load('earth', '1.x');
 
   window.onload = function() {
-    var addLayers, altStatus, animTick, animTicks, animTimeout, cam, camMoves, compassPts, connect, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, els, features, flapAmount, flown, fm, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, latFactor, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref1, _ref2;
+    var addLayers, altStatus, animTick, animTicks, animTimeout, cam, camMoves, compassPts, connect, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, els, features, flapAmount, flown, fm, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, lastMove, latFactor, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref1, _ref2;
     if (!window.WebSocket) {
       alert('This app needs browser WebSocket support');
       return;
@@ -97,6 +97,7 @@
       atmosphere: 1,
       sun: 0,
       timeControl: 0,
+      resetTimeout: 60,
       featureSkip: 12,
       debugBox: 0,
       reconnectWait: 2,
@@ -127,7 +128,7 @@
       return _results;
     })(), titleStatus = _ref2[0], altStatus = _ref2[1], debugDataStatus = _ref2[2], debugEarthAPIStatus = _ref2[3], debugTicksStatus = _ref2[4], headingStatus = _ref2[5];
     cam = {};
-    ge = seenCam = flown = animTimeout = fm = null;
+    ge = seenCam = flown = animTimeout = fm = lastMove = null;
     animTicks = camMoves = inMsgs = 0;
     lastFlap = flapAmount = 0;
     pi = Math.PI;
@@ -145,6 +146,7 @@
       cam.alt = params.startAlt;
       cam.roll = 0.0000001;
       cam.tilt = params.cruiseTilt;
+      lastMove = new Date();
       return flown = false;
     };
     moveCam = function() {
@@ -157,6 +159,7 @@
       if (unmoved) {
         return false;
       }
+      lastMove = new Date();
       view = ge.getView();
       c = view.copyAsCamera(ge.ALTITUDE_ABSOLUTE);
       c.setLatitude(cam.lat);
@@ -255,7 +258,12 @@
       altStatus.innerHTML = "" + (Math.round(cam.alt)) + "m";
       moved = moveCam();
       if (animTicks % params.featureSkip === 0) {
-        fm.update();
+        if (flown && new Date() - lastMove > params.resetTimeout * 1000) {
+          resetCam();
+          fm.reset();
+        } else {
+          fm.update();
+        }
       }
       if (animTimeout != null) {
         clearTimeout(animTimeout);

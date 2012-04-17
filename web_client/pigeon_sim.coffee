@@ -38,6 +38,7 @@ window.onload = ->
     atmosphere:     1       # show atmosphere
     sun:            0       # show sun
     timeControl:    0       # show Google Earth time controller (if sun is 1)
+    resetTimeout:  60       # seconds, after which to reset if no flight
     featureSkip:   12       # update features every n movement frames
     debugBox:       0       # show the box that determines visibility of features
     
@@ -60,7 +61,7 @@ window.onload = ->
     (el(id) for id in w('title alt debugData debugEarthAPI debugTicks heading'))
     
   cam = {}
-  ge = seenCam = flown = animTimeout = fm = null
+  ge = seenCam = flown = animTimeout = fm = lastMove = null
   animTicks = camMoves = inMsgs = 0
   lastFlap = flapAmount = 0
   
@@ -81,6 +82,7 @@ window.onload = ->
     cam.alt     = params.startAlt
     cam.roll    = 0.0000001  # a plain 0 is ignored
     cam.tilt    = params.cruiseTilt
+    lastMove    = new Date()
     flown = no
   
   moveCam = ->
@@ -88,6 +90,8 @@ window.onload = ->
     debugEarthAPIStatus.innerHTML = camMoves if params.debugData
     unmoved = objsEq(cam, seenCam)
     return no if unmoved
+    
+    lastMove = new Date()
     
     view = ge.getView()
     c = view.copyAsCamera(ge.ALTITUDE_ABSOLUTE)
@@ -159,7 +163,13 @@ window.onload = ->
     altStatus.innerHTML        = "#{Math.round(cam.alt)}m"
     
     moved = moveCam()
-    fm.update() if animTicks % params.featureSkip is 0
+    
+    if animTicks % params.featureSkip is 0
+      if flown and new Date() - lastMove > params.resetTimeout * 1000
+        resetCam()
+        fm.reset()
+      else
+        fm.update()
     
     clearTimeout(animTimeout) if animTimeout?
     animTimeout = null
