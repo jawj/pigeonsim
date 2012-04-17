@@ -4,7 +4,7 @@
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-  load = function(opts, callback) {
+  window.load = load = function(opts, callback) {
     var k, kvps, url, v, xhr;
     url = opts.url;
     if (opts.method == null) {
@@ -25,6 +25,9 @@
       url += '?' + kvps.join('&');
     }
     xhr = new XMLHttpRequest();
+    if (opts.type === 'xml') {
+      xhr.overrideMimeType('text/xml');
+    }
     xhr.onreadystatechange = function() {
       var obj;
       if (xhr.readyState === 4) {
@@ -352,7 +355,7 @@
     MiscSet.name = 'MiscSet';
 
     function MiscSet(featureManager) {
-      var bb, conf, logo;
+      var bb, conf, logo, tb;
       MiscSet.__super__.constructor.call(this, featureManager);
       logo = new CASALogo("casa-logo", 51.52192375643773, -0.13593167066574097);
       this.addFeature(logo);
@@ -362,6 +365,9 @@
       bb = new BigBen('big-ben', 51.5007286626542, -0.12459531426429749);
       bb.update();
       this.addFeature(bb);
+      tb = new TowerBridge('twr-brdg', 51.50558385576479, -0.0754237174987793);
+      tb.update();
+      this.addFeature(tb);
     }
 
     return MiscSet;
@@ -457,8 +463,13 @@
     BigBen.prototype.alt = 200;
 
     BigBen.prototype.nameTextOpts = {
-      size: 4,
-      lineWidth: 3
+      size: 2,
+      lineWidth: 2
+    };
+
+    BigBen.prototype.descTextOpts = {
+      size: 2,
+      lineWidth: 1
     };
 
     BigBen.prototype.update = function() {
@@ -474,6 +485,68 @@
     };
 
     return BigBen;
+
+  })(Feature);
+
+  this.TowerBridge = (function(_super) {
+
+    __extends(TowerBridge, _super);
+
+    TowerBridge.name = 'TowerBridge';
+
+    function TowerBridge() {
+      return TowerBridge.__super__.constructor.apply(this, arguments);
+    }
+
+    TowerBridge.prototype.alt = 200;
+
+    TowerBridge.prototype.nameTextOpts = {
+      size: 2,
+      lineWidth: 3
+    };
+
+    TowerBridge.prototype.name = 'Tower Bridge';
+
+    TowerBridge.prototype.update = function() {
+      var self,
+        _this = this;
+      load({
+        url: 'http://www.towerbridge.org.uk/TBE/EN/BridgeLiftTimes/',
+        type: 'xml'
+      }, function(data) {
+        var cells, changed, desc, descs, i, x;
+        cells = (function() {
+          var _i, _len, _ref, _results;
+          _ref = data.querySelectorAll('td');
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            x = _ref[_i];
+            _results.push(x.innerHTML);
+          }
+          return _results;
+        })();
+        descs = (function() {
+          var _i, _results;
+          _results = [];
+          for (i = _i = 0; _i <= 5; i = _i += 5) {
+            _results.push("" + cells[i + 4] + " on " + cells[i] + " " + cells[i + 1] + " at " + cells[i + 2] + " for vessel " + cells[i + 3]);
+          }
+          return _results;
+        })();
+        desc = descs.join('\n');
+        changed = _this.desc !== desc;
+        _this.desc = desc;
+        if (changed && (_this.geNode != null)) {
+          return _this.show();
+        }
+      });
+      self = arguments.callee.bind(this);
+      if (this.interval == null) {
+        return this.interval = setInterval(self, 4 * 60 * 60 * 1000);
+      }
+    };
+
+    return TowerBridge;
 
   })(Feature);
 

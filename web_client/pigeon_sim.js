@@ -81,12 +81,13 @@
       startHeading: 155,
       startAlt: 90,
       minAlt: 5,
+      maxAlt: 400,
       speed: 3,
       maxSpeed: 6,
-      cruiseTilt: 88,
+      cruiseTilt: 87,
       diveSpeed: 0.15,
-      diveAccel: 0.05,
-      diveDecel: 0.05,
+      diveAccel: 0,
+      diveDecel: 0,
       flapSize: 1,
       flapDecay: 0.8,
       maxRoll: 80,
@@ -234,6 +235,9 @@
       alt = cam.alt + altDelta;
       if (alt < params.minAlt) {
         alt = params.minAlt;
+      }
+      if (alt > params.maxAlt) {
+        alt = params.maxAlt;
       }
       cam.lat += latDelta;
       cam.lon += lonDelta;

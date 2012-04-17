@@ -1,11 +1,12 @@
 
-load = (opts, callback) ->
+window.load = load = (opts, callback) ->
   url = opts.url
   opts.method ?= 'GET'
   if opts.search?
     kvps = ("#{escape(k)}=#{escape(v)}" for own k, v of opts.search)
     url += '?' + kvps.join('&')
   xhr = new XMLHttpRequest()
+  xhr.overrideMimeType('text/xml') if opts.type is 'xml'
   xhr.onreadystatechange = ->
     if xhr.readyState is 4
       obj = if opts.type is 'json' then JSON.parse(xhr.responseText)
@@ -184,6 +185,10 @@ class @MiscSet extends FeatureSet
     bb = new BigBen('big-ben', 51.5007286626542, -0.12459531426429749)
     bb.update()
     @addFeature(bb)
+    
+    tb = new TowerBridge('twr-brdg', 51.50558385576479, -0.0754237174987793)
+    tb.update()
+    @addFeature(tb)
 
 class @CASALogo extends Feature
   alt: 220
@@ -213,13 +218,31 @@ class @CASAConf extends Feature
 
 class @BigBen extends Feature
   alt: 200
-  nameTextOpts: {size: 4, lineWidth: 3}
+  nameTextOpts: {size: 2, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
   
   update: ->
     @name = new Date().strftime('%H.%M')
     @show() if @geNode?
     self = arguments.callee.bind(@)
     @interval = setInterval(self, 1 * 60 * 1000) unless @interval?  # update every minute
+
+class @TowerBridge extends Feature
+  alt: 200
+  nameTextOpts: {size: 2, lineWidth: 3}
+  name: 'Tower Bridge'
+  
+  update: ->
+    load {url: 'http://www.towerbridge.org.uk/TBE/EN/BridgeLiftTimes/', type: 'xml'}, (data) =>
+      cells = (x.innerHTML for x in data.querySelectorAll('td'))  # arrayify the node list
+      descs = for i in [0..5] by 5
+        "#{cells[i + 4]} on #{cells[i]} #{cells[i + 1]} at #{cells[i + 2]} for vessel #{cells[i + 3]}"
+      desc = descs.join('\n')
+      changed = @desc isnt desc
+      @desc = desc
+      @show() if changed and @geNode?
+    self = arguments.callee.bind(@)
+    @interval = setInterval(self, 4 * 60 * 60 * 1000) unless @interval?  # update every 4 hours
     
 
 class @LondonTweetSet extends FeatureSet
