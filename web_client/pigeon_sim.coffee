@@ -27,8 +27,8 @@ window.onload = ->
     maxSpeed:       6       # = when diving
     cruiseTilt:    87       # degrees up from straight down
     diveSpeed:      0.15    # speed multiplier for diving (dive speed also a function of lean angle and general speed)
-    diveAccel:      0       # rate at which diving increases general speed
-    diveDecel:      0       # rate at which speed decreases again after levelling out
+    diveAccel:      0.05    # rate at which diving increases general speed
+    diveDecel:      0.05    # rate at which speed decreases again after levelling out
     flapSize:       1       # controls size of flap effect
     flapDecay:      0.8     # controls duration of flap effect
     maxRoll:       80       # max degrees left or right
@@ -111,7 +111,7 @@ window.onload = ->
   updateCam = (data) ->
     if data.reset and flown
       if data.reset is 2
-        location.reload()
+        window.location.reload()
       else
         resetCam()
         fm.reset()  # otherwise angles are wrong if we're already near reset point

@@ -86,8 +86,8 @@
       maxSpeed: 6,
       cruiseTilt: 87,
       diveSpeed: 0.15,
-      diveAccel: 0,
-      diveDecel: 0,
+      diveAccel: 0.05,
+      diveDecel: 0.05,
       flapSize: 1,
       flapDecay: 0.8,
       maxRoll: 80,
@@ -191,7 +191,7 @@
       var alt, altDelta, flapDiff, heading, headingDelta, headingRad, latDelta, lonDelta, roll;
       if (data.reset && flown) {
         if (data.reset === 2) {
-          location.reload();
+          window.location.reload();
         } else {
           resetCam();
           fm.reset();
