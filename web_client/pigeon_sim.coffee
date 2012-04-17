@@ -109,13 +109,13 @@ window.onload = ->
   addLayers = (layers...) -> ge.getLayerRoot().enableLayerById(l, yes) for l in layers
 
   updateCam = (data) ->
-    if data.reset and flown
-      if data.reset is 2
-        window.location.reload()
-      else
-        resetCam()
-        fm.reset()  # otherwise angles are wrong if we're already near reset point
+    if flown and data.reset is 1
+      resetCam()
+      fm.reset()  # otherwise angles are wrong if we're already near reset point
       
+    if data.reset is 2
+      window.location.reload()
+    
     return unless data.roll?
     
     flown        = yes  # since last resetCam()

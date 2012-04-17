@@ -189,13 +189,12 @@
     };
     updateCam = function(data) {
       var alt, altDelta, flapDiff, heading, headingDelta, headingRad, latDelta, lonDelta, roll;
-      if (data.reset && flown) {
-        if (data.reset === 2) {
-          window.location.reload();
-        } else {
-          resetCam();
-          fm.reset();
-        }
+      if (flown && data.reset === 1) {
+        resetCam();
+        fm.reset();
+      }
+      if (data.reset === 2) {
+        window.location.reload();
       }
       if (data.roll == null) {
         return;
