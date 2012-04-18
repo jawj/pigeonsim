@@ -1,4 +1,6 @@
 
+/* beware: technical debt ahead! */
+
 import SimpleOpenNI.*;
 
 import muthesius.net.*;

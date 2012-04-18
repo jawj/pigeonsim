@@ -24,11 +24,11 @@ window.onload = ->
     minAlt:         5       # metres above "sea level"
     maxAlt:       400       # ditto
     speed:          3       # = when flying straight
-    maxSpeed:       6       # = when diving
+    maxSpeed:       5       # = when diving
     cruiseTilt:    87       # degrees up from straight down
     diveSpeed:      0.15    # speed multiplier for diving (dive speed also a function of lean angle and general speed)
     diveAccel:      0.05    # rate at which diving increases general speed
-    diveDecel:      0.05    # rate at which speed decreases again after levelling out
+    diveDecel:      0.1     # rate at which speed decreases again after levelling out
     flapSize:       1       # controls size of flap effect
     flapDecay:      0.8     # controls duration of flap effect
     maxRoll:       80       # max degrees left or right
