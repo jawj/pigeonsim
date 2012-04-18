@@ -2,5 +2,5 @@ Get up and running (Windows or Mac):
 
 * Install Simple-OpenNI, OpenNI and Processing, following the "instructions provided by Simple-OpenNI":http://code.google.com/p/simple-openni/wiki/Installation (note that on 64-bit Windows, you probably still want the 32-bit OpenNI libraries, since Processing comes with its own 32-bit Java).
 * Run the pigeonsim Processing sketch
-* Launch Chrome with the --disable-web-security command-line flag (to allow cross-domain AJAX requests for the live data), and open web_client/index.html
+* Launch Chrome with the @--disable-web-security@ command-line flag (to allow cross-domain AJAX requests for the live data), and open web_client/index.html
 * Fly!
