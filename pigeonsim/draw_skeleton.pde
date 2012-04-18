@@ -1,7 +1,5 @@
 
-void drawSkeleton(int userId) {
-  ni.drawLimb(userId, SimpleOpenNI.SKEL_HEAD, SimpleOpenNI.SKEL_NECK);
-
+void drawSkeleton(int userId, boolean pigeon) {
   ni.drawLimb(userId, SimpleOpenNI.SKEL_NECK, SimpleOpenNI.SKEL_LEFT_SHOULDER);
   ni.drawLimb(userId, SimpleOpenNI.SKEL_LEFT_SHOULDER, SimpleOpenNI.SKEL_LEFT_ELBOW);
   ni.drawLimb(userId, SimpleOpenNI.SKEL_LEFT_ELBOW, SimpleOpenNI.SKEL_LEFT_HAND);
@@ -20,6 +18,21 @@ void drawSkeleton(int userId) {
   ni.drawLimb(userId, SimpleOpenNI.SKEL_TORSO, SimpleOpenNI.SKEL_RIGHT_HIP);
   ni.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_HIP, SimpleOpenNI.SKEL_RIGHT_KNEE);
   ni.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_KNEE, SimpleOpenNI.SKEL_RIGHT_FOOT);
+  
+  // ni.drawLimb(userId, SimpleOpenNI.SKEL_HEAD, SimpleOpenNI.SKEL_NECK);
+
+  if (pigeon) {
+    ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_HEAD, head);
+    ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_NECK, neck);
+    ni.convertRealWorldToProjective(head, convertedHead);
+    imageMode(CENTER);
+    pushMatrix();
+    float angle = atan((head.x - neck.x) / (head.y - neck.y));
+    translate(convertedHead.x, convertedHead.y - 10);
+    rotate(angle);
+    image(pigeonImg, 0, 0);
+    popMatrix();
+  }
 }
 
 void drawText(String t) {

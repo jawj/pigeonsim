@@ -18,10 +18,13 @@ boolean showText            = false;
 WebSocketP5   ws;
 SimpleOpenNI  ni;
 IntVector     users;
+PImage        pigeonImg;
 
 PFont         font;
 color         bgCol, readyCol, flyCol, diveCol, flapCol, resetCol, calibCol;
-PVector       head, rShoul, lShoul, rElbow, lElbow, rHand, lHand, rHip, lHip;
+PVector       head, neck, rShoul, lShoul, rElbow, lElbow, rHand, lHand, rHip, lHip;
+PVector       convertedHead;
+float         confHead, confNeck;
 
 int  flyingUserId = -1;
 int  flapStage = -1;
@@ -33,7 +36,8 @@ void setup() {
   rElbow = new PVector(); lElbow = new PVector();
   rHand  = new PVector(); lHand  = new PVector();
   rHip   = new PVector(); lHip   = new PVector();
-  head   = new PVector();
+  head   = new PVector(); neck   = new PVector();
+  convertedHead = new PVector();
   
   readyCol = color(255);             // white
   flyCol   = color(255, 255,   0);   // yellow
@@ -63,6 +67,7 @@ void setup() {
   textY = height * 0.975;
   
   smooth();
+  pigeonImg = loadImage("pigeon.png");
 }
 
 void draw() {
@@ -71,6 +76,7 @@ void draw() {
   textAlign(CENTER);
   
   ni.update();
+  imageMode(CORNER);
   image(ni.depthImage(), 0, 0);  
   ni.getUsers(users);
   long len = users.size();
@@ -85,8 +91,8 @@ void draw() {
     for (int i = 0; i < len; i ++) {
       int userId = users.get(i);
       if (ni.isTrackingSkeleton(userId)) {
-        ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_HEAD, head);
-        float xz = abs(head.x * 5.0) + head.z;  // lower z is nearer the Kinect; x nearer 0 is nearer the centre of the scene
+        ni.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_NECK, neck);
+        float xz = abs(neck.x * 5.0) + neck.z;  // lower z is nearer the Kinect; x nearer 0 is nearer the centre of the scene
         if (xz < frontUserXZ) {
           activeUserId = userId;
           frontUserXZ = xz;
@@ -101,7 +107,7 @@ void draw() {
     if (ni.isTrackingSkeleton(userId)) {
       stroke(127);
       strokeWeight(12);
-      drawSkeleton(userId);
+      drawSkeleton(userId, false);
       if (userId == activeUserId) identifyGestures(userId);
     }
   }

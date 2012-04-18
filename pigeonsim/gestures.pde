@@ -107,7 +107,7 @@ void identifyGestures(int userId) {
         stroke(flyCol);
       }
     }
-    drawSkeleton(userId);
+    drawSkeleton(userId, true);
 
     float handsLeftRad = atan2(rHand.y - lHand.y, rHand.x - lHand.x);
     float handsLeftDeg = wrapDegs180(degrees(handsLeftRad));
@@ -118,21 +118,21 @@ void identifyGestures(int userId) {
   } else if ((rHandOnHeart || lHandOnHeart) && confSum >= 8) {
     drawText("HOME");
     stroke(resetCol);
-    drawSkeleton(userId);
+    drawSkeleton(userId, true);
     int val = (rHandOnHeart && lHandOnHeart) ? 2 : 1;
     ws.broadcast("{\"reset\": " + val + "}");
     
   } else if (handsTogether && handsOverHead && confSum >= 8) {
     drawText("CALIBRATE");
     stroke(calibCol);
-    drawSkeleton(userId);
+    drawSkeleton(userId, true);
     leanStraightDeg = leanFwdDeg;
 
   } else {
     flyingUserId = -1;
     drawText("READY");
     stroke(readyCol);
-    drawSkeleton(userId);
+    drawSkeleton(userId, true);
     ws.broadcast("{}");
   }
 }
