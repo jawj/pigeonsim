@@ -290,20 +290,20 @@ class @LondonAirSet extends FeatureSet
       for line in lines
         cells = line.split(',')
         continue if cells.length < 10
-        a = new LondonAir("air-#{cells[0]}", parseFloat(cells[2]), parseFloat(cells[3]), {colour: 'ffccffcc'})
+        a = new LondonAir("air-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]), {colour: 'ffccffcc'})
         a.name = cells[1]
         desc = ''
-        pm10ugm3 = cells[20]
+        pm10ugm3 = cells[21]
         if pm10ugm3 isnt ''
-          pm10desc = cells[22]
+          pm10desc = cells[23]
           desc += "PM10:\t#{pm10ugm3} μg/m³ (#{pm10desc})\n"
-        no2ugm3 = cells[8]
+        no2ugm3 = cells[9]
         if no2ugm3 isnt ''
-          no2desc = cells[10]
+          no2desc = cells[11]
           desc += "NO₂:\t#{no2ugm3} μg/m³ (#{no2desc})\n"
-        o3ugm3 = cells[4]
+        o3ugm3 = cells[5]
         if o3ugm3 isnt ''
-          o3desc = cells[6]
+          o3desc = cells[7]
           desc += "O₃: \t#{o3ugm3} μg/m³ (#{o3desc})\n"
         a.desc = desc
         @addFeature(a)
@@ -330,9 +330,9 @@ class @LondonTrafficSet extends FeatureSet
       for line in lines
         cells = line.split(',')
         continue if cells.length < 5
-        a = new LondonTraffic("trf-#{cells[0]}", parseFloat(cells[1]), parseFloat(cells[2]), {colour: 'ff77ddff'})
-        a.name = cells[9]
-        a.desc = (s.match(/^\s*(.*?)\s*$/)[1] for s in cells[3..6]).join('\n')
+        a = new LondonTraffic("trf-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]), {colour: 'ff77ddff'})
+        a.name = cells[11]
+        a.desc = (s.match(/^\s*(.*?)\s*$/)[1] for s in cells[5..8]).join('\n')
         @addFeature(a)
     self = arguments.callee.bind(@)
     setTimeout(self, 3 * 60 * 1000)  # update every 3 mins
@@ -357,9 +357,9 @@ class @TideGaugeSet extends FeatureSet
       for line in lines
         cells = line.split(',')
         continue if cells.length < 3
-        a = new TideGauge("tide-#{cells[0]}", parseFloat(cells[2]), parseFloat(cells[3]), {colour: 'ffffdddd'})
+        a = new TideGauge("tide-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]), {colour: 'ffffdddd'})
         a.name = cells[1]
-        a.desc = "Height:\t#{cells[4]}m\nSurge:\t#{cells[5]}m"
+        a.desc = "Height:\t#{cells[5]}m\nSurge:\t#{cells[6]}m"
         @addFeature(a)
     self = arguments.callee.bind(@)
     setTimeout(self, 3 * 60 * 1000)  # update every 3 mins

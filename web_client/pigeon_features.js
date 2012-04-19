@@ -660,24 +660,24 @@
           if (cells.length < 10) {
             continue;
           }
-          a = new LondonAir("air-" + cells[0], parseFloat(cells[2]), parseFloat(cells[3]), {
+          a = new LondonAir("air-" + cells[0], parseFloat(cells[3]), parseFloat(cells[4]), {
             colour: 'ffccffcc'
           });
           a.name = cells[1];
           desc = '';
-          pm10ugm3 = cells[20];
+          pm10ugm3 = cells[21];
           if (pm10ugm3 !== '') {
-            pm10desc = cells[22];
+            pm10desc = cells[23];
             desc += "PM10:\t" + pm10ugm3 + " μg/m³ (" + pm10desc + ")\n";
           }
-          no2ugm3 = cells[8];
+          no2ugm3 = cells[9];
           if (no2ugm3 !== '') {
-            no2desc = cells[10];
+            no2desc = cells[11];
             desc += "NO₂:\t" + no2ugm3 + " μg/m³ (" + no2desc + ")\n";
           }
-          o3ugm3 = cells[4];
+          o3ugm3 = cells[5];
           if (o3ugm3 !== '') {
-            o3desc = cells[6];
+            o3desc = cells[7];
             desc += "O₃: \t" + o3ugm3 + " μg/m³ (" + o3desc + ")\n";
           }
           a.desc = desc;
@@ -749,13 +749,13 @@
           if (cells.length < 5) {
             continue;
           }
-          a = new LondonTraffic("trf-" + cells[0], parseFloat(cells[1]), parseFloat(cells[2]), {
+          a = new LondonTraffic("trf-" + cells[0], parseFloat(cells[3]), parseFloat(cells[4]), {
             colour: 'ff77ddff'
           });
-          a.name = cells[9];
+          a.name = cells[11];
           a.desc = ((function() {
             var _j, _len1, _ref, _results1;
-            _ref = cells.slice(3, 7);
+            _ref = cells.slice(5, 9);
             _results1 = [];
             for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
               s = _ref[_j];
@@ -832,11 +832,11 @@
           if (cells.length < 3) {
             continue;
           }
-          a = new TideGauge("tide-" + cells[0], parseFloat(cells[2]), parseFloat(cells[3]), {
+          a = new TideGauge("tide-" + cells[0], parseFloat(cells[3]), parseFloat(cells[4]), {
             colour: 'ffffdddd'
           });
           a.name = cells[1];
-          a.desc = "Height:\t" + cells[4] + "m\nSurge:\t" + cells[5] + "m";
+          a.desc = "Height:\t" + cells[5] + "m\nSurge:\t" + cells[6] + "m";
           _results.push(_this.addFeature(a));
         }
         return _results;

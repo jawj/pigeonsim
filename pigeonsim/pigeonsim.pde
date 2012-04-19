@@ -21,6 +21,7 @@ IntVector     users;
 PImage        pigeonImg;
 
 PFont         font;
+PFont         tinyFont;
 color         bgCol, readyCol, flyCol, diveCol, flapCol, resetCol, calibCol;
 PVector       head, neck, rShoul, lShoul, rElbow, lElbow, rHand, lHand, rHip, lHip;
 PVector       convertedHead;
@@ -63,6 +64,7 @@ void setup() {
   size(round(ni.depthWidth() * scaleFactor), round(ni.depthHeight() * scaleFactor));
   
   font = loadFont("HelveticaNeue-Bold-60.vlw");
+  tinyFont = loadFont("HelveticaNeue-9.vlw");
   textX = width  * 0.5;
   textY = height * 0.975;
   
@@ -112,4 +114,7 @@ void draw() {
     }
   }
 
+  textFont(tinyFont);
+  fill(255);
+  text("Pigeon image by Photos8.org", 20, height - 25);
 }

@@ -41,7 +41,7 @@ void mouseReleased() {
   mousedown = false;
 }
 void keyPressed() {
-  if      (key == ' ')     ws.broadcast("{\"reset\": 1}");
+  if      (key == ' ') ws.broadcast("{\"reset\": 1}");
   else if (key == 'r') ws.broadcast("{\"reset\": 2}");
 }
 

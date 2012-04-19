@@ -1,5 +1,5 @@
 
-google.load 'earth', '1.x'
+google.load('earth', '1.x', {'other_params':'sensor=false'})
 
 window.onload = ->
   unless window.WebSocket
