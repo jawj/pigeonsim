@@ -115,6 +115,8 @@ void draw() {
   }
 
   textFont(tinyFont);
+  fill(0);
+  text("Pigeon image by Photos8.org", width - 75.0, height - 8.0);
   fill(255);
-  text("Pigeon image by Photos8.org", 20, height - 25);
+  text("Pigeon image by Photos8.org", width - 74.0, height - 7.0);
 }
