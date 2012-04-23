@@ -6,8 +6,8 @@ h3. Installation
 * Install the "p5websocket":http://p5.twelvebytes.net/websocketP5-0.1.3/ library (version 0.1.3+) for Processing.
 * Launch Chrome with the @--disable-web-security@ command-line flag (to allow cross-domain AJAX requests for the live data), and open web_client/index.html. If you don't already have it, you'll need to agree to install the Google Earth plugin.
 * Plug in your Kinect, run the pigeonsim Processing sketch, and fly!
-* Alternatively, if you don't have a Kinect, run the pigeon_dummy sketch. Click and drag to bank/steer, and press [up] to flap, [down] to dive, and [space] to go home. this mainly defeats the point, though.
+* Alternatively, if you don't have a Kinect, run the pigeon_dummy sketch. Click and drag to bank/steer, and press [up] to flap, [down] to dive, and [space] to go home. This mainly defeats the point, though.
 
 h3. Licence
 
-This code is released under the "GPL v3":http://www.opensource.org/licenses/GPL-3.0 (to negotiate GPL-incompatible uses, feel free contact me).
+This code is released under the "GPL v3":http://www.opensource.org/licenses/GPL-3.0. To negotiate GPL-incompatible uses, feel free contact me.
