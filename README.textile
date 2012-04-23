@@ -1,4 +1,4 @@
-h2. Installation
+h3. Installation
 
 Pigeon Sim has been tested on Windows 7 and Mac OS 10.7. The Google Earth plugin seems somewhat more stable and less glitchy on Windows -- but this may depend on your graphics card.
 
@@ -8,6 +8,6 @@ Pigeon Sim has been tested on Windows 7 and Mac OS 10.7. The Google Earth plugin
 * Launch Chrome with the @--disable-web-security@ command-line flag (to allow cross-domain AJAX requests for the live data), and open web_client/index.html. If you don't already have it, you'll need to agree to install the Google Earth plugin.
 * Fly!
 
-h2. Licence
+h3. Licence
 
 This code is released under the "GPL v3":http://www.opensource.org/licenses/GPL-3.0 (to negotiate GPL-incompatible uses, feel free contact me).
