@@ -1,7 +1,5 @@
 
-google.load('earth', '1.x', {'other_params':'sensor=false'})
-
-window.onload = ->
+google.setOnLoadCallback ->
   unless window.WebSocket
     alert('This app needs browser WebSocket support')
     return
@@ -223,3 +221,4 @@ window.onload = ->
   
   google.earth.createInstance('earth', earthInitCallback, -> console.log("Google Earth error: #{errorCode}"))
     
+google.load('earth', '1', {'other_params':'sensor=false'})
