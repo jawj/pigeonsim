@@ -181,9 +181,11 @@ class @MiscSet extends FeatureSet
     logo = new CASALogo("casa-logo", 51.52192375643773, -0.13593167066574097)
     @addFeature(logo)
     
+    ###
     conf = new CASAConf('casa-conf', 51.5210609212573, -0.1287245750427246)
     conf.update()
     @addFeature(conf)
+    ###
     
     bb = new BigBen('big-ben', 51.5007286626542, -0.12459531426429749)
     bb.update()

@@ -339,15 +339,18 @@
     __extends(MiscSet, _super);
 
     function MiscSet(featureManager) {
-      var bb, ch, conf, logo, tb;
+      var bb, ch, logo, tb;
       MiscSet.__super__.constructor.call(this, featureManager);
       ch = new CityHall("city-hall", 51.50477580586208, -0.07864236831665039);
       this.addFeature(ch);
       logo = new CASALogo("casa-logo", 51.52192375643773, -0.13593167066574097);
       this.addFeature(logo);
-      conf = new CASAConf('casa-conf', 51.5210609212573, -0.1287245750427246);
-      conf.update();
-      this.addFeature(conf);
+      /*
+          conf = new CASAConf('casa-conf', 51.5210609212573, -0.1287245750427246)
+          conf.update()
+          @addFeature(conf)
+      */
+
       bb = new BigBen('big-ben', 51.5007286626542, -0.12459531426429749);
       bb.update();
       this.addFeature(bb);

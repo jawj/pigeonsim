@@ -4,11 +4,7 @@
     __slice = [].slice,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-  google.load('earth', '1.x', {
-    'other_params': 'sensor=false'
-  });
-
-  window.onload = function() {
+  google.setOnLoadCallback(function() {
     var addLayers, altStatus, animTick, animTicks, animTimeout, cam, camMoves, compassPts, connect, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, els, features, flapAmount, flown, fm, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, lastMove, latFactor, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref1, _ref2;
     if (!window.WebSocket) {
       alert('This app needs browser WebSocket support');
@@ -340,6 +336,10 @@
     return google.earth.createInstance('earth', earthInitCallback, function() {
       return console.log("Google Earth error: " + errorCode);
     });
-  };
+  });
+
+  google.load('earth', '1', {
+    'other_params': 'sensor=false'
+  });
 
 }).call(this);
