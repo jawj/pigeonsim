@@ -235,6 +235,7 @@ class @BigBen extends Feature
   
   update: ->
     @name = new Date().strftime('%H.%M')
+    @desc = 'Big Ben'
     @show() if @geNode?
     self = arguments.callee.bind(@)
     @interval = setInterval(self, 1 * 60 * 1000) unless @interval?  # update every minute

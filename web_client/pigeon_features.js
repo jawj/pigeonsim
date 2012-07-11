@@ -486,6 +486,7 @@
     BigBen.prototype.update = function() {
       var self;
       this.name = new Date().strftime('%H.%M');
+      this.desc = 'Big Ben';
       if (this.geNode != null) {
         this.show();
       }
