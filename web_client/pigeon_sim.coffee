@@ -16,10 +16,10 @@ window.onload = ->
   wrapDegs180 = (d) -> d += 360 while d < -180; d -= 360 while d >= 180; d
   
   params =  # all these default params may be over-ridden in the query string
-    startLat:      51.522609673708466
-    startLon:      -0.13099908828735352
-    startHeading: 155       # degrees
-    startAlt:     90       # metres above "sea level"
+    startLat:      51.5020
+    startLon:      -0.0735
+    startHeading: 310       # degrees
+    startAlt:      60       # metres above "sea level"
 
     minAlt:         5       # metres above "sea level"
     maxAlt:       400       # ditto
@@ -60,7 +60,7 @@ window.onload = ->
   [titleStatus, altStatus, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, headingStatus] =
     (el(id) for id in w('title alt debugData debugEarthAPI debugTicks heading'))
     
-  cam = {}
+  window.cam = cam = {}
   ge = seenCam = flown = animTimeout = fm = lastMove = null
   animTicks = camMoves = inMsgs = 0
   lastFlap = flapAmount = 0

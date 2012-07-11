@@ -153,7 +153,7 @@ class @RailStationSet extends FeatureSet
       @addFeature(station)
 
 class @RailStation extends Feature
-  alt: 120
+  alt: 130
   nameTextOpts: {size: 3}
 
 
@@ -175,6 +175,9 @@ class @MiscSet extends FeatureSet
   constructor: (featureManager) ->
     super(featureManager)
     
+    ch = new CityHall("city-hall", 51.50477580586208, -0.07864236831665039)
+    @addFeature(ch)
+    
     logo = new CASALogo("casa-logo", 51.52192375643773, -0.13593167066574097)
     @addFeature(logo)
     
@@ -190,11 +193,18 @@ class @MiscSet extends FeatureSet
     tb.update()
     @addFeature(tb)
 
+class @CityHall extends Feature
+  alt: 120
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  name: "City Hall"
+  desc: "More London"
+
 class @CASALogo extends Feature
   alt: 220
   nameTextOpts: {size: 1, lineWidth: 1}
   name: "\uF002"
-      
+
 class @CASAConf extends Feature
   alt: 130
   nameTextOpts: {size: 2, lineWidth: 3}
@@ -228,7 +238,7 @@ class @BigBen extends Feature
     @interval = setInterval(self, 1 * 60 * 1000) unless @interval?  # update every minute
 
 class @TowerBridge extends Feature
-  alt: 200
+  alt: 150
   nameTextOpts: {size: 2, lineWidth: 3}
   name: 'Tower Bridge'
   
@@ -262,8 +272,8 @@ class @LondonTweetSet extends FeatureSet
         lat = parseFloat(t.lat)
         lon = parseFloat(t.lon)
         continue if isNaN(lat) or isNaN(lon)
-        tweet = new Tweet("tweet-#{t.twitterID}", lat, lon, {colour: 'ffffeecc'})
-        tweet.name = t.name
+        tweet = new Tweet("tweet-#{t.twitterID}", lat, lon, {colour: 'ffffffff'})  # ffffeecc
+        tweet.name = "#{t.name} — #{t.dateT.match(/\d?\d:\d\d/)}"
         tweet.desc = t.twitterPost.replace(/&gt;/g, '>').replace(/&lt;/g, '<')
                       .match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n')  # bug: many \ns collapsed to one
         @addFeature(tweet)
@@ -272,8 +282,8 @@ class @LondonTweetSet extends FeatureSet
 
 class @Tweet extends Feature
   alt: 160
-  nameTextOpts: {size: 1, colour: 'ffffeecc'}
-  descTextOpts: {size: 1, lineWidth: 1, colour: 'ffffeecc'}
+  nameTextOpts: {size: 1, colour: 'ffffffff'}  # ffffeecc
+  descTextOpts: {size: 1, lineWidth: 1, colour: 'ffffffff'}  # ffffeecc
 
 
 class @LondonAirSet extends FeatureSet
@@ -290,7 +300,7 @@ class @LondonAirSet extends FeatureSet
       for line in lines
         cells = line.split(',')
         continue if cells.length < 10
-        a = new LondonAir("air-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]), {colour: 'ffccffcc'})
+        a = new LondonAir("air-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]), {colour: 'ffffffff'})  # ffccffcc
         a.name = cells[1]
         desc = ''
         pm10ugm3 = cells[21]
@@ -312,8 +322,8 @@ class @LondonAirSet extends FeatureSet
   
 class @LondonAir extends Feature
   alt: 180
-  nameTextOpts: {size: 2, colour: 'ffddffdd'}
-  descTextOpts: {size: 2, lineWidth: 1, colour: 'ffddffdd'}
+  nameTextOpts: {size: 2, colour: 'ffffffff'}  # ffddffdd
+  descTextOpts: {size: 2, lineWidth: 1, colour: 'ffffffff'}  # ffddffdd
   
   
 class @LondonTrafficSet extends FeatureSet
@@ -330,7 +340,7 @@ class @LondonTrafficSet extends FeatureSet
       for line in lines
         cells = line.split(',')
         continue if cells.length < 5
-        a = new LondonTraffic("trf-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]), {colour: 'ff77ddff'})
+        a = new LondonTraffic("trf-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]), {colour: 'ffffffff'})  # ff77ddff
         a.name = cells[11]
         a.desc = (s.match(/^\s*(.*?)\s*$/)[1] for s in cells[5..8]).join('\n')
         @addFeature(a)
@@ -338,9 +348,9 @@ class @LondonTrafficSet extends FeatureSet
     setTimeout(self, 3 * 60 * 1000)  # update every 3 mins
   
 class @LondonTraffic extends Feature
-  alt: 110
-  nameTextOpts: {size: 2, lineWidth: 3, colour: 'ff77ddff'}
-  descTextOpts: {size: 2, lineWidth: 2, colour: 'ff77ddff'}
+  alt: 150
+  nameTextOpts: {size: 2, lineWidth: 2, colour: 'ffffffff'}  # ff77ddff
+  descTextOpts: {size: 2, lineWidth: 1, colour: 'ffffffff'}  # ff77ddff
 
 
 class @TideGaugeSet extends FeatureSet
@@ -357,7 +367,7 @@ class @TideGaugeSet extends FeatureSet
       for line in lines
         cells = line.split(',')
         continue if cells.length < 3
-        a = new TideGauge("tide-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]), {colour: 'ffffdddd'})
+        a = new TideGauge("tide-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]), {colour: 'ffffffff'})  # ffffdddd
         a.name = cells[1]
         a.desc = "Height:\t#{cells[5]}m\nSurge:\t#{cells[6]}m"
         @addFeature(a)
@@ -366,6 +376,6 @@ class @TideGaugeSet extends FeatureSet
   
 class @TideGauge extends Feature
   alt: 80
-  nameTextOpts: {size: 2, lineWidth: 3, colour: 'ffffdddd'}
-  descTextOpts: {size: 2, lineWidth: 2, colour: 'ffffdddd'}
+  nameTextOpts: {size: 2, lineWidth: 3, colour: 'ffffffff'}  # ffffdddd
+  descTextOpts: {size: 2, lineWidth: 2, colour: 'ffffffff'}  # ffffdddd
   
