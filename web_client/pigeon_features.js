@@ -124,7 +124,7 @@
       midLon = (cam.lon + lookLon) / 2;
       latDiff = Math.abs(cam.lat - midLat);
       lonDiff = Math.abs(cam.lon - midLon);
-      sizeFactor = 1.1;
+      sizeFactor = 1.2;
       latSize = Math.max(latDiff, lonDiff / this.lonRatio) * sizeFactor;
       lonSize = latSize * this.lonRatio;
       lat1 = midLat - latSize;
@@ -345,12 +345,6 @@
       this.addFeature(ch);
       logo = new CASALogo("casa-logo", 51.52192375643773, -0.13593167066574097);
       this.addFeature(logo);
-      /*
-          conf = new CASAConf('casa-conf', 51.5210609212573, -0.1287245750427246)
-          conf.update()
-          @addFeature(conf)
-      */
-
       bb = new BigBen('big-ben', 51.5007286626542, -0.12459531426429749);
       bb.update();
       this.addFeature(bb);
@@ -463,40 +457,22 @@
 
   })(Feature);
 
-  this.Olympics = (function(_super) {
+  this.TubeStation = (function(_super) {
 
-    __extends(Olympics, _super);
+    __extends(TubeStation, _super);
 
-    Olympics.prototype.alt = 150;
-
-    function Olympics(featureManager) {
-      var code, date, day, desc, lat, lon, name, row, sport, times, venue, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3;
-      Olympics.__super__.constructor.call(this, featureManager);
-      this.venues = [];
-      this.events = {};
-      _ref = this.venueData.split("\n");
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        row = _ref[_i];
-        _ref1 = row.split("\t"), lat = _ref1[0], lon = _ref1[1], name = _ref1[2];
-        this.venues.push({
-          name: name,
-          lat: parseFloat(lat),
-          lon: parseFloat(lon)
-        });
-      }
-      _ref2 = this.eventData.split("\n");
-      for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-        row = _ref2[_j];
-        _ref3 = row.split("\t"), day = _ref3[0], date = _ref3[1], times = _ref3[2], sport = _ref3[3], desc = _ref3[4], code = _ref3[5], venue = _ref3[6];
-      }
+    function TubeStation() {
+      return TubeStation.__super__.constructor.apply(this, arguments);
     }
 
-    Olympics.prototype.update = function() {
-      var d;
-      return d = new Date();
+    TubeStation.prototype.alt = 100;
+
+    TubeStation.prototype.nameTextOpts = {
+      size: 2,
+      lineWidth: 1
     };
 
-    return Olympics;
+    return TubeStation;
 
   })(Feature);
 
@@ -632,9 +608,7 @@
           if (isNaN(lat) || isNaN(lon)) {
             continue;
           }
-          tweet = new Tweet("tweet-" + t.twitterID, lat, lon, {
-            colour: 'ffffffff'
-          });
+          tweet = new Tweet("tweet-" + t.twitterID, lat, lon);
           tweet.name = "" + t.name + " — " + (t.dateT.match(/\d?\d:\d\d/));
           tweet.desc = t.twitterPost.replace(/&gt;/g, '>').replace(/&lt;/g, '<').match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n');
           _results.push(_this.addFeature(tweet));
@@ -660,14 +634,12 @@
     Tweet.prototype.alt = 160;
 
     Tweet.prototype.nameTextOpts = {
-      size: 1,
-      colour: 'ffffffff'
+      size: 1
     };
 
     Tweet.prototype.descTextOpts = {
       size: 1,
-      lineWidth: 1,
-      colour: 'ffffffff'
+      lineWidth: 1
     };
 
     return Tweet;
@@ -701,9 +673,7 @@
           if (cells.length < 10) {
             continue;
           }
-          a = new LondonAir("air-" + cells[0], parseFloat(cells[3]), parseFloat(cells[4]), {
-            colour: 'ffffffff'
-          });
+          a = new LondonAir("air-" + cells[0], parseFloat(cells[3]), parseFloat(cells[4]));
           a.name = cells[1];
           desc = '';
           pm10ugm3 = cells[21];
@@ -745,14 +715,12 @@
     LondonAir.prototype.alt = 180;
 
     LondonAir.prototype.nameTextOpts = {
-      size: 2,
-      colour: 'ffffffff'
+      size: 2
     };
 
     LondonAir.prototype.descTextOpts = {
       size: 2,
-      lineWidth: 1,
-      colour: 'ffffffff'
+      lineWidth: 1
     };
 
     return LondonAir;
@@ -786,9 +754,7 @@
           if (cells.length < 5) {
             continue;
           }
-          a = new LondonTraffic("trf-" + cells[0], parseFloat(cells[3]), parseFloat(cells[4]), {
-            colour: 'ffffffff'
-          });
+          a = new LondonTraffic("trf-" + cells[0], parseFloat(cells[3]), parseFloat(cells[4]));
           a.name = cells[11];
           a.desc = ((function() {
             var _j, _len1, _ref, _results1;
@@ -824,14 +790,12 @@
 
     LondonTraffic.prototype.nameTextOpts = {
       size: 2,
-      lineWidth: 2,
-      colour: 'ffffffff'
+      lineWidth: 2
     };
 
     LondonTraffic.prototype.descTextOpts = {
       size: 2,
-      lineWidth: 1,
-      colour: 'ffffffff'
+      lineWidth: 1
     };
 
     return LondonTraffic;
@@ -865,9 +829,7 @@
           if (cells.length < 3) {
             continue;
           }
-          a = new TideGauge("tide-" + cells[0], parseFloat(cells[3]), parseFloat(cells[4]), {
-            colour: 'ffffffff'
-          });
+          a = new TideGauge("tide-" + cells[0], parseFloat(cells[3]), parseFloat(cells[4]));
           a.name = cells[1];
           a.desc = "Height:\t" + cells[5] + "m\nSurge:\t" + cells[6] + "m";
           _results.push(_this.addFeature(a));
@@ -894,17 +856,115 @@
 
     TideGauge.prototype.nameTextOpts = {
       size: 2,
-      lineWidth: 3,
-      colour: 'ffffffff'
+      lineWidth: 3
     };
 
     TideGauge.prototype.descTextOpts = {
       size: 2,
-      lineWidth: 2,
-      colour: 'ffffffff'
+      lineWidth: 2
     };
 
     return TideGauge;
+
+  })(Feature);
+
+  this.OlympicSet = (function(_super) {
+
+    __extends(OlympicSet, _super);
+
+    function OlympicSet(featureManager) {
+      var code, date, day, desc, end, lat, lon, name, row, sport, start, t1, t2, times, venue, _base, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+      OlympicSet.__super__.constructor.call(this, featureManager);
+      this.venues = [];
+      this.events = {};
+      _ref = this.venueData.split("\n");
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        row = _ref[_i];
+        _ref1 = row.split("\t"), lat = _ref1[0], lon = _ref1[1], name = _ref1[2];
+        if (name === 'Multiple Venues' || name === 'Olympic Park') {
+          continue;
+        }
+        this.venues.push({
+          name: name,
+          lat: parseFloat(lat),
+          lon: parseFloat(lon)
+        });
+      }
+      _ref2 = this.eventData.split("\n");
+      for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+        row = _ref2[_j];
+        _ref3 = row.split("\t"), day = _ref3[0], date = _ref3[1], times = _ref3[2], sport = _ref3[3], desc = _ref3[4], code = _ref3[5], venue = _ref3[6];
+        _ref4 = times.split("-"), t1 = _ref4[0], t2 = _ref4[1];
+        start = new Date("" + date + " " + t1);
+        end = new Date("" + date + " " + t2);
+        if ((_ref5 = (_base = this.events)[venue]) == null) {
+          _base[venue] = [];
+        }
+        this.events[venue].push({
+          start: start,
+          end: end,
+          sport: sport,
+          desc: desc
+        });
+      }
+      this.update();
+    }
+
+    OlympicSet.prototype.update = function() {
+      var a, event, i, nextEvent, now, self, venue, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3;
+      this.clearFeatures();
+      _ref = this.venues;
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        venue = _ref[i];
+        a = new OlympicVenue("oly-" + venue.name, venue.lat, venue.lon);
+        a.name = "\uF003 " + venue.name;
+        a.alt += (i % 5) * 30;
+        if ((_ref1 = venue.name) !== 'Orbit') {
+          now = new Date();
+          nextEvent = null;
+          _ref3 = (_ref2 = this.events[venue.name]) != null ? _ref2 : [];
+          for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
+            event = _ref3[_j];
+            if (event.end > now) {
+              nextEvent = event;
+              break;
+            }
+          }
+          if (nextEvent != null) {
+            a.desc = nextEvent.start < now ? "Now: " + nextEvent.sport : "Next event: " + nextEvent.sport + ", " + (nextEvent.start.strftime("%a %d %b, %H:%M"));
+          }
+        }
+        this.addFeature(a);
+      }
+      self = arguments.callee.bind(this);
+      return setTimeout(self, 7 * 60 * 1000);
+    };
+
+    return OlympicSet;
+
+  })(FeatureSet);
+
+  this.OlympicVenue = (function(_super) {
+
+    __extends(OlympicVenue, _super);
+
+    function OlympicVenue() {
+      return OlympicVenue.__super__.constructor.apply(this, arguments);
+    }
+
+    OlympicVenue.prototype.alt = 120;
+
+    OlympicVenue.prototype.nameTextOpts = {
+      size: 3,
+      lineWidth: 3
+    };
+
+    OlympicVenue.prototype.descTextOpts = {
+      size: 2,
+      lineWidth: 2
+    };
+
+    return OlympicVenue;
 
   })(Feature);
 

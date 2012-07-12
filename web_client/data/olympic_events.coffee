@@ -1,4 +1,4 @@
-@Olympics::eventData = """Wednesday	25-Jul-12	16:00-20:45	Football	Women's  Group E, Great Britain v New Zealand, Cameroon v Brazil	FB001	Millennium Stadium, Cardiff
+@OlympicSet::eventData = """Wednesday	25-Jul-12	16:00-20:45	Football	Women's  Group E, Great Britain v New Zealand, Cameroon v Brazil	FB001	Millennium Stadium, Cardiff
 Wednesday	25-Jul-12	17:00-21:45	Football	Women's Group F, Japan v Canada, Sweden v South Africa	FB002	City of Coventry Stadium, Coventry
 Wednesday	25-Jul-12	17:00-21:45	Football	Women's Group G, USA v France, Colombia v Korea DPR	FB003	Hampden Park, Glasgow
 Thursday	26-Jul-12	12:00-16:45	Football	Men's Group D, Spain v Japan, Honduras v Morocco	FB005	Hampden Park, Glasgow

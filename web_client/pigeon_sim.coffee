@@ -17,7 +17,7 @@ google.setOnLoadCallback ->
     startLat:      51.5020
     startLon:      -0.0735
     startHeading: 310       # degrees
-    startAlt:      60       # metres above "sea level"
+    startAlt:      80       # metres above "sea level"
 
     minAlt:         5       # metres above "sea level"
     maxAlt:       400       # ditto
@@ -43,7 +43,7 @@ google.setOnLoadCallback ->
     reconnectWait:  2       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
     
-    features:      'air,rail,traffic,tide,twitter,misc'
+    features:      'air,rail,traffic,tide,twitter,olympics,misc'
     
     
   for kvp in window.location.search.substring(1).split('&')
@@ -206,13 +206,14 @@ google.setOnLoadCallback ->
     ge.getWindow().setVisibility(yes)
     
     fm  = new FeatureManager(ge, lonRatio, cam, params)
-    las = new LondonAirSet(fm)     if 'air'     in features
-    tss = new TubeStationSet(fm)   if 'tube'    in features
-    rss = new RailStationSet(fm)   if 'rail'    in features
-    trs = new LondonTrafficSet(fm) if 'traffic' in features
-    tgs = new TideGaugeSet(fm)     if 'tide'    in features
-    ccs = new MiscSet(fm)          if 'misc'    in features
-    lts = new LondonTweetSet(fm)   if 'twitter' in features
+    las = new LondonAirSet(fm)     if 'air'       in features
+    tss = new TubeStationSet(fm)   if 'tube'      in features
+    rss = new RailStationSet(fm)   if 'rail'      in features
+    trs = new LondonTrafficSet(fm) if 'traffic'   in features
+    tgs = new TideGaugeSet(fm)     if 'tide'      in features
+    ccs = new MiscSet(fm)          if 'misc'      in features
+    lts = new LondonTweetSet(fm)   if 'twitter'   in features
+    ovs = new OlympicSet(fm)       if 'olympics'  in features and new Date("2012-08-12") - new Date() > 0
 
     google.earth.addEventListener(ge, 'frameend', animTick)
     animTick()

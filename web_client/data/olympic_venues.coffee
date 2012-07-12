@@ -1,4 +1,4 @@
-@Olympics::venueData = """51.5401489	-0.010668087	Aquatics Centre
+@OlympicSet::venueData = """51.5401489	-0.010668087	Aquatics Centre
 51.54852493	-0.013939476	Basketball Arena
 51.55086495	-0.013306266	BMX Track
 51.24841	-0.31263	Box Hill - Donkey Green

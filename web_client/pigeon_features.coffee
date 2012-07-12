@@ -70,7 +70,7 @@ class @FeatureManager
     latDiff = Math.abs(cam.lat - midLat)
     lonDiff = Math.abs(cam.lon - midLon)
     
-    sizeFactor = 1.1  # 1 = a box with the camera and lookAt points on its borders
+    sizeFactor = 1.2  # 1 = a box with the camera and lookAt points on its borders
     latSize = Math.max(latDiff, lonDiff / @lonRatio) * sizeFactor
     lonSize = latSize * @lonRatio
     
@@ -181,11 +181,9 @@ class @MiscSet extends FeatureSet
     logo = new CASALogo("casa-logo", 51.52192375643773, -0.13593167066574097)
     @addFeature(logo)
     
-    ###
-    conf = new CASAConf('casa-conf', 51.5210609212573, -0.1287245750427246)
-    conf.update()
-    @addFeature(conf)
-    ###
+    # conf = new CASAConf('casa-conf', 51.5210609212573, -0.1287245750427246)
+    # conf.update()
+    # @addFeature(conf)
     
     bb = new BigBen('big-ben', 51.5007286626542, -0.12459531426429749)
     bb.update()
@@ -228,23 +226,9 @@ class @CASAConf extends Feature
     self = arguments.callee.bind(@)
     @interval = setInterval(self, 1 * 60 * 1000) unless @interval? # update every minute
 
-class @Olympics extends Feature
-  alt: 150
-  
-  constructor: (featureManager) ->
-    super(featureManager)
-    @venues = []
-    @events = {}
-    for row in @venueData.split("\n")
-      [lat, lon, name] = row.split("\t")
-      @venues.push({name, lat: parseFloat(lat), lon: parseFloat(lon)})
-    for row in @eventData.split("\n")
-      [day, date, times, sport, desc, code, venue] = row.split("\t")
-      
-      
-  update: ->
-    d = new Date()  # testing: d = new Date(2012, 8, 1, 10, 25)
-    
+class @TubeStation extends Feature
+  alt: 100
+  nameTextOpts: {size: 2, lineWidth: 1}
 
 class @BigBen extends Feature
   alt: 200
@@ -293,7 +277,7 @@ class @LondonTweetSet extends FeatureSet
         lat = parseFloat(t.lat)
         lon = parseFloat(t.lon)
         continue if isNaN(lat) or isNaN(lon)
-        tweet = new Tweet("tweet-#{t.twitterID}", lat, lon, {colour: 'ffffffff'})  # ffffeecc
+        tweet = new Tweet("tweet-#{t.twitterID}", lat, lon)
         tweet.name = "#{t.name} — #{t.dateT.match(/\d?\d:\d\d/)}"
         tweet.desc = t.twitterPost.replace(/&gt;/g, '>').replace(/&lt;/g, '<')
                       .match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n')  # bug: many \ns collapsed to one
@@ -303,8 +287,8 @@ class @LondonTweetSet extends FeatureSet
 
 class @Tweet extends Feature
   alt: 160
-  nameTextOpts: {size: 1, colour: 'ffffffff'}  # ffffeecc
-  descTextOpts: {size: 1, lineWidth: 1, colour: 'ffffffff'}  # ffffeecc
+  nameTextOpts: {size: 1}
+  descTextOpts: {size: 1, lineWidth: 1}
 
 
 class @LondonAirSet extends FeatureSet
@@ -321,7 +305,7 @@ class @LondonAirSet extends FeatureSet
       for line in lines
         cells = line.split(',')
         continue if cells.length < 10
-        a = new LondonAir("air-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]), {colour: 'ffffffff'})  # ffccffcc
+        a = new LondonAir("air-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]))
         a.name = cells[1]
         desc = ''
         pm10ugm3 = cells[21]
@@ -343,8 +327,8 @@ class @LondonAirSet extends FeatureSet
   
 class @LondonAir extends Feature
   alt: 180
-  nameTextOpts: {size: 2, colour: 'ffffffff'}  # ffddffdd
-  descTextOpts: {size: 2, lineWidth: 1, colour: 'ffffffff'}  # ffddffdd
+  nameTextOpts: {size: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
   
   
 class @LondonTrafficSet extends FeatureSet
@@ -361,7 +345,7 @@ class @LondonTrafficSet extends FeatureSet
       for line in lines
         cells = line.split(',')
         continue if cells.length < 5
-        a = new LondonTraffic("trf-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]), {colour: 'ffffffff'})  # ff77ddff
+        a = new LondonTraffic("trf-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]))
         a.name = cells[11]
         a.desc = (s.match(/^\s*(.*?)\s*$/)[1] for s in cells[5..8]).join('\n')
         @addFeature(a)
@@ -370,8 +354,8 @@ class @LondonTrafficSet extends FeatureSet
   
 class @LondonTraffic extends Feature
   alt: 150
-  nameTextOpts: {size: 2, lineWidth: 2, colour: 'ffffffff'}  # ff77ddff
-  descTextOpts: {size: 2, lineWidth: 1, colour: 'ffffffff'}  # ff77ddff
+  nameTextOpts: {size: 2, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
 
 
 class @TideGaugeSet extends FeatureSet
@@ -388,7 +372,7 @@ class @TideGaugeSet extends FeatureSet
       for line in lines
         cells = line.split(',')
         continue if cells.length < 3
-        a = new TideGauge("tide-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]), {colour: 'ffffffff'})  # ffffdddd
+        a = new TideGauge("tide-#{cells[0]}", parseFloat(cells[3]), parseFloat(cells[4]))
         a.name = cells[1]
         a.desc = "Height:\t#{cells[5]}m\nSurge:\t#{cells[6]}m"
         @addFeature(a)
@@ -397,6 +381,52 @@ class @TideGaugeSet extends FeatureSet
   
 class @TideGauge extends Feature
   alt: 80
-  nameTextOpts: {size: 2, lineWidth: 3, colour: 'ffffffff'}  # ffffdddd
-  descTextOpts: {size: 2, lineWidth: 2, colour: 'ffffffff'}  # ffffdddd
+  nameTextOpts: {size: 2, lineWidth: 3}
+  descTextOpts: {size: 2, lineWidth: 2}
   
+
+class @OlympicSet extends FeatureSet
+  constructor: (featureManager) ->
+    super(featureManager)
+    @venues = []
+    @events = {}
+    for row in @venueData.split("\n")
+      [lat, lon, name] = row.split("\t")
+      continue if name in ['Multiple Venues', 'Olympic Park']
+      @venues.push({name, lat: parseFloat(lat), lon: parseFloat(lon)})
+    for row in @eventData.split("\n")
+      [day, date, times, sport, desc, code, venue] = row.split("\t")
+      [t1, t2] = times.split("-")
+      start = new Date("#{date} #{t1}")
+      end   = new Date("#{date} #{t2}")
+      @events[venue] ?= []
+      @events[venue].push({start, end, sport, desc})
+    @update()
+    
+  update: ->
+    @clearFeatures()
+    for venue, i in @venues
+      a = new OlympicVenue("oly-#{venue.name}", venue.lat, venue.lon)
+      a.name = "\uF003 #{venue.name}"
+      a.alt += (i % 5) * 30
+      
+      if venue.name not in ['Orbit']
+        now = new Date()
+        nextEvent = null  # scope
+        for event in @events[venue.name] ? []
+          if event.end > now
+            nextEvent = event
+            break
+        if nextEvent?
+          a.desc =  if nextEvent.start < now
+            "Now: #{nextEvent.sport}"
+          else 
+            "Next event: #{nextEvent.sport}, #{nextEvent.start.strftime("%a %d %b, %H:%M")}"
+      @addFeature(a)
+    self = arguments.callee.bind(@)
+    setTimeout(self, 7 * 60 * 1000)  # update every 7 mins
+    
+class @OlympicVenue extends Feature
+  alt: 120
+  nameTextOpts: {size: 3, lineWidth: 3}
+  descTextOpts: {size: 2, lineWidth: 2}

@@ -77,7 +77,7 @@
       startLat: 51.5020,
       startLon: -0.0735,
       startHeading: 310,
-      startAlt: 60,
+      startAlt: 80,
       minAlt: 5,
       maxAlt: 400,
       speed: 3,
@@ -100,7 +100,7 @@
       debugBox: 0,
       reconnectWait: 2,
       ws: 'ws://127.0.0.1:8888/p5websocket',
-      features: 'air,rail,traffic,tide,twitter,misc'
+      features: 'air,rail,traffic,tide,twitter,olympics,misc'
     };
     _ref = window.location.search.substring(1).split('&');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -297,7 +297,7 @@
       };
     };
     earthInitCallback = function(instance) {
-      var ccs, las, lts, rss, tgs, trs, tss;
+      var ccs, las, lts, ovs, rss, tgs, trs, tss;
       window.ge = ge = instance;
       console.log("Google Earth plugin v" + (ge.getPluginVersion()) + ", API v" + (ge.getApiVersion()));
       addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION);
@@ -328,6 +328,9 @@
       }
       if (__indexOf.call(features, 'twitter') >= 0) {
         lts = new LondonTweetSet(fm);
+      }
+      if (__indexOf.call(features, 'olympics') >= 0 && new Date("2012-08-12") - new Date() > 0) {
+        ovs = new OlympicSet(fm);
       }
       google.earth.addEventListener(ge, 'frameend', animTick);
       animTick();
