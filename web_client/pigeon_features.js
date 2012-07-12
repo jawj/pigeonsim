@@ -463,6 +463,43 @@
 
   })(Feature);
 
+  this.Olympics = (function(_super) {
+
+    __extends(Olympics, _super);
+
+    Olympics.prototype.alt = 150;
+
+    function Olympics(featureManager) {
+      var code, date, day, desc, lat, lon, name, row, sport, times, venue, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3;
+      Olympics.__super__.constructor.call(this, featureManager);
+      this.venues = [];
+      this.events = {};
+      _ref = this.venueData.split("\n");
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        row = _ref[_i];
+        _ref1 = row.split("\t"), lat = _ref1[0], lon = _ref1[1], name = _ref1[2];
+        this.venues.push({
+          name: name,
+          lat: parseFloat(lat),
+          lon: parseFloat(lon)
+        });
+      }
+      _ref2 = this.eventData.split("\n");
+      for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+        row = _ref2[_j];
+        _ref3 = row.split("\t"), day = _ref3[0], date = _ref3[1], times = _ref3[2], sport = _ref3[3], desc = _ref3[4], code = _ref3[5], venue = _ref3[6];
+      }
+    }
+
+    Olympics.prototype.update = function() {
+      var d;
+      return d = new Date();
+    };
+
+    return Olympics;
+
+  })(Feature);
+
   this.BigBen = (function(_super) {
 
     __extends(BigBen, _super);

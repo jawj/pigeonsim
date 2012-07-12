@@ -228,6 +228,24 @@ class @CASAConf extends Feature
     self = arguments.callee.bind(@)
     @interval = setInterval(self, 1 * 60 * 1000) unless @interval? # update every minute
 
+class @Olympics extends Feature
+  alt: 150
+  
+  constructor: (featureManager) ->
+    super(featureManager)
+    @venues = []
+    @events = {}
+    for row in @venueData.split("\n")
+      [lat, lon, name] = row.split("\t")
+      @venues.push({name, lat: parseFloat(lat), lon: parseFloat(lon)})
+    for row in @eventData.split("\n")
+      [day, date, times, sport, desc, code, venue] = row.split("\t")
+      
+      
+  update: ->
+    d = new Date()  # testing: d = new Date(2012, 8, 1, 10, 25)
+    
+
 class @BigBen extends Feature
   alt: 200
   nameTextOpts: {size: 2, lineWidth: 2}
