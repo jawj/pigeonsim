@@ -14,9 +14,9 @@ google.setOnLoadCallback ->
   wrapDegs180 = (d) -> d += 360 while d < -180; d -= 360 while d >= 180; d
   
   params =  # all these default params may be over-ridden in the query string
-    startLat:      51.5020
-    startLon:      -0.0735
-    startHeading: 310       # degrees
+    startLat:      51.5035
+    startLon:      -0.0742
+    startHeading: 302       # degrees
     startAlt:      80       # metres above "sea level"
 
     minAlt:         5       # metres above "sea level"

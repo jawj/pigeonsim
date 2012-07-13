@@ -74,9 +74,9 @@
       return d;
     };
     params = {
-      startLat: 51.5020,
-      startLon: -0.0735,
-      startHeading: 310,
+      startLat: 51.5035,
+      startLon: -0.0742,
+      startHeading: 302,
       startAlt: 80,
       minAlt: 5,
       maxAlt: 400,
