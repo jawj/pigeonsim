@@ -77,6 +77,7 @@
       startLat: 51.5035,
       startLon: -0.0742,
       startHeading: 302,
+      startCity: "Leeds",
       startAlt: 80,
       minAlt: 5,
       maxAlt: 400,
@@ -102,6 +103,15 @@
       ws: 'ws://127.0.0.1:8888/p5websocket',
       features: 'air,rail,traffic,tide,twitter,olympics,misc'
     };
+    if (params.startCity === "Leeds") {
+      params.startLat = 53.79852807423503;
+      params.startLon = -1.5497589111328125;
+      params.startHeading = 12;
+      params.startAlt = 100;
+      params.features = params.features + ',leeds';
+    } else {
+
+    }
     _ref = window.location.search.substring(1).split('&');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       kvp = _ref[_i];
@@ -297,7 +307,7 @@
       };
     };
     earthInitCallback = function(instance) {
-      var ccs, las, lts, ovs, rss, tgs, trs, tss;
+      var ccs, las, lds, lts, ovs, rss, tgs, trs, tss;
       window.ge = ge = instance;
       console.log("Google Earth plugin v" + (ge.getPluginVersion()) + ", API v" + (ge.getApiVersion()));
       addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION);
@@ -331,6 +341,9 @@
       }
       if (__indexOf.call(features, 'olympics') >= 0 && new Date("2012-08-12") - new Date() > 0) {
         ovs = new OlympicSet(fm);
+      }
+      if (__indexOf.call(features, 'leeds') >= 0) {
+        lds = new LeedsCitySet(fm);
       }
       google.earth.addEventListener(ge, 'frameend', animTick);
       animTick();

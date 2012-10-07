@@ -294,6 +294,149 @@
 
   })(Feature);
 
+  this.LeedsCitySet = (function(_super) {
+
+    __extends(LeedsCitySet, _super);
+
+    function LeedsCitySet(featureManager) {
+      var bb, lch, railLeeds, unileeds;
+      LeedsCitySet.__super__.constructor.call(this, featureManager);
+      lch = new LeedsCivicHall("civic-hall", 53.80210025576234, -1.5485385060310364);
+      this.addFeature(lch);
+      unileeds = new UniLeeds("uni-of-leeds", 53.80786737971994, -1.5527737140655518);
+      this.addFeature(unileeds);
+      railLeeds = new RailLeeds("RailStation", 53.79437097083624, -1.5475326776504517);
+      this.addFeature(railLeeds);
+      bb = new LeedsTownHallClock('TownHallClock', 53.80005678340009, -1.5497106313705444);
+      bb.update();
+      this.addFeature(bb);
+    }
+
+    return LeedsCitySet;
+
+  })(FeatureSet);
+
+  this.LeedsCivicHall = (function(_super) {
+
+    __extends(LeedsCivicHall, _super);
+
+    function LeedsCivicHall() {
+      return LeedsCivicHall.__super__.constructor.apply(this, arguments);
+    }
+
+    LeedsCivicHall.prototype.alt = 150;
+
+    LeedsCivicHall.prototype.nameTextOpts = {
+      size: 3,
+      lineWidth: 2
+    };
+
+    LeedsCivicHall.prototype.descTextOpts = {
+      size: 2,
+      lineWidth: 1
+    };
+
+    LeedsCivicHall.prototype.name = "Leeds Civic Hall";
+
+    LeedsCivicHall.prototype.desc = "";
+
+    return LeedsCivicHall;
+
+  })(Feature);
+
+  this.RailLeeds = (function(_super) {
+
+    __extends(RailLeeds, _super);
+
+    function RailLeeds() {
+      return RailLeeds.__super__.constructor.apply(this, arguments);
+    }
+
+    RailLeeds.prototype.alt = 200;
+
+    RailLeeds.prototype.nameTextOpts = {
+      size: 3,
+      lineWidth: 2
+    };
+
+    RailLeeds.prototype.descTextOpts = {
+      size: 2,
+      lineWidth: 1
+    };
+
+    RailLeeds.prototype.name = "\uF001 Leeds Rail Station";
+
+    RailLeeds.prototype.desc = "Next Train: ";
+
+    return RailLeeds;
+
+  })(Feature);
+
+  this.UniLeeds = (function(_super) {
+
+    __extends(UniLeeds, _super);
+
+    function UniLeeds() {
+      return UniLeeds.__super__.constructor.apply(this, arguments);
+    }
+
+    UniLeeds.prototype.alt = 200;
+
+    UniLeeds.prototype.nameTextOpts = {
+      size: 3,
+      lineWidth: 2
+    };
+
+    UniLeeds.prototype.descTextOpts = {
+      size: 2,
+      lineWidth: 1
+    };
+
+    UniLeeds.prototype.name = "University of Leeds";
+
+    UniLeeds.prototype.desc = "";
+
+    return UniLeeds;
+
+  })(Feature);
+
+  this.LeedsTownHallClock = (function(_super) {
+
+    __extends(LeedsTownHallClock, _super);
+
+    function LeedsTownHallClock() {
+      return LeedsTownHallClock.__super__.constructor.apply(this, arguments);
+    }
+
+    LeedsTownHallClock.prototype.alt = 200;
+
+    LeedsTownHallClock.prototype.nameTextOpts = {
+      size: 2,
+      lineWidth: 2
+    };
+
+    LeedsTownHallClock.prototype.descTextOpts = {
+      size: 2,
+      lineWidth: 1
+    };
+
+    LeedsTownHallClock.prototype.update = function() {
+      var self;
+      this.name = new Date().strftime('%H.%M');
+      this.desc = 'Leeds Town Hall';
+      if (this.geNode != null) {
+        this.show();
+      }
+      self = arguments.callee.bind(this);
+      if (this.interval == null) {
+        return this.interval = setInterval(self, 1 * 60 * 1000);
+      }
+    };
+
+    return LeedsTownHallClock;
+
+  })(Feature);
+
   this.TubeStationSet = (function(_super) {
 
     __extends(TubeStationSet, _super);

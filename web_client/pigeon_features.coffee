@@ -156,6 +156,55 @@ class @RailStation extends Feature
   alt: 130
   nameTextOpts: {size: 3}
 
+class @LeedsCitySet extends FeatureSet
+  constructor: (featureManager) ->
+    super(featureManager)
+    
+    lch = new LeedsCivicHall("civic-hall",  53.80210025576234, -1.5485385060310364)
+    @addFeature(lch)
+
+    unileeds = new UniLeeds("uni-of-leeds", 53.80786737971994, -1.5527737140655518)
+    @addFeature(unileeds)
+
+    railLeeds = new RailLeeds("RailStation", 53.79437097083624, -1.5475326776504517)
+    @addFeature(railLeeds)
+    
+    bb = new LeedsTownHallClock('TownHallClock', 53.80005678340009, -1.5497106313705444)
+    bb.update()
+    @addFeature(bb)
+
+class @LeedsCivicHall extends Feature
+  alt: 150
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  name: "Leeds Civic Hall"
+  desc: ""
+
+class @RailLeeds extends Feature
+  alt: 200
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  name: "\uF001 Leeds Rail Station"
+  desc: "Next Train: "
+
+class @UniLeeds extends Feature
+  alt: 200
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  name: "University of Leeds"
+  desc: ""
+
+class @LeedsTownHallClock extends Feature
+  alt: 200
+  nameTextOpts: {size: 2, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  
+  update: ->
+    @name = new Date().strftime('%H.%M')
+    @desc = 'Leeds Town Hall'
+    @show() if @geNode?
+    self = arguments.callee.bind(@)
+    @interval = setInterval(self, 1 * 60 * 1000) unless @interval?  # update every minute
 
 class @TubeStationSet extends FeatureSet
   constructor: (featureManager) ->

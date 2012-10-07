@@ -16,7 +16,8 @@ google.setOnLoadCallback ->
   params =  # all these default params may be over-ridden in the query string
     startLat:      51.5035
     startLon:      -0.0742
-    startHeading: 302       # degrees
+    startHeading:  302       # degrees
+    startCity:     "Leeds"
     startAlt:      80       # metres above "sea level"
 
     minAlt:         5       # metres above "sea level"
@@ -44,8 +45,17 @@ google.setOnLoadCallback ->
     ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
     
     features:      'air,rail,traffic,tide,twitter,olympics,misc'
-    
-    
+  
+
+  if params.startCity == "Leeds" 
+    params.startLat = 53.79852807423503
+    params.startLon = -1.5497589111328125
+    params.startHeading = 12
+    params.startAlt = 100 
+    params.features =  params.features + ',leeds'
+  else
+    # Default is London -- so do nothing // Adding for future cities
+
   for kvp in window.location.search.substring(1).split('&')
     [k, v] = kvp.split('=')
     params[k] = if k in ['ws', 'features'] then v else parseFloat(v)
@@ -57,7 +67,7 @@ google.setOnLoadCallback ->
   
   [titleStatus, altStatus, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, headingStatus] =
     (el(id) for id in w('title alt debugData debugEarthAPI debugTicks heading'))
-    
+
   window.cam = cam = {}
   ge = seenCam = flown = animTimeout = fm = lastMove = null
   animTicks = camMoves = inMsgs = 0
@@ -214,6 +224,7 @@ google.setOnLoadCallback ->
     ccs = new MiscSet(fm)          if 'misc'      in features
     lts = new LondonTweetSet(fm)   if 'twitter'   in features
     ovs = new OlympicSet(fm)       if 'olympics'  in features and new Date("2012-08-12") - new Date() > 0
+    lds = new LeedsCitySet(fm)     if 'leeds'     in features
 
     google.earth.addEventListener(ge, 'frameend', animTick)
     animTick()
