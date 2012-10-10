@@ -96,7 +96,7 @@
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       kvp = _ref[_i];
       _ref2 = kvp.split('='), k = _ref2[0], v = _ref2[1];
-      params[k] = k === 'ws' || k === 'features' || k === 'city' ? v : parseFloat(v);
+      params[k] = k === 'ws' || k === 'features' || k === 'city' ? v.toLowerCase() : parseFloat(v);
     }
     if (params.city === "leeds") {
       params.startLat = 53.79852807423503;
