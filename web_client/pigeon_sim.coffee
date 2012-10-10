@@ -49,7 +49,7 @@ google.setOnLoadCallback ->
 
   for kvp in window.location.search.substring(1).split('&')
     [k, v] = kvp.split('=')
-    params[k] = if k in ['ws', 'features', 'city'] then v.toLowerCase() else parseFloat(v)  #ignore case
+    params[k] = if k in ['ws', 'features', 'city'] then v else parseFloat(v)  #ignore case
   
   if params.city == "leeds" 
     params.startLat = 53.79852807423503
