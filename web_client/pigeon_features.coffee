@@ -140,8 +140,6 @@ class @Feature
       @fm.ge.getFeatures().removeChild(@geNode)
       delete @geNode
 
-
-
 class @RailStationSet extends FeatureSet
   constructor: (featureManager) ->
     super(featureManager)
@@ -156,6 +154,8 @@ class @RailStation extends Feature
   alt: 130
   nameTextOpts: {size: 3}
 
+#################################### LEEDS ##############################################
+
 class @LeedsCitySet extends FeatureSet
   constructor: (featureManager) ->
     super(featureManager)
@@ -167,11 +167,27 @@ class @LeedsCitySet extends FeatureSet
     @addFeature(unileeds)
 
     railLeeds = new RailLeeds("RailStation", 53.79437097083624, -1.5475326776504517)
+    railLeeds.update()
     @addFeature(railLeeds)
     
     bb = new LeedsTownHallClock('TownHallClock', 53.80005678340009, -1.5497106313705444)
     bb.update()
     @addFeature(bb)
+
+    #Loop around CSV with Leeds featurea
+    for row in @csv.split("\n")
+        [lat, lon, name] = row.split(',')
+        lfs = new LeedsFeature(name, parseFloat(lat), parseFloat(lon))
+        lfs.name = name;
+        @addFeature(lfs)
+
+    #Loop around Leeds Open Plaques
+
+
+class @LeedsFeature extends Feature
+  alt: Math.floor(Math.random()*(300-200+1)+200)
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
 
 class @LeedsCivicHall extends Feature
   alt: 150
@@ -186,6 +202,12 @@ class @RailLeeds extends Feature
   descTextOpts: {size: 2, lineWidth: 1}
   name: "\uF001 Leeds Rail Station"
   desc: "Next Train: "
+
+  update: -> 
+    @desc = "Next Train: " + new Date().strftime('%H.%M') 
+    @show() if @geNode?
+    self = arguments.callee.bind(@)
+    @interval = setInterval(self, 1 * 60 * 1000) unless @interval?  # update every minute
 
 class @UniLeeds extends Feature
   alt: 200
@@ -205,6 +227,8 @@ class @LeedsTownHallClock extends Feature
     @show() if @geNode?
     self = arguments.callee.bind(@)
     @interval = setInterval(self, 1 * 60 * 1000) unless @interval?  # update every minute
+
+#######################################################################################
 
 class @TubeStationSet extends FeatureSet
   constructor: (featureManager) ->

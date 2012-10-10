@@ -12,17 +12,16 @@ google.setOnLoadCallback ->
   truncNum = (n, dp = 2) -> if typeof n is 'number' then parseFloat(n.toFixed(dp)) else n
   wrapDegs360 = (d) -> d += 360 while d <    0; d -= 360 while d >= 360; d
   wrapDegs180 = (d) -> d += 360 while d < -180; d -= 360 while d >= 180; d
-  
+
   params =  # all these default params may be over-ridden in the query string
     startLat:      51.5035
     startLon:      -0.0742
     startHeading:  302       # degrees
-    startCity:     "Leeds"
+    city:          "London"
     startAlt:      80       # metres above "sea level"
-
     minAlt:         5       # metres above "sea level"
     maxAlt:       400       # ditto
-    speed:          3       # = when flying straight
+    speed:          4       # = when flying straight
     maxSpeed:       5       # = when diving
     cruiseTilt:    87       # degrees up from straight down
     diveSpeed:      0.15    # speed multiplier for diving (dive speed also a function of lean angle and general speed)
@@ -45,21 +44,28 @@ google.setOnLoadCallback ->
     ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
     
     features:      'air,rail,traffic,tide,twitter,olympics,misc'
-  
 
-  if params.startCity == "Leeds" 
+  # Parse city so we can alter it using search string 
+
+  for kvp in window.location.search.substring(1).split('&')
+    [k, v] = kvp.split('=')
+    params[k] = if k in ['ws', 'features', 'city'] then v.toLowerCase() else parseFloat(v)  #ignore case
+  
+  if params.city == "leeds" 
     params.startLat = 53.79852807423503
     params.startLon = -1.5497589111328125
     params.startHeading = 12
     params.startAlt = 100 
-    params.features =  params.features + ',leeds'
-  else
-    # Default is London -- so do nothing // Adding for future cities
-
-  for kvp in window.location.search.substring(1).split('&')
-    [k, v] = kvp.split('=')
-    params[k] = if k in ['ws', 'features'] then v else parseFloat(v)
-  
+    # Helen G feels sick flying around Leeds to fast!
+    params.speed = 3; 
+    params.features += ',leeds'
+  else if params.city == "london"
+    # Default is London
+    params.startLat = 51.5035
+    params.startLon = -0.0742
+    params.startHeading = 302
+    params.startAlt = 80
+    
   features = params.features.split(',')
   
   el('statusOuter').style.display = 'block' if params.status
