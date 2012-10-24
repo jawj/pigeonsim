@@ -370,7 +370,7 @@ class @LondonAirSet extends FeatureSet
     @update()
   
   update: ->
-    load {url: 'http://orca.casa.ucl.ac.uk/~ollie/citydb/modules/airquality.php?city=london&format=csv'}, (csv) =>
+    load {url: 'http://www.citydashboard.org/modules/airquality.php?city=london&format=csv'}, (csv) =>
       @clearFeatures()
       lines = csv.split('\n')
       metadata = lines.shift()
@@ -410,7 +410,7 @@ class @LondonTrafficSet extends FeatureSet
     @update()
   
   update: ->
-    load {url: 'http://orca.casa.ucl.ac.uk/~ollie/citydb/modules/roadsigns.php?city=london&format=csv'}, (csv) =>
+    load {url: 'http://www.citydashboard.org/modules/roadsigns.php?city=london&format=csv'}, (csv) =>
       @clearFeatures()
       lines = csv.split('\n')
       metadata = lines.shift()
@@ -437,7 +437,7 @@ class @TideGaugeSet extends FeatureSet
     @update()
   
   update: ->
-    load {url: 'http://orca.casa.ucl.ac.uk/~ollie/citydb/modules/tide.php?city=london&format=csv'}, (csv) =>
+    load {url: 'http://www.citydashboard.org/modules/tide.php?city=london&format=csv'}, (csv) =>
       @clearFeatures()
       lines = csv.split('\n')
       metadata = lines.shift()
