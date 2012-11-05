@@ -1,4 +1,3 @@
-
 window.load = load = (opts, callback) ->
   url = opts.url
   opts.method ?= 'GET'
@@ -204,10 +203,11 @@ class @RailLeeds extends Feature
   desc: "Next Train: "
 
   update: -> 
-    @desc = "Next Train: " + new Date().strftime('%H.%M') 
-    @show() if @geNode?
+    load {url: 'http://www.maptube.org/realtime/leedsdeparturesservice.svc/leeds', type: 'json'}, (data) =>
+      @desc = "Next Train: " + data.text.replace "Platform \?\? " , "" 
+      @show() if @geNode?
     self = arguments.callee.bind(@)
-    @interval = setInterval(self, 1 * 60 * 1000) unless @interval?  # update every minute
+    @interval = setInterval(self, 3 * 60 * 1000) unless @interval?  # update every 3 minutes
 
 class @UniLeeds extends Feature
   alt: 200
@@ -227,6 +227,31 @@ class @LeedsTownHallClock extends Feature
     @show() if @geNode?
     self = arguments.callee.bind(@)
     @interval = setInterval(self, 1 * 60 * 1000) unless @interval?  # update every minute
+
+class @LeedsTweetSet extends FeatureSet
+  maxTweets: 500
+  
+  constructor: (featureManager) ->
+    super(featureManager)
+    @update()
+      
+  update: ->
+    load {url: 'http://www.casa.ucl.ac.uk/tom/ajax-live/leeds_last_hour.json', type: 'json'}, (data) =>
+      @clearFeatures()
+      dedupedTweets = {}
+      for t, i in data.results.slice(-@maxTweets)
+        dedupedTweets["#{parseFloat(t.lat).toFixed(4)}/#{parseFloat(t.lon).toFixed(4)}"] = t
+      for own k, t of dedupedTweets
+        lat = parseFloat(t.lat)
+        lon = parseFloat(t.lon)
+        continue if isNaN(lat) or isNaN(lon)
+        tweet = new Tweet("tweet-#{t.twitterID}", lat, lon)
+        tweet.name = "#{t.name} — #{t.dateT.match(/\d?\d:\d\d/)}"
+        tweet.desc = t.twitterPost.replace(/&gt;/g, '>').replace(/&lt;/g, '<')
+                      .match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n')  # bug: many \ns collapsed to one
+        @addFeature(tweet)
+    self = arguments.callee.bind(@)
+    setTimeout(self, 5 * 60 * 1000)  # update every 5 mins
 
 #######################################################################################
 

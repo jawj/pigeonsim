@@ -389,11 +389,17 @@
 
     RailLeeds.prototype.update = function() {
       var self;
-      this.desc = "Next Train: " + new Date().strftime('%H.%M');
-      if (this.geNode != null) this.show();
+      var _this = this;
+      load({
+        url: 'http://www.maptube.org/realtime/leedsdeparturesservice.svc/leeds',
+        type: 'json'
+      }, function(data) {
+        _this.desc = "Next Train: " + data.text.replace("Platform \?\? ", "");
+        if (_this.geNode != null) return _this.show();
+      });
       self = arguments.callee.bind(this);
       if (this.interval == null) {
-        return this.interval = setInterval(self, 1 * 60 * 1000);
+        return this.interval = setInterval(self, 3 * 60 * 1000);
       }
     };
 
@@ -461,6 +467,54 @@
     };
 
     return LeedsTownHallClock;
+
+  })();
+
+  this.LeedsTweetSet = (function() {
+
+    __extends(LeedsTweetSet, FeatureSet);
+
+    LeedsTweetSet.prototype.maxTweets = 500;
+
+    function LeedsTweetSet(featureManager) {
+      LeedsTweetSet.__super__.constructor.call(this, featureManager);
+      this.update();
+    }
+
+    LeedsTweetSet.prototype.update = function() {
+      var self;
+      var _this = this;
+      load({
+        url: 'http://www.casa.ucl.ac.uk/tom/ajax-live/leeds_last_hour.json',
+        type: 'json'
+      }, function(data) {
+        var dedupedTweets, i, k, lat, lon, t, tweet, _len, _ref, _results;
+        _this.clearFeatures();
+        dedupedTweets = {};
+        _ref = data.results.slice(-_this.maxTweets);
+        for (i = 0, _len = _ref.length; i < _len; i++) {
+          t = _ref[i];
+          dedupedTweets["" + (parseFloat(t.lat).toFixed(4)) + "/" + (parseFloat(t.lon).toFixed(4))] = t;
+        }
+        _results = [];
+        for (k in dedupedTweets) {
+          if (!__hasProp.call(dedupedTweets, k)) continue;
+          t = dedupedTweets[k];
+          lat = parseFloat(t.lat);
+          lon = parseFloat(t.lon);
+          if (isNaN(lat) || isNaN(lon)) continue;
+          tweet = new Tweet("tweet-" + t.twitterID, lat, lon);
+          tweet.name = "" + t.name + " — " + (t.dateT.match(/\d?\d:\d\d/));
+          tweet.desc = t.twitterPost.replace(/&gt;/g, '>').replace(/&lt;/g, '<').match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n');
+          _results.push(_this.addFeature(tweet));
+        }
+        return _results;
+      });
+      self = arguments.callee.bind(this);
+      return setTimeout(self, 5 * 60 * 1000);
+    };
+
+    return LeedsTweetSet;
 
   })();
 
