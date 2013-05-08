@@ -9,7 +9,7 @@ import org.webbitserver.*;
 WebSocketP5 socket;
 
 void setup() {
-  socket = new WebSocketP5(this,8080);
+  socket = new WebSocketP5( this, 8080 );
 }
 
 void draw() {}

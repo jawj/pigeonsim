@@ -18,9 +18,9 @@
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * 
- * @author jens alexander ewald http://twelvebytes.net | http://www.muthesius.de
- * @modified 11/08/2011
- * @version 0.1.3
+ * @author jens alexander ewald http://twelvebytes.net
+ * @modified 06/27/2011
+ * @version 0.1.2
  */
 
 package muthesius.net;
@@ -53,7 +53,7 @@ public class WebSocketP5 implements WebSocketHandler {
   int                        port;
   String                     socketname;
 
-  public final static String VERSION        = "0.1.3";
+  public final static String VERSION        = "0.1.2";
   public final static String DEFAULT_SOCKET = "p5websocket";
 
   /**
@@ -261,14 +261,6 @@ public class WebSocketP5 implements WebSocketHandler {
     }
   }
 
-  /////////// Implement the musts:
-  
-  public void onMessage(WebSocketConnection connection, byte[] message) {
-  }
-  
-  public void onPong(WebSocketConnection connection, String message) {
-  }
-
   // ///////// END SOCKETHANDLING
 
   class JSStringServer implements HttpHandler {
@@ -291,6 +283,4 @@ public class WebSocketP5 implements WebSocketHandler {
       response.end();
     }
   }
-  
-  
 }
