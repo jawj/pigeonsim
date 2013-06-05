@@ -1,9 +1,19 @@
 
+###
+openssl genrsa -passout pass:dummy -out snakeoil.secure.key 1024
+openssl rsa -passin pass:dummy -in snakeoil.secure.key -out snakeoil.key
+openssl req -new -subj "/commonName=localhost" -key snakeoil.key -out snakeoil.csr
+openssl x509 -req -days 36500 -in snakeoil.csr -signkey snakeoil.key -out snakeoil.crt
+rm snakeoil.secure.key snakeoil.csr
+###
+
+# twistd --nodaemon web --path=. -c snakeoil.crt -k snakeoil.key --https=8443 --log=/dev/null
+
 google.setOnLoadCallback ->
   unless window.WebSocket
     alert('This app needs browser WebSocket support')
     return
-  
+
   el  = (id)  -> document.getElementById(id)
   els = (sel) -> document.querySelectorAll(sel)
   w = (s) -> s.split(/\s+/)
@@ -106,8 +116,21 @@ google.setOnLoadCallback ->
   
   addLayers = (layers...) -> ge.getLayerRoot().enableLayerById(l, yes) for l in layers
 
+  areYouThereScotty = (event) ->
+    
+
+  beamMeUp = () ->
+
+
+  sprec = new webkitSpeechRecognition()
+  sprec.lang = 'en-gb'
+  sprec.onresult = areYouThereScotty
+
   updateCam = (data) ->
     if flown and data.reset is 1
+
+      sprec.start()
+      sprec.stop()
       resetCam()
       fm.reset()  # otherwise angles are wrong if we're already near reset point
       
