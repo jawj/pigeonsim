@@ -14,7 +14,7 @@ rm snakeoil.secure.key snakeoil.csr
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   google.setOnLoadCallback(function() {
-    var addLayers, altStatus, animTick, animTicks, animTimeout, areYouThereScotty, beamMeUp, cam, camMoves, compassPts, connect, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, els, features, flapAmount, flown, fm, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, lastMove, latFactor, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, sprec, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref1, _ref2;
+    var addLayers, altStatus, animTick, animTicks, animTimeout, areYouThereScotty, beamMeUp, cam, camMoves, compassPts, connect, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, els, features, flapAmount, flown, fm, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, lastMove, latFactor, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, sprec, sprecListening, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref1, _ref2;
 
     if (!window.WebSocket) {
       alert('This app needs browser WebSocket support');
@@ -112,13 +112,15 @@ rm snakeoil.secure.key snakeoil.csr
       debugBox: 0,
       reconnectWait: 2,
       ws: 'ws://127.0.0.1:8888/p5websocket',
-      features: 'air,rail,traffic,tide,twitter,olympics,misc'
+      features: 'air,rail,traffic,tide,twitter,olympics,misc',
+      geocodeSuffix: ', london',
+      beamLatOffset: -0.0075
     };
     _ref = window.location.search.substring(1).split('&');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       kvp = _ref[_i];
       _ref1 = kvp.split('='), k = _ref1[0], v = _ref1[1];
-      params[k] = k === 'ws' || k === 'features' ? v : parseFloat(v);
+      params[k] = k === 'ws' || k === 'features' || k === 'geocodeSuffix' ? v : parseFloat(v);
     }
     features = params.features.split(',');
     if (params.status) {
@@ -150,10 +152,10 @@ rm snakeoil.secure.key snakeoil.csr
     latFactor = 0.00001;
     lonRatio = 1 / Math.cos(params.startLat * piOver180);
     lonFactor = latFactor * lonRatio;
-    resetCam = function() {
-      cam.lat = params.startLat;
-      cam.lon = params.startLon;
-      cam.heading = params.startHeading;
+    resetCam = function(lat, lon, heading) {
+      cam.lat = lat != null ? lat : params.startLat;
+      cam.lon = lon != null ? lon : params.startLon;
+      cam.heading = heading != null ? heading : params.startHeading;
       cam.alt = params.startAlt;
       cam.roll = 0.0000001;
       cam.tilt = params.cruiseTilt;
@@ -200,19 +202,70 @@ rm snakeoil.secure.key snakeoil.csr
       }
       return _results;
     };
-    areYouThereScotty = function(event) {};
-    beamMeUp = function() {};
-    sprec = new webkitSpeechRecognition();
+    sprecListening = false;
+    areYouThereScotty = function(recognition) {
+      var baseURL, conf, result, transcript, _ref3, _ref4;
+
+      console.log('Speech recognition results: ', recognition);
+      result = (_ref3 = recognition.results) != null ? (_ref4 = _ref3[0]) != null ? _ref4[0] : void 0 : void 0;
+      if (!result) {
+        return;
+      }
+      conf = result.confidence;
+      if (!(result.confidence > 0.33)) {
+        return;
+      }
+      transcript = result.transcript;
+      if (transcript === 'u c l') {
+        transcript = 'ucl';
+      }
+      if (transcript === 'home') {
+        transcript = '80 tottenham court road';
+      }
+      console.log('Scotty heard: ', transcript);
+      baseURL = 'https://maps.googleapis.com/maps/api/geocode/json';
+      return load({
+        url: "" + baseURL + "?sensor=false&components=country:GB&address=" + (encodeURIComponent(transcript)) + params.geocodeSuffix,
+        type: 'json'
+      }, beamMeUp);
+    };
+    beamMeUp = function(geocoding) {
+      var lat, lng, loc, _ref3, _ref4, _ref5;
+
+      console.log('Geocoding results: ', geocoding);
+      if (geocoding.status !== 'OK') {
+        return;
+      }
+      loc = (_ref3 = geocoding.results) != null ? (_ref4 = _ref3[0]) != null ? (_ref5 = _ref4.geometry) != null ? _ref5.location : void 0 : void 0 : void 0;
+      if (!loc) {
+        return;
+      }
+      lat = loc.lat, lng = loc.lng;
+      lat += params.beamLatOffset;
+      console.log('Beaming you to: ', lat, lng);
+      resetCam(lat, lng, 0);
+      return fm.reset();
+    };
+    window.sprec = sprec = new webkitSpeechRecognition();
     sprec.lang = 'en-gb';
+    sprec.onstart = function(e) {
+      sprec.stop();
+      return sprec.onstart = null;
+    };
+    sprec.start();
     sprec.onresult = areYouThereScotty;
     updateCam = function(data) {
       var alt, altDelta, flapDiff, heading, headingDelta, headingRad, latDelta, lonDelta, roll;
 
-      if (flown && data.reset === 1) {
+      if (data.reset === 1 && !sprecListening) {
+        sprecListening = true;
         sprec.start();
+        console.log('sprec started');
+      }
+      if (data.reset !== 1 && sprecListening) {
+        sprecListening = false;
         sprec.stop();
-        resetCam();
-        fm.reset();
+        console.log('sprec stopped');
       }
       if (data.reset === 2) {
         window.location.reload();
@@ -363,8 +416,8 @@ rm snakeoil.secure.key snakeoil.csr
       animTick();
       return connect();
     };
-    return google.earth.createInstance('earth', earthInitCallback, function() {
-      return console.log("Google Earth error: " + errorCode);
+    return google.earth.createInstance('earth', earthInitCallback, function(errMsg) {
+      return console.log("Google Earth error: " + errMsg);
     });
   });
 

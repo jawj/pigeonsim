@@ -12,11 +12,23 @@ void setup() {
 }
 
 void draw() {
-  if (! mousedown) return;
-  float dive = keyPressed && keyCode == DOWN ? 1.0 : 0.0;
-  float flap = keyPressed && keyCode == UP   ? 2.0 : 0.0;
-  String data = "{\"roll\":" + ((mouseXOffset - mouseX) / 2) + ",\"dive\":" + dive + ",\"flap\":" + flap + "}";
-  ws.broadcast(data);
+  if (keyPressed) {
+    if (key == ' ') {
+      ws.broadcast("{\"reset\": 1}");
+      return;
+    } else if (key == 'r') {
+      ws.broadcast("{\"reset\": 2}");
+      return;
+    }
+  }
+  if (mousedown) {
+    float dive = keyPressed && keyCode == DOWN ? 1.0 : 0.0;
+    float flap = keyPressed && keyCode == UP   ? 2.0 : 0.0;
+    String data = "{\"roll\":" + ((mouseXOffset - mouseX) / 2) + ",\"dive\":" + dive + ",\"flap\":" + flap + "}";
+    ws.broadcast(data);
+  } else {
+     ws.broadcast("{}");
+  }
 }
 
 void stop() {
@@ -40,8 +52,3 @@ void mousePressed() {
 void mouseReleased() {
   mousedown = false;
 }
-void keyPressed() {
-  if      (key == ' ') ws.broadcast("{\"reset\": 1}");
-  else if (key == 'r') ws.broadcast("{\"reset\": 2}");
-}
-

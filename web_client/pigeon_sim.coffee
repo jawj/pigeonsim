@@ -7,7 +7,7 @@ openssl x509 -req -days 36500 -in snakeoil.csr -signkey snakeoil.key -out snakeo
 rm snakeoil.secure.key snakeoil.csr
 ###
 
-# twistd --nodaemon web --path=. -c snakeoil.crt -k snakeoil.key --https=8443 --log=/dev/null
+# twistd --nodaemon web --path=. -c snakeoil.crt -k snakeoil.key --https=8443
 
 google.setOnLoadCallback ->
   unless window.WebSocket
@@ -54,11 +54,14 @@ google.setOnLoadCallback ->
     ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
     
     features:      'air,rail,traffic,tide,twitter,olympics,misc'
+
+    geocodeSuffix:  ', london'
+    beamLatOffset:  -0.0075
     
     
   for kvp in window.location.search.substring(1).split('&')
     [k, v] = kvp.split('=')
-    params[k] = if k in ['ws', 'features'] then v else parseFloat(v)
+    params[k] = if k in ['ws', 'features', 'geocodeSuffix'] then v else parseFloat(v)
   
   features = params.features.split(',')
   
@@ -83,10 +86,10 @@ google.setOnLoadCallback ->
   lonRatio    = 1 / Math.cos(params.startLat * piOver180)
   lonFactor   = latFactor * lonRatio
   
-  resetCam = ->
-    cam.lat     = params.startLat
-    cam.lon     = params.startLon
-    cam.heading = params.startHeading
+  resetCam = (lat, lon, heading) ->
+    cam.lat     = lat ? params.startLat
+    cam.lon     = lon ? params.startLon
+    cam.heading = heading ? params.startHeading
     cam.alt     = params.startAlt
     cam.roll    = 0.0000001  # a plain 0 is ignored
     cam.tilt    = params.cruiseTilt
@@ -116,24 +119,55 @@ google.setOnLoadCallback ->
   
   addLayers = (layers...) -> ge.getLayerRoot().enableLayerById(l, yes) for l in layers
 
-  areYouThereScotty = (event) ->
-    
 
-  beamMeUp = () ->
+  sprecListening = no
 
+  areYouThereScotty = (recognition) ->
+    console.log 'Speech recognition results: ', recognition
+    result = recognition.results?[0]?[0]
+    return unless result
+    conf = result.confidence
+    return unless result.confidence > 0.33
+    transcript = result.transcript
+    if transcript is 'u c l' then transcript = 'ucl'
+    if transcript is 'home' then transcript = '80 tottenham court road'
+    console.log 'Scotty heard: ', transcript
+    baseURL = 'https://maps.googleapis.com/maps/api/geocode/json'
+    load {url: "#{baseURL}?sensor=false&components=country:GB&address=#{encodeURIComponent transcript}#{params.geocodeSuffix}", type: 'json'}, beamMeUp
 
-  sprec = new webkitSpeechRecognition()
+  beamMeUp = (geocoding) ->
+    console.log 'Geocoding results: ', geocoding
+    return unless geocoding.status is 'OK'
+    loc = geocoding.results?[0]?.geometry?.location
+    return unless loc
+    {lat, lng} = loc
+    lat += params.beamLatOffset
+    console.log 'Beaming you to: ', lat, lng
+    resetCam lat, lng, 0
+    fm.reset()
+
+  window.sprec = sprec = new webkitSpeechRecognition()
   sprec.lang = 'en-gb'
+
+  sprec.onstart = (e) ->
+    sprec.stop()
+    sprec.onstart = null
+  sprec.start()  # make permission bar appear on load (if at all)
+  
   sprec.onresult = areYouThereScotty
 
-  updateCam = (data) ->
-    if flown and data.reset is 1
 
+  updateCam = (data) ->
+    if data.reset is 1 and not sprecListening
+      sprecListening = yes
       sprec.start()
+      console.log 'sprec started'
+
+    if data.reset isnt 1 and sprecListening
+      sprecListening = no
       sprec.stop()
-      resetCam()
-      fm.reset()  # otherwise angles are wrong if we're already near reset point
-      
+      console.log 'sprec stopped'
+
     if data.reset is 2
       window.location.reload()
     
@@ -243,6 +277,6 @@ google.setOnLoadCallback ->
     
     connect()
   
-  google.earth.createInstance('earth', earthInitCallback, -> console.log("Google Earth error: #{errorCode}"))
+  google.earth.createInstance('earth', earthInitCallback, (errMsg) -> console.log("Google Earth error: #{errMsg}"))
     
 google.load('earth', '1', {'other_params':'sensor=false'})
