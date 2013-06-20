@@ -1,13 +1,25 @@
 
 ###
+
+# webkitSpeechRecognition asks for permission EVERY TIME unless run from SSL, so:
+
+# 1) create a 100-year self-signed SSL cert for localhost:
+
 openssl genrsa -passout pass:dummy -out snakeoil.secure.key 1024
 openssl rsa -passin pass:dummy -in snakeoil.secure.key -out snakeoil.key
 openssl req -new -subj "/commonName=localhost" -key snakeoil.key -out snakeoil.csr
 openssl x509 -req -days 36500 -in snakeoil.csr -signkey snakeoil.key -out snakeoil.crt
 rm snakeoil.secure.key snakeoil.csr
-###
 
-# twistd --nodaemon web --path=. -c snakeoil.crt -k snakeoil.key --https=8443
+# 2) run with an SSL equivalent of 'python -m SimpleHTTPServer'
+
+twistd --nodaemon web --path=. -c snakeoil.crt -k snakeoil.key --https=8443
+
+# 3) open Chrome (Mac)
+
+open -a "Google Chrome" --args --disable-web-security https://localhost:8443
+
+###
 
 google.setOnLoadCallback ->
   unless window.WebSocket
@@ -122,6 +134,9 @@ google.setOnLoadCallback ->
 
   sprecListening = no
 
+  sprStartSound = make tag: 'audio', src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/commbadge.wav', preload: 'auto'
+  sprBeamSound  = make tag: 'audio', src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/beam1a.wav', preload: 'auto'
+
   areYouThereScotty = (recognition) ->
     console.log 'Speech recognition results: ', recognition
     result = recognition.results?[0]?[0]
@@ -140,6 +155,7 @@ google.setOnLoadCallback ->
     return unless geocoding.status is 'OK'
     loc = geocoding.results?[0]?.geometry?.location
     return unless loc
+    sprBeamSound.play()
     {lat, lng} = loc
     lat += params.beamLatOffset
     console.log 'Beaming you to: ', lat, lng
@@ -155,11 +171,13 @@ google.setOnLoadCallback ->
   sprec.start()  # make permission bar appear on load (if at all)
   
   sprec.onresult = areYouThereScotty
+  sprec.onerror = sprec.onnomatch = (e) -> console.log e
 
 
   updateCam = (data) ->
     if data.reset is 1 and not sprecListening
       sprecListening = yes
+      sprStartSound.play()
       sprec.start()
       console.log 'sprec started'
 
@@ -280,3 +298,17 @@ google.setOnLoadCallback ->
   google.earth.createInstance('earth', earthInitCallback, (errMsg) -> console.log("Google Earth error: #{errMsg}"))
     
 google.load('earth', '1', {'other_params':'sensor=false'})
+
+make = (opts = {}) -> 
+  t = document.createElement opts.tag ? 'div'
+  for own k, v of opts
+    switch k
+      when 'tag' then continue
+      when 'parent' then v.appendChild t
+      when 'kids' then t.appendChild c for c in v when c?
+      when 'prevSib' then v.parentNode.insertBefore t, v.nextSibling
+      when 'text' then t.appendChild text v
+      when 'cls' then t.className = v
+      else t[k] = v
+  t
+
