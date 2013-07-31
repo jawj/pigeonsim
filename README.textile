@@ -3,7 +3,7 @@ h1. Pigeon Sim
 
 Pigeon Sim simulates flight, using your arms as wings.
 
-It links a Kinect -- via "Simple-OpenNI":http://code.google.com/p/simple-openni/, "Processing":http://processing.org/, some GCSE trigonometry, WebSockets and "CoffeeScript":http://jashkenas.github.com/coffee-script/  or a "LeapMotion":https://www.leapmotion.com/ sensor-- to the "Google Earth API":https://developers.google.com/earth/ and "browser plugin":http://www.google.com/earth/explore/products/plugin.html. 
+It links a Kinect via "Simple-OpenNI":http://code.google.com/p/simple-openni/, "Processing":http://processing.org/, some GCSE trigonometry, WebSockets and "CoffeeScript":http://jashkenas.github.com/coffee-script/  or a "LeapMotion":https://www.leapmotion.com/ sensor to the "Google Earth API":https://developers.google.com/earth/ and "browser plugin":http://www.google.com/earth/explore/products/plugin.html. 
 
 It also introduces "Spindlytext":https://github.com/jawj/spindlytext, a nice way to write in the sky with KML, which is used to display various kinds of live data.
 
