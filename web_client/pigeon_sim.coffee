@@ -1,8 +1,31 @@
+
+###
+
+# webkitSpeechRecognition asks for permission EVERY TIME unless run from SSL, so:
+
+# 1) create a 100-year self-signed SSL cert for localhost:
+
+openssl genrsa -passout pass:dummy -out snakeoil.secure.key 1024
+openssl rsa -passin pass:dummy -in snakeoil.secure.key -out snakeoil.key
+openssl req -new -subj "/commonName=localhost" -key snakeoil.key -out snakeoil.csr
+openssl x509 -req -days 36500 -in snakeoil.csr -signkey snakeoil.key -out snakeoil.crt
+rm snakeoil.secure.key snakeoil.csr
+
+# 2) run with an SSL equivalent of 'python -m SimpleHTTPServer'
+
+twistd --nodaemon web --path=. -c snakeoil.crt -k snakeoil.key --https=8443
+
+# 3) open Chrome (Mac)
+
+open -a "Google Chrome" --args --disable-web-security https://localhost:8443
+
+###
+
 google.setOnLoadCallback ->
   unless window.WebSocket
     alert('This app needs browser WebSocket support')
     return
-  
+
   el  = (id)  -> document.getElementById(id)
   els = (sel) -> document.querySelectorAll(sel)
   w = (s) -> s.split(/\s+/)
@@ -18,6 +41,7 @@ google.setOnLoadCallback ->
     startHeading:  302       # degrees
     city:          "London"
     startAlt:      80       # metres above "sea level"
+   
     minAlt:         5       # metres above "sea level"
     maxAlt:       400       # ditto
     speed:          4       # = when flying straight
@@ -41,11 +65,15 @@ google.setOnLoadCallback ->
     
     reconnectWait:  2       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
+    
     leapOptions:    {enableGestures: true}
     timeStampDelta: 4
     enableLeap:     0
     leapOptions:    {enableGestures: true}
     rollMultiplier: 40
+
+    geocodeSuffix:  ', london'
+    beamLatOffset:  -0.0075
 
 
     features:      'air,rail,traffic,tide,twitter,olympics,misc'
@@ -54,7 +82,7 @@ google.setOnLoadCallback ->
 
   for kvp in window.location.search.substring(1).split('&')
     [k, v] = kvp.split('=')
-    params[k] = if k in ['ws', 'features', 'city'] then v.toLowerCase() else parseFloat(v)  #ignore case
+    params[k] = if k in ['ws', 'features', 'geocodeSuffix','city'] then v.toLowerCase() else parseFloat(v)  #ignore case
   
   if params.city == "leeds" 
     params.startLat = 53.79852807423503
@@ -94,10 +122,10 @@ google.setOnLoadCallback ->
   lonRatio    = 1 / Math.cos(params.startLat * piOver180)
   lonFactor   = latFactor * lonRatio
   
-  resetCam = ->
-    cam.lat     = params.startLat
-    cam.lon     = params.startLon
-    cam.heading = params.startHeading
+  resetCam = (lat, lon, heading) ->
+    cam.lat     = lat ? params.startLat
+    cam.lon     = lon ? params.startLon
+    cam.heading = heading ? params.startHeading
     cam.alt     = params.startAlt
     cam.roll    = 0.0000001  # a plain 0 is ignored
     cam.tilt    = params.cruiseTilt
@@ -127,7 +155,62 @@ google.setOnLoadCallback ->
   
   addLayers = (layers...) -> ge.getLayerRoot().enableLayerById(l, yes) for l in layers
 
+
+  sprecListening = no
+
+  sprStartSound = make tag: 'audio', src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/commbadge.wav', preload: 'auto'
+  sprBeamSound  = make tag: 'audio', src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/beam1a.wav', preload: 'auto'
+
+  areYouThereScotty = (recognition) ->
+    console.log 'Speech recognition results: ', recognition
+    result = recognition.results?[0]?[0]
+    return unless result
+    conf = result.confidence
+    return unless result.confidence > 0.33
+    transcript = result.transcript
+    if transcript is 'u c l' then transcript = 'ucl'
+    if transcript is 'home' then transcript = '80 tottenham court road'
+    console.log 'Scotty heard: ', transcript
+    baseURL = 'https://maps.googleapis.com/maps/api/geocode/json'
+    load {url: "#{baseURL}?sensor=false&components=country:GB&address=#{encodeURIComponent transcript}#{params.geocodeSuffix}", type: 'json'}, beamMeUp
+
+  beamMeUp = (geocoding) ->
+    console.log 'Geocoding results: ', geocoding
+    return unless geocoding.status is 'OK'
+    loc = geocoding.results?[0]?.geometry?.location
+    return unless loc
+    sprBeamSound.play()
+    {lat, lng} = loc
+    lat += params.beamLatOffset
+    console.log 'Beaming you to: ', lat, lng
+    resetCam lat, lng, 0
+    fm.reset()
+
+  window.sprec = sprec = new webkitSpeechRecognition()
+  sprec.lang = 'en-gb'
+
+  sprec.onstart = (e) ->
+    sprec.stop()
+    sprec.onstart = null
+  sprec.start()  # make permission bar appear on load (if at all)
+  
+  sprec.onresult = areYouThereScotty
+  sprec.onerror = sprec.onnomatch = (e) -> console.log e
+
+
   updateCam = (data) ->
+    if data.reset is 1 and not sprecListening
+      sprecListening = yes
+      sprStartSound.play()
+      sprec.start()
+      console.log 'sprec started'
+
+    if data.reset isnt 1 and sprecListening
+      sprecListening = no
+      sprec.stop()
+      console.log 'sprec stopped'
+
+
     if flown and data.reset is 1
       resetCam()
       fm.reset()  # otherwise angles are wrong if we're already near reset point
@@ -277,6 +360,20 @@ google.setOnLoadCallback ->
     leapMotion()
 
 
-  google.earth.createInstance('earth', earthInitCallback, -> console.log("Google Earth error: #{errorCode}"))
+  google.earth.createInstance('earth', earthInitCallback, (errMsg) -> console.log("Google Earth error: #{errMsg}"))
     
 google.load('earth', '1', {'other_params':'sensor=false'})
+
+make = (opts = {}) -> 
+  t = document.createElement opts.tag ? 'div'
+  for own k, v of opts
+    switch k
+      when 'tag' then continue
+      when 'parent' then v.appendChild t
+      when 'kids' then t.appendChild c for c in v when c?
+      when 'prevSib' then v.parentNode.insertBefore t, v.nextSibling
+      when 'text' then t.appendChild text v
+      when 'cls' then t.className = v
+      else t[k] = v
+  t
+
