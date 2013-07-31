@@ -1,4 +1,3 @@
-
 google.setOnLoadCallback ->
   unless window.WebSocket
     alert('This app needs browser WebSocket support')
@@ -42,7 +41,13 @@ google.setOnLoadCallback ->
     
     reconnectWait:  2       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
-    
+    leapOptions:    {enableGestures: true}
+    timeStampDelta: 4
+    enableLeap:     0
+    leapOptions:    {enableGestures: true}
+    rollMultiplier: 40
+
+
     features:      'air,rail,traffic,tide,twitter,olympics,misc'
 
   # Parse city so we can alter it using search string 
@@ -192,7 +197,37 @@ google.setOnLoadCallback ->
     
     animTicks += 1
     
-  
+  leapMotion = ->
+    if params.enableLeap
+      console.log("Leap Called!");
+      controller = new Leap.Controller(params.leapOptions);
+      controller.loop (frame) ->
+          if frame.hands.length == 1
+             if frame.timestamp % params.timeStampDelta == 0
+               roll = Math.atan2(frame.hands[0].palmNormal[0], -frame.hands[0].palmNormal[1])
+               palmHeight =  frame.hands[0].palmPosition[1]
+               
+               heightDelta = Math.round(adjustMapping(palmHeight, 0, 300, 0, 2));
+               
+               dive = 0
+               flap = 0
+
+               if heightDelta < 1
+                  dive = 1
+               
+               if heightDelta > 1
+                  flap = 1
+
+               updateCam({"roll": roll * params.rollMultiplier, "flap": flap, "dive": dive})
+          #if frame.gestures.length > 0
+            #if frame.gestures[0].type == 'swipe'
+              #console.log("going home");
+              #updateCam({"reset": 1})
+
+  adjustMapping = (value, r0, r1, r2, r3) ->
+    `var mag = Math.abs(value - r0), sgn = value < 0 ? -1 : 1;`
+    sgn * mag * (r3 - r2) / (r1 - r0);
+
   connect = ->
     ws = new WebSocket(params.ws)
     titleStatus.style.color = '#ff0'                      # yellow when connecting
@@ -208,6 +243,9 @@ google.setOnLoadCallback ->
       data = JSON.parse(e.data)
       debugDataStatus.innerHTML = "#{inMsgs} #{JSON.stringify(data, (k, v) -> truncNum(v))}" if params.debugData
       updateCam(data)
+          
+
+       
   
   earthInitCallback = (instance) ->
     window.ge = ge = instance
@@ -236,7 +274,9 @@ google.setOnLoadCallback ->
     animTick()
     
     connect()
-  
+    leapMotion()
+
+
   google.earth.createInstance('earth', earthInitCallback, -> console.log("Google Earth error: #{errorCode}"))
     
 google.load('earth', '1', {'other_params':'sensor=false'})
