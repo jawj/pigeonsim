@@ -9,24 +9,24 @@ It also introduces "Spindlytext":https://github.com/jawj/spindlytext, a nice way
 
 There's a brief write-up, with video clip, "in New Scientist":http://www.newscientist.com/blogs/onepercent/2012/04/flap-around-london-with-the-pi.html. It's also "in the Independent":http://www.independent.co.uk/life-style/motoring/features/the-ideas-factory-move-over-prius-owners-theres-a-new-hybrid-in-town-7679050.html.
 
-NCRM have also made a video which dives into the different parts of "PigeonSim":http://www.youtube.com/watch?v=LbLFxctyct0
+NCRM have also made a video which dives into the different parts of "PigeonSim":http://www.youtube.com/watch?v=LbLFxctyct0.
 
 h2. Installation
 
 Pigeon Sim has been tested on Windows 7 and Mac OS 10.7. The Google Earth plugin seems somewhat more stable and less glitchy on Windows -- but this may depend on your graphics card.
 
 * Install Simple-OpenNI, OpenNI and Processing, following the "instructions provided by Simple-OpenNI":http://code.google.com/p/simple-openni/wiki/Installation. Note that on 64-bit Windows, you probably still want the 32-bit OpenNI libraries, since Processing comes with its own 32-bit Java.
-* Install the "p5websocket":http://p5.twelvebytes.net/websocketP5-0.1.3/ library (version 0.1.3+) for Processing.
-* Launch Chrome with the @--disable-web-security@ command-line flag (to allow cross-domain AJAX requests for the live data), and open web_client/index.html. If you don't already have it, you'll need to agree to install the Google Earth plugin.
+* Install the p5websocket Processing library (now included in this repo, along with the SimpleOpenNI one).
+* See instructions at the top of web_client/pigeonsim.coffee to get the web client running.
 * Plug in your Kinect, run the pigeonsim Processing sketch, and fly!
 * Alternatively, if you don't have a Kinect, run the pigeon_dummy sketch. Click and drag to bank/steer, and press [up] to flap, [down] to dive, and [space] to go home. This mainly defeats the point, though.
 
-A .BAT file is included to start PigeonSim on boot, just check your own paths and username in this file. Drop it into your Startup folder located in by typing shell:startup in the Start Menu (Windows 7).
+A .bat file is included to start PigeonSim on Windows boot, just check your own paths and username in this file. Drop it into your Startup folder located in by typing shell:startup in the Start Menu (Windows 7).
 
 h2. LeapMotion Support
 
-To enable LeapMotion Support append enableLeap=1 to the query string (e.g. /pigeonsim/web_client/?enableLeap=1) which will allow you to control the sim with your hand movements.  See "this video":http://www.youtube.com/watch?v=6C6D6IF2PO0, for instructions and an example of how to fly with a LeapMotion.
+To enable LeapMotion Support append enableLeap=1 to the query string, which will allow you to control the sim with your hand movements. There is "a video with instructions and an example of how to fly with a LeapMotion":http://www.youtube.com/watch?v=6C6D6IF2PO0.
 
 h2. Licence
 
-This code is released under the "GPL v3":http://www.opensource.org/licenses/GPL-3.0. To negotiate GPL-incompatible uses, feel free contact me.
+This code is released under the "GPL v3":http://www.opensource.org/licenses/GPL-3.0. To negotiate GPL-incompatible uses, feel free to get in touch.
