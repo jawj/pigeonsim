@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "rail_stations.js",
+  "sourceRoot": "../..",
+  "sources": [
+    "web_client/data/rail_stations.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA;CAAA,CAAA,CAAA,CAAC,KAAgB,KAAF,i86FAAf;CAAA"
+}

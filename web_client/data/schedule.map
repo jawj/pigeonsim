@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "schedule.js",
+  "sourceRoot": "../..",
+  "sources": [
+    "web_client/data/schedule.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA;AACI,CADJ,CAAA,CAAsB,CAArB,CAkBC,EAAA,CAlBO,CAAE,KAET,CAcA,SAXA,KAIA,GAEA,CAEA,CATA,KAGA,EAUA,EAdA,CASA,SANA;CANF"
+}

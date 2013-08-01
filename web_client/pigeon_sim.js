@@ -28,7 +28,7 @@ open -a "Google Chrome" --args --disable-web-security https://localhost:8443
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   google.setOnLoadCallback(function() {
-    var addLayers, altStatus, animTick, animTicks, animTimeout, areYouThereScotty, beamMeUp, cam, camMoves, compassPts, connect, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, els, features, flapAmount, flown, fm, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, lastMove, latFactor, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, sprBeamSound, sprStartSound, sprec, sprecListening, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref1, _ref2;
+    var addLayers, adjustMapping, altStatus, animTick, animTicks, animTimeout, areYouThereScotty, beamMeUp, cam, camMoves, compassPts, connect, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, els, features, flapAmount, flown, fm, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, lastMove, latFactor, leapMotion, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, sprBeamSound, sprStartSound, sprec, sprecListening, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref1, _ref2;
 
     if (!window.WebSocket) {
       alert('This app needs browser WebSocket support');
@@ -103,10 +103,11 @@ open -a "Google Chrome" --args --disable-web-security https://localhost:8443
       startLat: 51.5035,
       startLon: -0.0742,
       startHeading: 302,
+      city: "London",
       startAlt: 80,
       minAlt: 5,
       maxAlt: 400,
-      speed: 3,
+      speed: 4,
       maxSpeed: 5,
       cruiseTilt: 87,
       diveSpeed: 0.15,
@@ -126,15 +127,32 @@ open -a "Google Chrome" --args --disable-web-security https://localhost:8443
       debugBox: 0,
       reconnectWait: 2,
       ws: 'ws://127.0.0.1:8888/p5websocket',
-      features: 'air,rail,traffic,tide,twitter,olympics,misc',
+      leapOptions: {
+        enableGestures: true
+      },
+      timeStampDelta: 4,
+      enableLeap: 0,
+      leapOptions: {
+        enableGestures: true
+      },
+      rollMultiplier: 40,
       geocodeSuffix: ', london',
-      beamLatOffset: -0.0075
+      beamLatOffset: -0.0075,
+      features: 'air,rail,traffic,tide,twitter,olympics,misc'
     };
     _ref = window.location.search.substring(1).split('&');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       kvp = _ref[_i];
       _ref1 = kvp.split('='), k = _ref1[0], v = _ref1[1];
-      params[k] = k === 'ws' || k === 'features' || k === 'geocodeSuffix' ? v : parseFloat(v);
+      params[k] = k === 'ws' || k === 'features' || k === 'geocodeSuffix' || k === 'city' ? v.toLowerCase() : parseFloat(v);
+    }
+    if (params.city === "leeds") {
+      params.startLat = 53.79852807423503;
+      params.startLon = -1.5497589111328125;
+      params.startHeading = 12;
+      params.startAlt = 100;
+      params.speed = 3;
+      params.features += ',leeds';
     }
     features = params.features.split(',');
     if (params.status) {
@@ -377,6 +395,45 @@ open -a "Google Chrome" --args --disable-web-security https://localhost:8443
       }
       return animTicks += 1;
     };
+    leapMotion = function() {
+      var controller;
+
+      if (params.enableLeap) {
+        console.log("Leap Called!");
+        controller = new Leap.Controller(params.leapOptions);
+        return controller.loop(function(frame) {
+          var dive, flap, heightDelta, palmHeight, roll;
+
+          if (frame.hands.length === 1) {
+            if (frame.timestamp % params.timeStampDelta === 0) {
+              roll = Math.atan2(frame.hands[0].palmNormal[0], -frame.hands[0].palmNormal[1]);
+              palmHeight = frame.hands[0].palmPosition[1];
+              heightDelta = Math.round(adjustMapping(palmHeight, 0, 300, 0, 2));
+              dive = 0;
+              flap = 0;
+              if (heightDelta < 1) {
+                dive = 1;
+              }
+              if (heightDelta > 1) {
+                flap = 1;
+              }
+              return updateCam({
+                "roll": roll * params.rollMultiplier,
+                "flap": flap,
+                "dive": dive
+              });
+            }
+          }
+        });
+      }
+    };
+    adjustMapping = function(value, r0, r1, r2, r3) {
+      var mag, sgn;
+
+      mag = Math.abs(value - r0);
+      sgn = value < 0 ? -1 : 1;
+      return sgn * mag * (r3 - r2) / (r1 - r0);
+    };
     connect = function() {
       var ws;
 
@@ -405,7 +462,7 @@ open -a "Google Chrome" --args --disable-web-security https://localhost:8443
       };
     };
     earthInitCallback = function(instance) {
-      var ccs, las, lts, ovs, rss, tgs, trs, tss;
+      var ccs, las, lds, lts, ovs, rss, tgs, trs, tss;
 
       window.ge = ge = instance;
       console.log("Google Earth plugin v" + (ge.getPluginVersion()) + ", API v" + (ge.getApiVersion()));
@@ -441,9 +498,13 @@ open -a "Google Chrome" --args --disable-web-security https://localhost:8443
       if (__indexOf.call(features, 'olympics') >= 0 && new Date("2012-08-12") - new Date() > 0) {
         ovs = new OlympicSet(fm);
       }
+      if (__indexOf.call(features, 'leeds') >= 0) {
+        lds = new LeedsCitySet(fm);
+      }
       google.earth.addEventListener(ge, 'frameend', animTick);
       animTick();
-      return connect();
+      connect();
+      return leapMotion();
     };
     return google.earth.createInstance('earth', earthInitCallback, function(errMsg) {
       return console.log("Google Earth error: " + errMsg);

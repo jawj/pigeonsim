@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "tube_stations.js",
+  "sourceRoot": "../..",
+  "sources": [
+    "web_client/data/tube_stations.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA;CAAA,CAAA,CAAA,CAAC,KAAgB,KAAF,kzeAAf;CAAA"
+}

@@ -1,4 +1,3 @@
-
 window.load = load = (opts, callback) ->
   url = opts.url
   opts.method ?= 'GET'
@@ -140,8 +139,6 @@ class @Feature
       @fm.ge.getFeatures().removeChild(@geNode)
       delete @geNode
 
-
-
 class @RailStationSet extends FeatureSet
   constructor: (featureManager) ->
     super(featureManager)
@@ -156,6 +153,107 @@ class @RailStation extends Feature
   alt: 130
   nameTextOpts: {size: 3}
 
+#################################### LEEDS ##############################################
+
+class @LeedsCitySet extends FeatureSet
+  constructor: (featureManager) ->
+    super(featureManager)
+    
+    lch = new LeedsCivicHall("civic-hall",  53.80210025576234, -1.5485385060310364)
+    @addFeature(lch)
+
+    unileeds = new UniLeeds("uni-of-leeds", 53.80786737971994, -1.5527737140655518)
+    @addFeature(unileeds)
+
+    railLeeds = new RailLeeds("RailStation", 53.79437097083624, -1.5475326776504517)
+    railLeeds.update()
+    @addFeature(railLeeds)
+    
+    bb = new LeedsTownHallClock('TownHallClock', 53.80005678340009, -1.5497106313705444)
+    bb.update()
+    @addFeature(bb)
+
+    #Loop around CSV with Leeds featurea
+    for row in @csv.split("\n")
+        [lat, lon, name] = row.split(',')
+        lfs = new LeedsFeature(name, parseFloat(lat), parseFloat(lon))
+        lfs.name = name;
+        @addFeature(lfs)
+
+    #Loop around Leeds Open Plaques
+
+
+class @LeedsFeature extends Feature
+  alt: Math.floor(Math.random()*(300-200+1)+200)
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+
+class @LeedsCivicHall extends Feature
+  alt: 150
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  name: "Leeds Civic Hall"
+  desc: ""
+
+class @RailLeeds extends Feature
+  alt: 200
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  name: "\uF001 Leeds Rail Station"
+  desc: "Next Train: "
+
+  update: -> 
+    load {url: 'http://www.maptube.org/realtime/leedsdeparturesservice.svc/leeds', type: 'json'}, (data) =>
+      @desc = "Next Train: " + data.text.replace "Platform \?\? " , "" 
+      @show() if @geNode?
+    self = arguments.callee.bind(@)
+    @interval = setInterval(self, 3 * 60 * 1000) unless @interval?  # update every 3 minutes
+
+class @UniLeeds extends Feature
+  alt: 200
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  name: "University of Leeds"
+  desc: ""
+
+class @LeedsTownHallClock extends Feature
+  alt: 200
+  nameTextOpts: {size: 2, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  
+  update: ->
+    @name = new Date().strftime('%H.%M')
+    @desc = 'Leeds Town Hall'
+    @show() if @geNode?
+    self = arguments.callee.bind(@)
+    @interval = setInterval(self, 1 * 60 * 1000) unless @interval?  # update every minute
+
+class @LeedsTweetSet extends FeatureSet
+  maxTweets: 500
+  
+  constructor: (featureManager) ->
+    super(featureManager)
+    @update()
+      
+  update: ->
+    load {url: 'http://www.casa.ucl.ac.uk/tom/ajax-live/leeds_last_hour.json', type: 'json'}, (data) =>
+      @clearFeatures()
+      dedupedTweets = {}
+      for t, i in data.results.slice(-@maxTweets)
+        dedupedTweets["#{parseFloat(t.lat).toFixed(4)}/#{parseFloat(t.lon).toFixed(4)}"] = t
+      for own k, t of dedupedTweets
+        lat = parseFloat(t.lat)
+        lon = parseFloat(t.lon)
+        continue if isNaN(lat) or isNaN(lon)
+        tweet = new Tweet("tweet-#{t.twitterID}", lat, lon)
+        tweet.name = "#{t.name} — #{t.dateT.match(/\d?\d:\d\d/)}"
+        tweet.desc = t.twitterPost.replace(/&gt;/g, '>').replace(/&lt;/g, '<')
+                      .match(/.{1,35}(\s|$)|\S+?(\s|$)/g).join('\n').replace(/\n+/g, '\n')  # bug: many \ns collapsed to one
+        @addFeature(tweet)
+    self = arguments.callee.bind(@)
+    setTimeout(self, 5 * 60 * 1000)  # update every 5 mins
+
+#######################################################################################
 
 class @TubeStationSet extends FeatureSet
   constructor: (featureManager) ->
@@ -297,7 +395,7 @@ class @LondonAirSet extends FeatureSet
     @update()
   
   update: ->
-    load {url: 'http://orca.casa.ucl.ac.uk/~ollie/citydb/modules/airquality.php?city=london&format=csv'}, (csv) =>
+    load {url: 'http://www.citydashboard.org/modules/airquality.php?city=london&format=csv'}, (csv) =>
       @clearFeatures()
       lines = csv.split('\n')
       metadata = lines.shift()
@@ -337,7 +435,7 @@ class @LondonTrafficSet extends FeatureSet
     @update()
   
   update: ->
-    load {url: 'http://orca.casa.ucl.ac.uk/~ollie/citydb/modules/roadsigns.php?city=london&format=csv'}, (csv) =>
+    load {url: 'http://www.citydashboard.org/modules/roadsigns.php?city=london&format=csv'}, (csv) =>
       @clearFeatures()
       lines = csv.split('\n')
       metadata = lines.shift()
@@ -364,7 +462,7 @@ class @TideGaugeSet extends FeatureSet
     @update()
   
   update: ->
-    load {url: 'http://orca.casa.ucl.ac.uk/~ollie/citydb/modules/tide.php?city=london&format=csv'}, (csv) =>
+    load {url: 'http://www.citydashboard.org/modules/tide.php?city=london&format=csv'}, (csv) =>
       @clearFeatures()
       lines = csv.split('\n')
       metadata = lines.shift()

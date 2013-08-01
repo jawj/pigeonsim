@@ -34,16 +34,17 @@ google.setOnLoadCallback ->
   truncNum = (n, dp = 2) -> if typeof n is 'number' then parseFloat(n.toFixed(dp)) else n
   wrapDegs360 = (d) -> d += 360 while d <    0; d -= 360 while d >= 360; d
   wrapDegs180 = (d) -> d += 360 while d < -180; d -= 360 while d >= 180; d
-  
+
   params =  # all these default params may be over-ridden in the query string
     startLat:      51.5035
     startLon:      -0.0742
-    startHeading: 302       # degrees
+    startHeading:  302       # degrees
+    city:          "London"
     startAlt:      80       # metres above "sea level"
-
+   
     minAlt:         5       # metres above "sea level"
     maxAlt:       400       # ditto
-    speed:          3       # = when flying straight
+    speed:          4       # = when flying straight
     maxSpeed:       5       # = when diving
     cruiseTilt:    87       # degrees up from straight down
     diveSpeed:      0.15    # speed multiplier for diving (dive speed also a function of lean angle and general speed)
@@ -65,16 +66,32 @@ google.setOnLoadCallback ->
     reconnectWait:  2       # seconds to wait between connection attempts
     ws:            'ws://127.0.0.1:8888/p5websocket'  # websocket URL of OpenNI-derived data feed
     
-    features:      'air,rail,traffic,tide,twitter,olympics,misc'
+    leapOptions:    {enableGestures: true}
+    timeStampDelta: 4
+    enableLeap:     0
+    leapOptions:    {enableGestures: true}
+    rollMultiplier: 40
 
     geocodeSuffix:  ', london'
     beamLatOffset:  -0.0075
-    
-    
+
+
+    features:      'air,rail,traffic,tide,twitter,olympics,misc'
+
+  # Parse city so we can alter it using search string 
+
   for kvp in window.location.search.substring(1).split('&')
     [k, v] = kvp.split('=')
-    params[k] = if k in ['ws', 'features', 'geocodeSuffix'] then v else parseFloat(v)
-  
+    params[k] = if k in ['ws', 'features', 'geocodeSuffix', 'city'] then v.toLowerCase() else parseFloat(v)  # ignore case
+ 
+  if params.city is "leeds" 
+    params.startLat = 53.79852807423503
+    params.startLon = -1.5497589111328125
+    params.startHeading = 12
+    params.startAlt = 100 
+    params.speed = 3  # Helen G feels sick flying around Leeds too fast!
+    params.features += ',leeds'
+    
   features = params.features.split(',')
   
   el('statusOuter').style.display = 'block' if params.status
@@ -82,7 +99,7 @@ google.setOnLoadCallback ->
   
   [titleStatus, altStatus, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, headingStatus] =
     (el(id) for id in w('title alt debugData debugEarthAPI debugTicks heading'))
-    
+
   window.cam = cam = {}
   ge = seenCam = flown = animTimeout = fm = lastMove = null
   animTicks = camMoves = inMsgs = 0
@@ -251,7 +268,31 @@ google.setOnLoadCallback ->
     
     animTicks += 1
     
-  
+  leapMotion = ->
+    if params.enableLeap
+      console.log "Leap Called!"
+      controller = new Leap.Controller params.leapOptions
+      controller.loop (frame) ->
+          if frame.hands.length is 1
+             if frame.timestamp % params.timeStampDelta is 0
+               roll = Math.atan2(frame.hands[0].palmNormal[0], -frame.hands[0].palmNormal[1])
+               palmHeight =  frame.hands[0].palmPosition[1]
+               heightDelta = Math.round adjustMapping(palmHeight, 0, 300, 0, 2)
+               dive = 0
+               flap = 0
+               dive = 1 if heightDelta < 1
+               flap = 1 if heightDelta > 1
+               updateCam {"roll": roll * params.rollMultiplier, "flap": flap, "dive": dive}
+          #if frame.gestures.length > 0
+            #if frame.gestures[0].type == 'swipe'
+              #console.log("going home");
+              #updateCam({"reset": 1})
+
+  adjustMapping = (value, r0, r1, r2, r3) ->
+    mag = Math.abs(value - r0)
+    sgn = if value < 0 then -1 else 1
+    sgn * mag * (r3 - r2) / (r1 - r0)
+
   connect = ->
     ws = new WebSocket(params.ws)
     titleStatus.style.color = '#ff0'                      # yellow when connecting
@@ -289,12 +330,14 @@ google.setOnLoadCallback ->
     ccs = new MiscSet(fm)          if 'misc'      in features
     lts = new LondonTweetSet(fm)   if 'twitter'   in features
     ovs = new OlympicSet(fm)       if 'olympics'  in features and new Date("2012-08-12") - new Date() > 0
+    lds = new LeedsCitySet(fm)     if 'leeds'     in features
 
     google.earth.addEventListener(ge, 'frameend', animTick)
     animTick()
     
     connect()
-  
+    leapMotion()
+
   google.earth.createInstance('earth', earthInitCallback, (errMsg) -> console.log("Google Earth error: #{errMsg}"))
     
 google.load('earth', '1', {'other_params':'sensor=false'})
@@ -311,4 +354,3 @@ make = (opts = {}) ->
       when 'cls' then t.className = v
       else t[k] = v
   t
-

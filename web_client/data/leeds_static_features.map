@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "leeds_static_features.js",
+  "sourceRoot": "../..",
+  "sources": [
+    "web_client/data/leeds_static_features.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA;CAAA,CAAA,CAAA,CAAC,KAAc,GAAF,ysEAAb;CAAA"
+}

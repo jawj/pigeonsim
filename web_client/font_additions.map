@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "font_additions.js",
+  "sourceRoot": "..",
+  "sources": [
+    "web_client/font_additions.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAIA;CAAA,GAAA,EAAA;;CAAA,CAAA,CAAO,CAAP,GAAc,EAAE;;CAAhB,CAEA,CAAiB,CAAZ,IAAA;;CAFL,CAGA,CAAiB,CAAZ,IAAA;;CAHL,CAIA,CAAiB,CAAZ,CAAa,GAAb;;AACuB,CAL5B,CAKA,CAAiB,CAAZ,IAAA;CALL"
+}

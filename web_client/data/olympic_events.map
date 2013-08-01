@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "olympic_events.js",
+  "sourceRoot": "../..",
+  "sources": [
+    "web_client/data/olympic_events.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA;CAAA,CAAA,CAAyB,CAAxB,KAAY,CAAF,ixsKAAX;CAAA"
+}
