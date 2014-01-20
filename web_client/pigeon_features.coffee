@@ -22,8 +22,6 @@ mergeObj = (o1, o2) ->
 oneEightyOverPi = 180 / Math.PI
 box = null
 
-
-
 class @FeatureManager
   constructor: (@ge, @lonRatio, @cam, @params) ->
     @featureTree = new RTree()
@@ -153,6 +151,93 @@ class @RailStation extends Feature
   alt: 130
   nameTextOpts: {size: 3}
 
+#################################### DISTANCE ##############################################
+class @DistanceSensorSet extends FeatureSet
+  constructor: (featureManager) ->
+    super(featureManager)
+
+    dis_event = new DistanceEventLocation("excel center", 51.508208, 0.030958)
+    dis_event.name = "ExCeL London"
+    dis_event.desc = "International Convention Centre"
+    @addFeature(dis_event)
+
+    dis_crystal = new DistanceEventLocation("The Crystal", 51.507474, 0.01633)
+    dis_crystal.name = "The Crystal"
+    dis_crystal.alt = 150
+    @addFeature(dis_crystal)
+
+    dis_sensor = new DistanceTempSensor("Temp Sensor", 51.508168, 0.026473)
+    @addFeature(dis_sensor)
+    dis_sensor.update()
+
+    distance_wind_sensor = new DistanceWindSensor("Wind Sensor", 51.508762, 0.028759)
+    @addFeature(distance_wind_sensor)
+    distance_wind_sensor.update()
+
+    dis_sound_sensor = new DistanceSoundSensor("Sound Sensor",  51.508208, 0.030459)
+    @addFeature(dis_sound_sensor)
+    dis_sound_sensor.update()
+
+    #Loop around CSV with Distance features
+    for row in @csv.split("\n")
+        [lat, lon, name] = row.split(',')
+        lfs = new LeedsFeature(name, parseFloat(lat), parseFloat(lon))
+        lfs.name = name;
+        @addFeature(lfs)
+
+class @DistanceEventLocation extends Feature
+  alt: 210 
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+
+class @DistanceFeature extends Feature
+  alt: Math.floor(Math.random()*(300-200+1)+200)
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+
+class @DistanceTempSensor extends Feature
+  alt: 200
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  name: "Intel Weather Station"
+
+  update: -> 
+    @show() if @geNode?
+    load {url: 'http://ios.stevenjamesgray.com/dataFeed/?feed=491325353&stream=Inside_air_temperature.json', type: 'json'}, (data) =>
+      @desc = "Temperature: "  + data.current_value + data.unit.symbol
+      @show() if @geNode?
+    self = arguments.callee.bind(@)
+    @interval = setInterval(self, 10 * 1000) unless @interval?  # update every minute
+
+class @DistanceWindSensor extends Feature
+  alt: 110
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  name: "Intel Weather Station"
+
+  update: -> 
+    @show() if @geNode?
+    load {url: 'http://ios.stevenjamesgray.com/dataFeed/?feed=491325353&stream=Wind_Speed.json', type: 'json'}, (data) =>
+      @desc = "Wind Speed: "  + data.current_value + data.unit.symbol
+      @show() if @geNode?
+    self = arguments.callee.bind(@)
+    @interval = setInterval(self, 10 * 1000) unless @interval?  # update every minute
+
+class @DistanceSoundSensor extends Feature
+  alt: 150
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  name: "GPRS LogBook"
+
+  update: -> 
+    @show() if @geNode?
+    load {url: 'http://ios.stevenjamesgray.com/dataFeed/?feed=804611207&stream=230908.json', type: 'json'}, (data) =>
+      @desc = "Sound Level: "  + data.current_value + data.unit.symbol
+      @show() if @geNode?
+    self = arguments.callee.bind(@)
+    @interval = setInterval(self, 10 * 1000) unless @interval?  # update every minute
+
+    
 #################################### LEEDS ##############################################
 
 class @LeedsCitySet extends FeatureSet
@@ -173,15 +258,12 @@ class @LeedsCitySet extends FeatureSet
     bb.update()
     @addFeature(bb)
 
-    #Loop around CSV with Leeds featurea
+    #Loop around CSV with Leeds features
     for row in @csv.split("\n")
         [lat, lon, name] = row.split(',')
         lfs = new LeedsFeature(name, parseFloat(lat), parseFloat(lon))
         lfs.name = name;
         @addFeature(lfs)
-
-    #Loop around Leeds Open Plaques
-
 
 class @LeedsFeature extends Feature
   alt: Math.floor(Math.random()*(300-200+1)+200)
@@ -356,6 +438,8 @@ class @TowerBridge extends Feature
       @show() if changed and @geNode?
     self = arguments.callee.bind(@)
     @interval = setInterval(self, 4 * 60 * 60 * 1000) unless @interval?  # update every 4 hours
+    
+    
     
 
 class @LondonTweetSet extends FeatureSet

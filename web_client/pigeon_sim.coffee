@@ -76,7 +76,7 @@ google.setOnLoadCallback ->
     beamLatOffset:  -0.0075
 
 
-    features:      'air,rail,traffic,tide,twitter,olympics,misc'
+    features:      'air,rail,traffic,tide,twitter,olympics,misc,distance'
 
   # Parse city so we can alter it using search string 
 
@@ -155,7 +155,7 @@ google.setOnLoadCallback ->
   
   addLayers = (layers...) -> ge.getLayerRoot().enableLayerById(l, yes) for l in layers
 
-
+  ###
   sprecListening = no
 
   sprStartSound = make tag: 'audio', src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/commbadge.wav', preload: 'auto'
@@ -196,7 +196,7 @@ google.setOnLoadCallback ->
   
   sprec.onresult = areYouThereScotty
   sprec.onerror = sprec.onnomatch = (e) -> console.log e
-
+  ###
 
   updateCam = (data) ->
     if data.reset is 1 and not sprecListening
@@ -343,15 +343,16 @@ google.setOnLoadCallback ->
     ge.getWindow().setVisibility(yes)
     
     fm  = new FeatureManager(ge, lonRatio, cam, params)
-    las = new LondonAirSet(fm)     if 'air'       in features
-    tss = new TubeStationSet(fm)   if 'tube'      in features
-    rss = new RailStationSet(fm)   if 'rail'      in features
-    trs = new LondonTrafficSet(fm) if 'traffic'   in features
-    tgs = new TideGaugeSet(fm)     if 'tide'      in features
-    ccs = new MiscSet(fm)          if 'misc'      in features
-    lts = new LondonTweetSet(fm)   if 'twitter'   in features
-    ovs = new OlympicSet(fm)       if 'olympics'  in features and new Date("2012-08-12") - new Date() > 0
-    lds = new LeedsCitySet(fm)     if 'leeds'     in features
+    las = new LondonAirSet(fm)      if 'air'       in features
+    tss = new TubeStationSet(fm)    if 'tube'      in features
+    rss = new RailStationSet(fm)    if 'rail'      in features
+    trs = new LondonTrafficSet(fm)  if 'traffic'   in features
+    tgs = new TideGaugeSet(fm)      if 'tide'      in features
+    ccs = new MiscSet(fm)           if 'misc'      in features
+    lts = new LondonTweetSet(fm)    if 'twitter'   in features
+    ovs = new OlympicSet(fm)        if 'olympics'  in features and new Date("2012-08-12") - new Date() > 0
+    lds = new LeedsCitySet(fm)      if 'leeds'     in features
+    dis = new DistanceSensorSet(fm) if 'distance'  in features
 
     google.earth.addEventListener(ge, 'frameend', animTick)
     animTick()

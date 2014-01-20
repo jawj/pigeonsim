@@ -29,7 +29,7 @@ open -a "Google Chrome" --args --disable-web-security https://localhost:8443
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   google.setOnLoadCallback(function() {
-    var addLayers, adjustMapping, altStatus, animTick, animTicks, animTimeout, areYouThereScotty, beamMeUp, cam, camMoves, compassPts, connect, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, els, features, flapAmount, flown, fm, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, lastMove, latFactor, leapMotion, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, sprBeamSound, sprStartSound, sprec, sprecListening, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref1, _ref2;
+    var addLayers, adjustMapping, altStatus, animTick, animTicks, animTimeout, cam, camMoves, compassPts, connect, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, els, features, flapAmount, flown, fm, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, lastMove, latFactor, leapMotion, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref1, _ref2;
     if (!window.WebSocket) {
       alert('This app needs browser WebSocket support');
       return;
@@ -136,7 +136,7 @@ open -a "Google Chrome" --args --disable-web-security https://localhost:8443
       rollMultiplier: 40,
       geocodeSuffix: ', london',
       beamLatOffset: -0.0075,
-      features: 'air,rail,traffic,tide,twitter,olympics,misc'
+      features: 'air,rail,traffic,tide,twitter,olympics,misc,distance'
     };
     _ref = window.location.search.substring(1).split('&');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -234,72 +234,51 @@ open -a "Google Chrome" --args --disable-web-security https://localhost:8443
       }
       return _results;
     };
-    sprecListening = false;
-    sprStartSound = make({
-      tag: 'audio',
-      src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/commbadge.wav',
-      preload: 'auto'
-    });
-    sprBeamSound = make({
-      tag: 'audio',
-      src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/beam1a.wav',
-      preload: 'auto'
-    });
-    areYouThereScotty = function(recognition) {
-      var baseURL, conf, result, transcript, _ref3, _ref4;
-      console.log('Speech recognition results: ', recognition);
-      result = (_ref3 = recognition.results) != null ? (_ref4 = _ref3[0]) != null ? _ref4[0] : void 0 : void 0;
-      if (!result) {
-        return;
-      }
-      conf = result.confidence;
-      if (!(result.confidence > 0.33)) {
-        return;
-      }
-      transcript = result.transcript;
-      if (transcript === 'u c l') {
-        transcript = 'ucl';
-      }
-      if (transcript === 'home') {
-        transcript = '80 tottenham court road';
-      }
-      console.log('Scotty heard: ', transcript);
-      baseURL = 'https://maps.googleapis.com/maps/api/geocode/json';
-      return load({
-        url: "" + baseURL + "?sensor=false&components=country:GB&address=" + (encodeURIComponent(transcript)) + params.geocodeSuffix,
-        type: 'json'
-      }, beamMeUp);
-    };
-    beamMeUp = function(geocoding) {
-      var lat, lng, loc, _ref3, _ref4, _ref5;
-      console.log('Geocoding results: ', geocoding);
-      if (geocoding.status !== 'OK') {
-        return;
-      }
-      loc = (_ref3 = geocoding.results) != null ? (_ref4 = _ref3[0]) != null ? (_ref5 = _ref4.geometry) != null ? _ref5.location : void 0 : void 0 : void 0;
-      if (!loc) {
-        return;
-      }
-      sprBeamSound.play();
-      lat = loc.lat, lng = loc.lng;
-      lat += params.beamLatOffset;
-      console.log('Beaming you to: ', lat, lng);
-      resetCam(lat, lng, 0);
-      return fm.reset();
-    };
-    window.sprec = sprec = new webkitSpeechRecognition();
-    sprec.lang = 'en-gb';
-    sprec.onstart = function(e) {
-      sprec.stop();
-      return sprec.onstart = null;
-    };
-    sprec.start();
-    sprec.onresult = areYouThereScotty;
-    sprec.onerror = sprec.onnomatch = function(e) {
-      return console.log(e);
-    };
+    /*
+      sprecListening = no
+    
+      sprStartSound = make tag: 'audio', src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/commbadge.wav', preload: 'auto'
+      sprBeamSound  = make tag: 'audio', src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/beam1a.wav', preload: 'auto'
+    
+      areYouThereScotty = (recognition) ->
+        console.log 'Speech recognition results: ', recognition
+        result = recognition.results?[0]?[0]
+        return unless result
+        conf = result.confidence
+        return unless result.confidence > 0.33
+        transcript = result.transcript
+        if transcript is 'u c l' then transcript = 'ucl'
+        if transcript is 'home' then transcript = '80 tottenham court road'
+        console.log 'Scotty heard: ', transcript
+        baseURL = 'https://maps.googleapis.com/maps/api/geocode/json'
+        load {url: "#{baseURL}?sensor=false&components=country:GB&address=#{encodeURIComponent transcript}#{params.geocodeSuffix}", type: 'json'}, beamMeUp
+    
+      beamMeUp = (geocoding) ->
+        console.log 'Geocoding results: ', geocoding
+        return unless geocoding.status is 'OK'
+        loc = geocoding.results?[0]?.geometry?.location
+        return unless loc
+        sprBeamSound.play()
+        {lat, lng} = loc
+        lat += params.beamLatOffset
+        console.log 'Beaming you to: ', lat, lng
+        resetCam lat, lng, 0
+        fm.reset()
+    
+      window.sprec = sprec = new webkitSpeechRecognition()
+      sprec.lang = 'en-gb'
+    
+      sprec.onstart = (e) ->
+        sprec.stop()
+        sprec.onstart = null
+      sprec.start()  # make permission bar appear on load (if at all)
+      
+      sprec.onresult = areYouThereScotty
+      sprec.onerror = sprec.onnomatch = (e) -> console.log e
+    */
+
     updateCam = function(data) {
-      var alt, altDelta, flapDiff, heading, headingDelta, headingRad, latDelta, lonDelta, roll;
+      var alt, altDelta, flapDiff, heading, headingDelta, headingRad, latDelta, lonDelta, roll, sprecListening;
       if (data.reset === 1 && !sprecListening) {
         sprecListening = true;
         sprStartSound.play();
@@ -455,7 +434,7 @@ open -a "Google Chrome" --args --disable-web-security https://localhost:8443
       };
     };
     earthInitCallback = function(instance) {
-      var ccs, las, lds, lts, ovs, rss, tgs, trs, tss;
+      var ccs, dis, las, lds, lts, ovs, rss, tgs, trs, tss;
       window.ge = ge = instance;
       console.log("Google Earth plugin v" + (ge.getPluginVersion()) + ", API v" + (ge.getApiVersion()));
       addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION);
@@ -492,6 +471,9 @@ open -a "Google Chrome" --args --disable-web-security https://localhost:8443
       }
       if (__indexOf.call(features, 'leeds') >= 0) {
         lds = new LeedsCitySet(fm);
+      }
+      if (__indexOf.call(features, 'distance') >= 0) {
+        dis = new DistanceSensorSet(fm);
       }
       google.earth.addEventListener(ge, 'frameend', animTick);
       animTick();
