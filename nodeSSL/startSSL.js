@@ -1,3 +1,6 @@
+// Start SSL Server
+// Author:  Steven Gray
+
 var fs = require('fs');
 var express = require('express');
 var https = require('https');
