@@ -72,18 +72,20 @@ google.setOnLoadCallback ->
     leapOptions:    {enableGestures: true}
     rollMultiplier: 40
 
-    geocodeSuffix:  ', london'
+    geocodeSuffix:  ''
     beamLatOffset:  -0.0075
 
-
     features:      'air,rail,traffic,tide,twitter,olympics,misc,distance'
+    beam: 0
 
   # Parse city so we can alter it using search string 
 
   for kvp in window.location.search.substring(1).split('&')
     [k, v] = kvp.split('=')
     params[k] = if k in ['ws', 'features', 'geocodeSuffix','city'] then v.toLowerCase() else parseFloat(v)  #ignore case
-  
+    #Overide lng in params if provided
+    if k in ['startLng'] then params['startLon'] = parseFloat(v)
+
   if params.city == "leeds" 
     params.startLat = 53.79852807423503
     params.startLon = -1.5497589111328125
@@ -154,61 +156,64 @@ google.setOnLoadCallback ->
     yes
   
   addLayers = (layers...) -> ge.getLayerRoot().enableLayerById(l, yes) for l in layers
-
-  ###
-  sprecListening = no
-
-  sprStartSound = make tag: 'audio', src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/commbadge.wav', preload: 'auto'
-  sprBeamSound  = make tag: 'audio', src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/beam1a.wav', preload: 'auto'
-
-  areYouThereScotty = (recognition) ->
-    console.log 'Speech recognition results: ', recognition
-    result = recognition.results?[0]?[0]
-    return unless result
-    conf = result.confidence
-    return unless result.confidence > 0.33
-    transcript = result.transcript
-    if transcript is 'u c l' then transcript = 'ucl'
-    if transcript is 'home' then transcript = '80 tottenham court road'
-    console.log 'Scotty heard: ', transcript
-    baseURL = 'https://maps.googleapis.com/maps/api/geocode/json'
-    load {url: "#{baseURL}?sensor=false&components=country:GB&address=#{encodeURIComponent transcript}#{params.geocodeSuffix}", type: 'json'}, beamMeUp
-
-  beamMeUp = (geocoding) ->
-    console.log 'Geocoding results: ', geocoding
-    return unless geocoding.status is 'OK'
-    loc = geocoding.results?[0]?.geometry?.location
-    return unless loc
-    sprBeamSound.play()
-    {lat, lng} = loc
-    lat += params.beamLatOffset
-    console.log 'Beaming you to: ', lat, lng
-    resetCam lat, lng, 0
-    fm.reset()
-
-  window.sprec = sprec = new webkitSpeechRecognition()
-  sprec.lang = 'en-gb'
-
-  sprec.onstart = (e) ->
-    sprec.stop()
-    sprec.onstart = null
-  sprec.start()  # make permission bar appear on load (if at all)
   
-  sprec.onresult = areYouThereScotty
-  sprec.onerror = sprec.onnomatch = (e) -> console.log e
-  ###
+
+  if params.beam == 1
+    sprecListening = no
+    console.log("Beam me up (speech teleporter) loaded")
+    sprStartSound = make tag: 'audio', src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/commbadge.wav', preload: 'auto'
+    sprBeamSound  = make tag: 'audio', src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/beam1a.wav', preload: 'auto'
+
+    areYouThereScotty = (recognition) ->
+      console.log 'Speech recognition results: ', recognition
+      result = recognition.results?[0]?[0]
+      return unless result
+      conf = result.confidence
+      return unless result.confidence > 0.33
+      transcript = result.transcript
+      if transcript is 'u c l' then transcript = 'ucl'
+      if transcript is 'home' then transcript = '90 tottenham court road'
+      console.log 'Scotty heard: ', transcript
+      baseURL = 'https://maps.googleapis.com/maps/api/geocode/json'
+      load {url: "#{baseURL}?sensor=false&components=country:GB&address=#{encodeURIComponent transcript}#{params.geocodeSuffix}", type: 'json'}, beamMeUp
+
+    beamMeUp = (geocoding) ->
+      console.log 'Geocoding results: ', geocoding
+      return unless geocoding.status is 'OK'
+      loc = geocoding.results?[0]?.geometry?.location
+      return unless loc
+      sprBeamSound.play()
+      {lat, lng} = loc
+      lat += params.beamLatOffset
+      console.log 'Beaming you to: ', lat, lng
+      resetCam lat, lng, 0
+      fm.reset()
+
+    window.sprec = sprec = new webkitSpeechRecognition()
+    sprec.lang = 'en-gb'
+
+    sprec.onstart = (e) ->
+      sprec.stop()
+      sprec.onstart = null
+    sprec.start()  # make permission bar appear on load (if at all)
+    
+    sprec.onresult = areYouThereScotty
+    sprec.onerror = sprec.onnomatch = (e) -> console.log e
+  
 
   updateCam = (data) ->
     if data.reset is 1 and not sprecListening
-      sprecListening = yes
-      sprStartSound.play()
-      sprec.start()
-      console.log 'sprec started'
+      if params.beam == 1 
+        sprecListening = yes
+        sprStartSound.play()
+        sprec.start()
+        console.log 'sprec started'
 
     if data.reset isnt 1 and sprecListening
-      sprecListening = no
-      sprec.stop()
-      console.log 'sprec stopped'
+      if params.beam == 1
+        sprecListening = no
+        sprec.stop()
+        console.log 'sprec stopped'
 
 
     if flown and data.reset is 1
