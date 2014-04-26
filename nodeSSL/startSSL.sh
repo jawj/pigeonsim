@@ -14,9 +14,7 @@ var PORT = 8443;
 var HOST = 'localhost';
 app = express();
 
-app.configure(function(){
-    app.use(app.router);
-});
+app.use(app.router);
 
 server = https.createServer(https_options, app).listen(PORT, HOST);
 console.log('https server listening on https://%s:%s', HOST, PORT);
