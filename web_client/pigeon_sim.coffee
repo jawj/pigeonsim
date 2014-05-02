@@ -443,7 +443,6 @@ CountUpTimer = (secStart, minStart, hrStart,id) ->
 
   globalTimer = setInterval(start, 1000)
 
-if params.timer  
-  CountUpTimer 0,0,0,"timer"
+CountUpTimer 0,0,0,"timer"
 
 
