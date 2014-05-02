@@ -21,11 +21,11 @@
   open -a "Google Chrome" --args --disable-web-security https://localhost:8443
   */
 
-  var make;
+  var CountUpTimer, globalTimer, make;
   var __hasProp = Object.prototype.hasOwnProperty, __slice = Array.prototype.slice, __indexOf = Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (__hasProp.call(this, i) && this[i] === item) return i; } return -1; };
 
   google.setOnLoadCallback(function() {
-    var addLayers, adjustMapping, altStatus, animTick, animTicks, animTimeout, areYouThereScotty, beamMeUp, cam, camMoves, compassPts, connect, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, els, features, flapAmount, flown, fm, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, lastMove, latFactor, leapMotion, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, sprBeamSound, sprStartSound, sprec, sprecListening, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref2, _ref3;
+    var addLayers, adjustMapping, altStatus, animTick, animTicks, animTimeout, areYouThereScotty, beamMeUp, cam, camMoves, compassPts, connect, counterlastFlap, debugDataStatus, debugEarthAPIStatus, debugTicksStatus, earthInitCallback, el, els, features, flapAmount, flapsCount, flown, fm, ge, headingStatus, id, inMsgs, k, kvp, lastFlap, lastMove, latFactor, leapMotion, lonFactor, lonRatio, moveCam, objClone, objsEq, params, pi, piOver180, resetCam, seenCam, speed, sprBeamSound, sprStartSound, sprec, sprecListening, titleStatus, truncNum, twoPi, updateCam, v, w, wrapDegs180, wrapDegs360, _i, _len, _ref, _ref2, _ref3;
     if (!window.WebSocket) {
       alert('This app needs browser WebSocket support');
       return;
@@ -85,6 +85,7 @@
       }
       return d;
     };
+    flapsCount = 0;
     params = {
       startLat: 51.5035,
       startLon: -0.0742,
@@ -125,7 +126,9 @@
       geocodeSuffix: '',
       beamLatOffset: -0.0075,
       features: 'air,rail,traffic,tide,twitter,olympics,misc,distance',
-      beam: 0
+      teleport: 0,
+      timer: 0,
+      flapCounter: 0
     };
     _ref = window.location.search.substring(1).split('&');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -163,7 +166,8 @@
     window.cam = cam = {};
     ge = seenCam = flown = animTimeout = fm = lastMove = null;
     animTicks = camMoves = inMsgs = 0;
-    lastFlap = flapAmount = 0;
+    lastFlap = flapAmount = counterlastFlap = 0;
+    if (params.flapCounter) $("#userFlaps").html("Flaps: 0");
     pi = Math.PI;
     twoPi = pi * 2;
     piOver180 = pi / 180;
@@ -180,7 +184,15 @@
       cam.roll = 0.0000001;
       cam.tilt = params.cruiseTilt;
       lastMove = new Date();
-      return flown = false;
+      flapsCount = 0;
+      $("#flapNum").html(flapsCount);
+      flown = false;
+      clearInterval(globalTimer);
+      if (params.timer) {
+        clearInterval(globalTimer);
+        CountUpTimer(0, 0, 0, "timer");
+      }
+      if (params.flapCounter) return $("#userFlaps").html("Flaps: 0");
     };
     moveCam = function() {
       var c, unmoved, view;
@@ -216,7 +228,7 @@
       }
       return _results;
     };
-    if (params.beam === 1) {
+    if (params.teleport === 1) {
       sprecListening = false;
       console.log("Beam me up (speech teleporter) loaded");
       sprStartSound = make({
@@ -274,7 +286,7 @@
     updateCam = function(data) {
       var alt, altDelta, flapDiff, heading, headingDelta, headingRad, latDelta, lonDelta, roll;
       if (data.reset === 1 && !sprecListening) {
-        if (params.beam === 1) {
+        if (params.teleport === 1) {
           sprecListening = true;
           sprStartSound.play();
           sprec.start();
@@ -282,7 +294,7 @@
         }
       }
       if (data.reset !== 1 && sprecListening) {
-        if (params.beam === 1) {
+        if (params.teleport === 1) {
           sprecListening = false;
           sprec.stop();
           console.log('sprec stopped');
@@ -294,6 +306,13 @@
       }
       if (data.reset === 2) window.location.reload();
       if (data.roll == null) return;
+      if (params.flapCounter) {
+        if (data.flap !== 0.0) {
+          if (counterlastFlap === 0) flapsCount++;
+          $("#userFlaps").html("Flaps: " + flapsCount);
+        }
+        counterlastFlap = data.flap;
+      }
       flown = true;
       altDelta = 0;
       if (data.dive > 0) {
@@ -474,5 +493,52 @@
     }
     return t;
   };
+
+  globalTimer = void 0;
+
+  CountUpTimer = function(secStart, minStart, hrStart, id) {
+    var hr, min, sec, selector, start;
+    selector = document.getElementById(id);
+    sec = secStart;
+    min = minStart;
+    hr = hrStart;
+    start = function() {
+      var hrDisp, minDisp, secDisp;
+      secDisp = "";
+      minDisp = "";
+      hrDisp = "";
+      if (sec < 10) {
+        secDisp = "0" + sec;
+      } else {
+        secDisp = sec;
+      }
+      if (sec > 59) {
+        min++;
+        sec = 0;
+      }
+      if (min < 10) {
+        minDisp = "0" + min;
+      } else {
+        minDisp = min;
+      }
+      if (min > 59) {
+        hr++;
+        min = 0;
+      }
+      if (hr < 10) {
+        hrDisp = "0" + hr;
+      } else {
+        hrDisp = hr;
+      }
+      if (sec === 0) secDisp = "00";
+      if (min === 0) minDisp = "00";
+      if (hr === 0) hrDisp = "00";
+      selector.innerHTML = hrDisp + ":" + minDisp + ":" + secDisp;
+      return sec++;
+    };
+    return globalTimer = setInterval(start, 1000);
+  };
+
+  if (params.timer) CountUpTimer(0, 0, 0, "timer");
 
 }).call(this);

@@ -16,6 +16,7 @@ void draw() {
   float dive = keyPressed && keyCode == DOWN ? 1.0 : 0.0;
   float flap = keyPressed && keyCode == UP   ? 2.0 : 0.0;
   String data = "{\"roll\":" + ((mouseXOffset - mouseX) / 2) + ",\"dive\":" + dive + ",\"flap\":" + flap + "}";
+  println("flap:" + flap);
   ws.broadcast(data);
 }
 

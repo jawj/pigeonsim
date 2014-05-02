@@ -34,6 +34,7 @@ google.setOnLoadCallback ->
   truncNum = (n, dp = 2) -> if typeof n is 'number' then parseFloat(n.toFixed(dp)) else n
   wrapDegs360 = (d) -> d += 360 while d <    0; d -= 360 while d >= 360; d
   wrapDegs180 = (d) -> d += 360 while d < -180; d -= 360 while d >= 180; d
+  flapsCount = 0
 
   params =  # all these default params may be over-ridden in the query string
     startLat:      51.5035
@@ -76,7 +77,11 @@ google.setOnLoadCallback ->
     beamLatOffset:  -0.0075
 
     features:      'air,rail,traffic,tide,twitter,olympics,misc,distance'
-    beam: 0
+    
+    #Extra Features
+    teleport: 0
+    timer: 0
+    flapCounter: 0
 
   # Parse city so we can alter it using search string 
 
@@ -112,7 +117,11 @@ google.setOnLoadCallback ->
   window.cam = cam = {}
   ge = seenCam = flown = animTimeout = fm = lastMove = null
   animTicks = camMoves = inMsgs = 0
-  lastFlap = flapAmount = 0
+  lastFlap = flapAmount = counterlastFlap = 0
+
+  if params.flapCounter
+    $("#userFlaps").html("Flaps: 0")
+
   
   pi          = Math.PI
   twoPi       = pi * 2
@@ -132,8 +141,18 @@ google.setOnLoadCallback ->
     cam.roll    = 0.0000001  # a plain 0 is ignored
     cam.tilt    = params.cruiseTilt
     lastMove    = new Date()
+    flapsCount = 0
+    $("#flapNum").html(flapsCount);
     flown = no
-  
+    clearInterval globalTimer
+    #Reset CountTimer Timer at 0
+    if params.timer
+      clearInterval globalTimer
+      CountUpTimer 0,0,0,"timer"
+    
+    if params.flapCounter
+      $("#userFlaps").html("Flaps: 0")
+
   moveCam = ->
     camMoves += 1
     debugEarthAPIStatus.innerHTML = camMoves if params.debugData
@@ -158,7 +177,7 @@ google.setOnLoadCallback ->
   addLayers = (layers...) -> ge.getLayerRoot().enableLayerById(l, yes) for l in layers
   
 
-  if params.beam == 1
+  if params.teleport == 1
     sprecListening = no
     console.log("Beam me up (speech teleporter) loaded")
     sprStartSound = make tag: 'audio', src: 'http://www.stdimension.org/MediaLib/effects/technology/federation/commbadge.wav', preload: 'auto'
@@ -203,14 +222,14 @@ google.setOnLoadCallback ->
 
   updateCam = (data) ->
     if data.reset is 1 and not sprecListening
-      if params.beam == 1 
+      if params.teleport == 1 
         sprecListening = yes
         sprStartSound.play()
         sprec.start()
         console.log 'sprec started'
 
     if data.reset isnt 1 and sprecListening
-      if params.beam == 1
+      if params.teleport == 1
         sprecListening = no
         sprec.stop()
         console.log 'sprec stopped'
@@ -225,6 +244,14 @@ google.setOnLoadCallback ->
     
     return unless data.roll?
     
+    #Calculate Flap Counter
+    if params.flapCounter
+      if data.flap != 0.0
+        if(counterlastFlap == 0) then flapsCount++
+        $("#userFlaps").html("Flaps: " + flapsCount)
+      
+      counterlastFlap = data.flap
+
     flown        = yes  # since last resetCam()
     altDelta     = 0
     
@@ -241,7 +268,7 @@ google.setOnLoadCallback ->
     altDelta    += flapAmount if flapAmount > 0
     flapAmount  *= params.flapDecay
     lastFlap     = data.flap
-    
+
     roll         = data.roll
     roll         =   params.maxRoll if roll >   params.maxRoll
     roll         = - params.maxRoll if roll < - params.maxRoll
@@ -256,7 +283,7 @@ google.setOnLoadCallback ->
     alt          = cam.alt + altDelta
     alt          = params.minAlt if alt < params.minAlt
     alt          = params.maxAlt if alt > params.maxAlt
-    
+
     cam.lat     += latDelta
     cam.lon     += lonDelta
     cam.heading  = heading
@@ -382,4 +409,41 @@ make = (opts = {}) ->
       when 'cls' then t.className = v
       else t[k] = v
   t
+
+#Global Timer object so that we can kill it when we reset the interface
+globalTimer = undefined
+
+CountUpTimer = (secStart, minStart, hrStart,id) ->
+  selector = document.getElementById(id)
+  sec = secStart
+  min = minStart
+  hr = hrStart
+
+  start = ->
+    secDisp = ""
+    minDisp = "" 
+    hrDisp = "";
+    if sec < 10 then secDisp="0"+sec else secDisp = sec
+    if sec > 59  
+      min++ 
+      sec=0
+    if min < 10 then minDisp="0"+min else minDisp = min
+    if min > 59 
+      hr++
+      min=0
+    if hr < 10 then hrDisp="0"+hr else hrDisp = hr
+    if sec == 0
+      secDisp = "00"
+    if min == 0
+      minDisp = "00"
+    if hr == 0
+      hrDisp = "00"
+    selector.innerHTML = hrDisp+":"+minDisp+":"+secDisp
+    sec++
+
+  globalTimer = setInterval(start, 1000)
+
+if params.timer  
+  CountUpTimer 0,0,0,"timer"
+
 

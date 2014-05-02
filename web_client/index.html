@@ -10,6 +10,8 @@ html, body { margin: 0; padding: 0; font-size: 0.95em; overflow: hidden; width: 
 #statusInner { padding: 0.4em 1em 0; font-family: Helvetica; color: #fff; }
 #statusInner span { margin: 0 0.5em; }
 #credit { float: right; font-weight: normal; }
+#timer { float: right; margin-right: 1.75em; font-weight: normal; }
+#userFlaps { float: right; margin-right: 1.75em; font-weight: normal; }
 #title         { color: #777; }  /* title colour changes according to connection status */
 #debugData     { color: #ff0; }  /* JSON data: yelow   */
 #debugEarthAPI { color: #0ff; }  /* API data:  cyan    */
@@ -17,7 +19,7 @@ html, body { margin: 0; padding: 0; font-size: 0.95em; overflow: hidden; width: 
 a              { color: #fff; }
 </style>
 <title>Pigeon Sim</title>
-<script type='text/javascript' src='http://www.iotschool.org/wp-includes/js/jquery/jquery.js?ver=1.10.2'></script>
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 </head>
 <body>
 <div id="statusOuter"><div id="statusInner">
@@ -29,6 +31,8 @@ a              { color: #fff; }
   <span id="debugTicks"></span>
   <span id="debugTicks"></span>
   <div id="credit"><span>@CASAUCL</span></div>
+  <div id="timer"><span>00:00:00</span></div>
+  <div id="userFlaps"></span></div>
 </div></div>
 <div id="earth"></div>
 
