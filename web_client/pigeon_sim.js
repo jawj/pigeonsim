@@ -127,8 +127,8 @@
       beamLatOffset: -0.0075,
       features: 'air,rail,traffic,tide,twitter,olympics,misc,distance',
       teleport: 0,
-      timer: 0,
-      flapCounter: 0
+      timer: 1,
+      flapCounter: 1
     };
     _ref = window.location.search.substring(1).split('&');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -538,7 +538,5 @@
     };
     return globalTimer = setInterval(start, 1000);
   };
-
-  CountUpTimer(0, 0, 0, "timer");
 
 }).call(this);

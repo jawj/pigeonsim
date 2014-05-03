@@ -80,8 +80,8 @@ google.setOnLoadCallback ->
     
     #Extra Features
     teleport: 0
-    timer: 0
-    flapCounter: 0
+    timer: 1
+    flapCounter: 1
 
   # Parse city so we can alter it using search string 
 
@@ -443,6 +443,6 @@ CountUpTimer = (secStart, minStart, hrStart,id) ->
 
   globalTimer = setInterval(start, 1000)
 
-CountUpTimer 0,0,0,"timer"
+#CountUpTimer 0,0,0,"timer"
 
 
