@@ -67,6 +67,7 @@ function wsRegisterEvents(board){
                 console.log("Fan Left On: " + message.roll);
                 if(board != undefined){
                     board.analogWrite(leftFanPWM, 255);
+                    board.analogWrite(rightFanPWM, 0); //Turn off right fan when going right
                 }
             }
             
@@ -74,6 +75,7 @@ function wsRegisterEvents(board){
                 console.log("Fan Right On: " + message.roll);
                 if(board != undefined){
                     board.analogWrite(rightFanPWM, 255);
+                    board.analogWrite(leftFanPWM, 0);  //Turn off left fan when going right
                 }
             }
         
