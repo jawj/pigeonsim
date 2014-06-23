@@ -16,3 +16,8 @@ void mousePressed() {
   String data = "{\"roll\":1,\"dive\":0,\"flap\":0}";
    ws.broadcast(data);
 }
+
+void resetSystem() {
+  String data = "{\"reset\":1}";
+  ws.broadcast(data);
+}
