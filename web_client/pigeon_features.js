@@ -495,6 +495,51 @@
 
   })();
 
+  this.ParisCitySet = (function() {
+
+    __extends(ParisCitySet, FeatureSet);
+
+    function ParisCitySet(featureManager) {
+      var lat, lfs, lon, name, row, _i, _len, _ref, _ref2;
+      ParisCitySet.__super__.constructor.call(this, featureManager);
+      _ref = this.csv.split("\n");
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        row = _ref[_i];
+        _ref2 = row.split(','), lat = _ref2[0], lon = _ref2[1], name = _ref2[2];
+        lfs = new ParisFeature(name, parseFloat(lat), parseFloat(lon));
+        lfs.name = name;
+        this.addFeature(lfs);
+      }
+    }
+
+    return ParisCitySet;
+
+  })();
+
+  this.ParisFeature = (function() {
+
+    __extends(ParisFeature, Feature);
+
+    function ParisFeature() {
+      ParisFeature.__super__.constructor.apply(this, arguments);
+    }
+
+    ParisFeature.prototype.alt = Math.floor(Math.random() * (300 - 200 + 1) + 200);
+
+    ParisFeature.prototype.nameTextOpts = {
+      size: 3,
+      lineWidth: 2
+    };
+
+    ParisFeature.prototype.descTextOpts = {
+      size: 2,
+      lineWidth: 1
+    };
+
+    return ParisFeature;
+
+  })();
+
   this.LeedsCitySet = (function() {
 
     __extends(LeedsCitySet, FeatureSet);

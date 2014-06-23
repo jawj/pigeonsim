@@ -76,7 +76,7 @@ google.setOnLoadCallback ->
     geocodeSuffix:  ''
     beamLatOffset:  -0.0075
 
-    features:      'air,rail,traffic,tide,twitter,olympics,misc,distance'
+    features:      'air,rail,traffic,tide,twitter,olympics,misc,distance,paris'
     
     #Extra Features
     teleport: 0
@@ -385,6 +385,8 @@ google.setOnLoadCallback ->
     ovs = new OlympicSet(fm)        if 'olympics'  in features and new Date("2012-08-12") - new Date() > 0
     lds = new LeedsCitySet(fm)      if 'leeds'     in features
     dis = new DistanceSensorSet(fm) if 'distance'  in features
+    par = new ParisCitySet(fm)      if 'paris'     in features
+
 
     google.earth.addEventListener(ge, 'frameend', animTick)
     animTick()

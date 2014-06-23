@@ -125,7 +125,7 @@
       rollMultiplier: 40,
       geocodeSuffix: '',
       beamLatOffset: -0.0075,
-      features: 'air,rail,traffic,tide,twitter,olympics,misc,distance',
+      features: 'air,rail,traffic,tide,twitter,olympics,misc,distance,paris',
       teleport: 0,
       timer: 1,
       flapCounter: 1
@@ -420,7 +420,7 @@
       };
     };
     earthInitCallback = function(instance) {
-      var ccs, dis, las, lds, lts, ovs, rss, tgs, trs, tss;
+      var ccs, dis, las, lds, lts, ovs, par, rss, tgs, trs, tss;
       window.ge = ge = instance;
       console.log("Google Earth plugin v" + (ge.getPluginVersion()) + ", API v" + (ge.getApiVersion()));
       addLayers(ge.LAYER_TERRAIN, ge.LAYER_TREES, ge.LAYER_BUILDINGS, ge.LAYER_BUILDINGS_LOW_RESOLUTION);
@@ -445,6 +445,7 @@
       if (__indexOf.call(features, 'distance') >= 0) {
         dis = new DistanceSensorSet(fm);
       }
+      if (__indexOf.call(features, 'paris') >= 0) par = new ParisCitySet(fm);
       google.earth.addEventListener(ge, 'frameend', animTick);
       animTick();
       connect();

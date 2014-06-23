@@ -237,7 +237,25 @@ class @DistanceSoundSensor extends Feature
     self = arguments.callee.bind(@)
     @interval = setInterval(self, 10 * 1000) unless @interval?  # update every minute
 
-    
+
+#################################### PARIS ##############################################
+
+class @ParisCitySet extends FeatureSet
+  constructor: (featureManager) ->
+    super(featureManager)
+
+    #Loop around CSV with Leeds features
+    for row in @csv.split("\n")
+        [lat, lon, name] = row.split(',')
+        lfs = new ParisFeature(name, parseFloat(lat), parseFloat(lon))
+        lfs.name = name;
+        @addFeature(lfs)
+
+class @ParisFeature extends Feature
+  alt: Math.floor(Math.random()*(300-200+1)+200)
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+
 #################################### LEEDS ##############################################
 
 class @LeedsCitySet extends FeatureSet
