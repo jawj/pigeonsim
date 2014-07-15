@@ -375,6 +375,9 @@ class @MiscSet extends FeatureSet
     
     ch = new CityHall("city-hall", 51.50477580586208, -0.07864236831665039)
     @addFeature(ch)
+
+    hg = new Helen("Helen Message", 51.518927, -0.124482)
+    @addFeature(hg)
     
     logo = new CASALogo("casa-logo", 51.52192375643773, -0.13593167066574097)
     @addFeature(logo)
@@ -390,6 +393,13 @@ class @MiscSet extends FeatureSet
     tb = new TowerBridge('twr-brdg', 51.50558385576479, -0.0754237174987793)
     tb.update()
     @addFeature(tb)
+
+class @Helen extends Feature
+  alt: 170
+  nameTextOpts: {size: 3, lineWidth: 2}
+  descTextOpts: {size: 2, lineWidth: 1}
+  name: "but you'll always know where to find us!"
+  desc: "...... Steve x :)"
 
 class @CityHall extends Feature
   alt: 120
