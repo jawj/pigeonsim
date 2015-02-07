@@ -72,6 +72,7 @@ google.setOnLoadCallback ->
     enableLeap:     0
     leapOptions:    {enableGestures: true}
     rollMultiplier: 40
+    hud:            0
 
     geocodeSuffix:  ''
     beamLatOffset:  -0.0075
@@ -122,7 +123,30 @@ google.setOnLoadCallback ->
   if params.flapCounter
     $("#userFlaps").html("Flaps: 0")
 
-  
+  if params.hud 
+    mapOptions = {
+      center: { lat: params.startLat, lng: params.startLon},
+      zoom: 13
+    };
+
+    map = new google.maps.Map(document.getElementById('map'), mapOptions);
+    
+    marker = new google.maps.Marker({
+      position: new google.maps.LatLng(params.startLat, params.startLon),
+      icon: { 
+        url: "./img/birdicon.png",
+        anchor: new google.maps.Point(10,4)
+      },
+      map: map
+    })
+
+    poly = new google.maps.Polyline({
+      strokeColor: "#CC33FF",
+      map: map
+    })
+
+    document.getElementById("map").style.display = 'block';
+
   pi          = Math.PI
   twoPi       = pi * 2
   piOver180   = pi / 180
@@ -153,6 +177,13 @@ google.setOnLoadCallback ->
     if params.flapCounter
       $("#userFlaps").html("Flaps: 0")
 
+    if params.hud
+      currentPos = new google.maps.LatLng(params.startLat, params.startLon)
+      map.setCenter(currentPos)
+      marker.setPosition(currentPos)
+      posArray = []
+      poly.setPath(posArray)
+
   moveCam = ->
     camMoves += 1
     debugEarthAPIStatus.innerHTML = camMoves if params.debugData
@@ -173,6 +204,14 @@ google.setOnLoadCallback ->
     seenCam = objClone(cam)
     debugEarthAPIStatus.innerHTML +=  ' ' + JSON.stringify(cam, (k, v) -> truncNum(v)) if params.debugData
     yes
+
+    if params.hud
+      currentPos = new google.maps.LatLng(cam.lat, cam.lon)
+      map.setCenter(currentPos)
+      marker.setPosition(currentPos)
+      path = poly.getPath()
+      path.push(currentPos)
+      poly.setPath(path)
   
   addLayers = (layers...) -> ge.getLayerRoot().enableLayerById(l, yes) for l in layers
   
@@ -414,6 +453,10 @@ make = (opts = {}) ->
 
 #Global Timer object so that we can kill it when we reset the interface
 globalTimer = undefined
+map = undefined
+marker = undefined
+posArray = []
+poly = undefined
 
 CountUpTimer = (secStart, minStart, hrStart,id) ->
   selector = document.getElementById(id)

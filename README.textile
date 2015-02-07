@@ -27,6 +27,10 @@ h2. LeapMotion Support
 
 To enable LeapMotion Support append enableLeap=1 to the query string (e.g. /pigeonsim/web_client/?enableLeap=1) which will allow you to control the sim with your hand movements.  See "this video":http://www.youtube.com/watch?v=6C6D6IF2PO0, for instructions and an example of how to fly with a LeapMotion.
 
+h2. HUD Mode
+
+To enable a top down map of your current position and path flown append hud=1 to the query string. 
+
 h2. Licence
 
 This code is released under the "GPL v3":http://www.opensource.org/licenses/GPL-3.0. To negotiate GPL-incompatible uses, feel free contact me.
